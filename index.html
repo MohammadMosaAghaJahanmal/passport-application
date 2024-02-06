@@ -142,9 +142,13 @@
 				const cloneDB = [...database];
 				const isExists = cloneDB.find(per => per.barCode === data.barCode);
 				if(isExists)
-					return alert("دا بارکوډ دمخه لا شتون لري")
+				{
+					alert("دا بارکوډ دمخه لا شتون لري")
+					return false; 
+				}
 				cloneDB.push(data);
 				saveDatabase(cloneDB);
+				return true
 			}
 
 			function insertBulky(data) {
@@ -207,9 +211,10 @@
 			<table>
 				<thead>
 					<tr>
-						<th>#</th>
-						<th>نوم</th>
 						<th>کړنې</th>
+						<th>نوم</th>
+						<th>تغیر</th>
+						<th>#</th>
 					</tr>
 				</thead>
 				<tbody></tbody>
@@ -224,7 +229,6 @@
 				</button>
 			</div>
 		</div>
-			
 		<script>
 			console.clear();
 			const form2 = document.getElementById("form2");
@@ -291,15 +295,18 @@
 				database.forEach((applicant, index) => {
 					tbody.insertAdjacentHTML("beforeend", `
 						<tr>
-							<td>${(index + 1)}</td>
-							<td>${applicant.name}</td>
-							<td>
+							<td class="action">
 								<div class="btn-group">
-									<button class="danger" onclick="deleteHandler('${applicant.barCode}')">ړنګول</button>
-									<button class="info" onclick="editHandler('${applicant.barCode}')">سمون</button>
+									<button class="danger" onclick="deleteHandler(this, '${applicant.barCode}')">ړنګول</button>
+									<button class="info" onclick="editHandler(this, '${applicant.barCode}')">سمون</button>
 									<button class="Submit" onclick="submitHandler('${applicant.barCode}', '${applicant.date}')">سپارل</button>
 								</div>
 							</td>
+							<td class="app-name">${applicant.name}</td>
+							<td class="checked">
+								<input type="checkbox" ${applicant.checked ? 'checked' : ""} onchange="checkHandler(this, '${applicant.barCode}')" >
+							</td>
+							<td class="number">${(index + 1)}</td>
 						</tr>
 					`)
 				});
@@ -310,13 +317,25 @@
 				const barCodeDate = uxBirthDate?.value?.trim();
 				const barCodeName = nameInput?.value?.trim();
 				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی"))
-					return
-				createOne({
+					return;
+
+				let isUpdated = createOne({
 					name: barCodeName,
 					barCode: barCodeText,
 					date: barCodeDate,
+					checked: false,
 				});
-				loadDataToTable(tbody)
+				if(!isUpdated)
+					return
+				const rowToInsert = changeRowData(null, {
+					name: barCodeName,
+					barCode: barCodeText,
+					date: barCodeDate,
+					checked: false,
+					number: (database.length + 1)
+				});
+				console.log(rowToInsert);
+				tbody.insertAdjacentElement('beforeend', rowToInsert)
 				uxCode.value = ""
 				uxBirthDate.value = ""
 				nameInput.value = ""
@@ -329,28 +348,40 @@
 				return value;
 			}
 
-			function deleteHandler(BAR_CODE) {
+			function deleteHandler(elm, BAR_CODE) {
+				console.log(elm)
+				console.log(BAR_CODE)
 				const isConfirm = confirm("ایا تاسو ډاډه یاست چې دا غوښتنلیک حذف کړئ");
 				if(isConfirm)
 				{
 					deleteOne(BAR_CODE);
-					loadDataToTable(tbody);
+					findParentRow(elm)?.remove();
 				}
 			}
 
-			function editHandler(BAR_CODE) {
+			function editHandler(elm, BAR_CODE) {
 				const getApplicant = fineOne(BAR_CODE);
 				const barCodeName = prompt("نوی نوم", getApplicant.name);
 				const barCodeText = prompt("نوی بارکوډ", getApplicant.barCode);
 				const barCodeDate = prompt("نوی نیټه", getApplicant.date);;
 				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی"))
 					return;
-				updateOne(BAR_CODE, {
+				const newData = {
 					name: barCodeName?.trim() || getApplicant.name,
 					barCode: barCodeText?.trim() || getApplicant.barCode,
 					date: barCodeDate?.trim() || getApplicant.date,
+					checked: getApplicant.checked
+				}
+				updateOne(BAR_CODE, newData);
+				changeRowData(elm, newData);
+			}
+
+			function checkHandler(elm, BAR_CODE) {
+				const getApplicant = fineOne(BAR_CODE);
+				updateOne(BAR_CODE, {
+					...getApplicant,
+					checked: elm.checked
 				});
-				loadDataToTable(tbody)
 			}
 
 			function onbackup() {
@@ -378,6 +409,42 @@
 					alert("مهرباني وکړئ د معلوماتو سم ډول دننه کړئ!")
 				}
 				textarea.value = "";
+			}
+
+
+			function changeRowData(elm, data) {
+				let TR = document.createElement("tr");
+				let NumberField = document.createElement("td");
+				NumberField.innerHTML = data?.number;
+				NumberField.setAttribute("class", 'number');
+				if(elm)
+				{
+					TR = findParentRow(elm);
+					NumberField = TR.querySelector(".number")?.cloneNode(true);
+				}
+				TR.innerHTML = "";
+				TR.insertAdjacentHTML('beforeend', `
+				<td class="action">
+					<div class="btn-group">
+						<button class="danger" onclick="deleteHandler(this, '${data.barCode}')">ړنګول</button>
+						<button class="info" onclick="editHandler(this, '${data.barCode}')">سمون</button>
+						<button class="Submit" onclick="submitHandler('${data.barCode}', '${data.date}')">سپارل</button>
+					</div>
+				</td>
+				<td class="app-name">${data.name}</td>
+				<td class="checked">
+					<input type="checkbox" ${data.checked ? 'checked' : ""} onchange="checkHandler(this, '${data.barCode}')" >
+				</td>
+				`
+				);
+				TR.insertAdjacentElement("beforeend", NumberField);
+				return TR
+}
+
+			function findParentRow(element) {
+				while (element && element.tagName !== 'TR') 
+						element = element.parentNode;
+				return element;
 			}
 		</script>
 	</body>
