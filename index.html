@@ -186,7 +186,7 @@
 
 				<div class="form-group">
 						<label id="Label70" class="aspLabel" for="uxCode">بارکوډ</label>
-					<input name="uxCode" type="text" maxlength="50" id="uxCode" class="form-control" rule="{fn:'required'}" required="" placeholder="کود را وارد نمائید">
+					<input name="uxCode" type="text" maxlength="50" id="uxCode" class="form-control" rule="{fn:'required'}" required="" placeholder="کوډ داخل کړی">
 				</div>
 
 				<div class="form-group">
@@ -342,7 +342,7 @@
 				const getApplicant = fineOne(BAR_CODE);
 				const barCodeName = prompt("نوی نوم", getApplicant.name);
 				const barCodeText = prompt("نوی بارکوډ", getApplicant.barCode);
-				const barCodeDate = prompt("توی نیټه", getApplicant.date);;
+				const barCodeDate = prompt("نوی نیټه", getApplicant.date);;
 				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی"))
 					return;
 				updateOne(BAR_CODE, {
