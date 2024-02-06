@@ -175,10 +175,6 @@
 				فورمه باوری کړی
 			</button>
 			<br>
-			<div class="form-group">
-				<label id="Label70" class="aspLabel" for="uxName">نوم</label>
-				<input type="text" value="" id="uxName" placeholder="نوم">
-			</div>
 			<form method="post" action="https://passport.moi.gov.af/BarcodeSearch/" id="form2" target="_blank">
 				<div class="aspNetHidden">
 					<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="">
@@ -200,6 +196,10 @@
 					<input type="submit" name="uxSearch" value="لټون" id="uxSearch" class="submit-btn info">
 
 			</form>
+			<div class="form-group">
+				<label id="Label70" class="aspLabel" for="uxName">نوم</label>
+				<input type="text" value="" id="uxName" placeholder="نوم">
+			</div>
 			<button onclick="saveFormData(this)" class="submit">فورمه سبت کړی</button>
 		</div>
 
@@ -309,7 +309,7 @@
 				const barCodeText = uxCode?.value?.trim()
 				const barCodeDate = uxBirthDate?.value?.trim();
 				const barCodeName = nameInput?.value?.trim();
-				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeText, "د نیټی"))
+				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی"))
 					return
 				createOne({
 					name: barCodeName,
@@ -343,7 +343,7 @@
 				const barCodeName = prompt("نوی نوم", getApplicant.name);
 				const barCodeText = prompt("نوی بارکوډ", getApplicant.barCode);
 				const barCodeDate = prompt("توی نیټه", getApplicant.date);;
-				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeText, "د نیټی"))
+				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی"))
 					return;
 				updateOne(BAR_CODE, {
 					name: barCodeName?.trim() || getApplicant.name,
