@@ -1,0 +1,414 @@
+<html>
+	<head>
+		<meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>
+			FORM
+		</title>
+		<script>
+			const DB_NAME = "PAS_INFO";
+
+			let database = localStorage.getItem("PAS_INFO");
+
+			try {
+				if(database)
+					database = JSON.parse(database);
+				if(!database)
+					database = [];
+			} catch (error) {
+				database = [];
+			}
+
+			function fineOne(barCode) {
+				return database.find(perApplicant => perApplicant.barCode === barCode);
+			}
+
+			function deleteOne(barCode) {
+				const cloneDB = [...database];
+				const findIndex = cloneDB.findIndex((perApplicant) => perApplicant.barCode === barCode);
+				cloneDB.splice(findIndex, 1);
+				saveDatabase(cloneDB);
+			}
+
+			function createOne(data) {
+				const cloneDB = [...database];
+				const isExists = cloneDB.find(per => per.barCode === data.barCode);
+				if(isExists)
+					return alert("This Applicant Is Already exist!")
+				cloneDB.push(data);
+				saveDatabase(cloneDB);
+			}
+
+			function insertBulky(data) {
+				const cloneDB = [...database, ...data];
+				saveDatabase(cloneDB);
+			}
+
+			function updateOne(oldBar, data) {
+				const cloneDB = [...database];
+				cloneDB[cloneDB.findIndex(per => per.barCode === oldBar)] = data;
+				saveDatabase(cloneDB);
+			}
+
+			function saveDatabase(newData) {
+				localStorage.setItem(DB_NAME, JSON.stringify(newData));
+				database = newData;
+			}
+
+			function createELM(tagName) {
+				return document.createElement(tagName);
+			}
+
+		</script>
+		<style>
+			*
+			{
+				box-sizing: border-box;
+				text-align: center;
+			}
+			body
+			{
+				background-color: #eee;
+			}
+			button, .submit-btn {
+				font-size: 16px;
+				display: inline-block;
+				padding: 5px 5px;
+				border-radius: 3px;
+				border: 1px solid #c7bebe;
+			}
+			button:hover, .submit-btn:hover 
+			{
+					background-color: #dddddd;
+			}
+			button:active, .submit-btn:active
+			{
+				background-color: rgb(99, 79, 79);
+				color: white;
+			}
+			button:focus, .submit-btn:focus
+			{
+				background-color: rgb(99, 79, 79);
+				color: white;
+			}
+			/* Apply border and collapse */
+			table {
+					border-collapse: collapse;
+					width: 100%;
+			}
+
+			td button, .submit-btn
+			{
+				padding: 5px 15px;
+			}
+
+			/* Apply border to cells */
+			td, th {
+					border: 1px solid #dddddd;
+					text-align: center;
+			}
+
+			/* Apply different background color to even rows */
+			tr:nth-child(even) {
+					background-color: rgba(104, 90, 90, 0.3);
+			}
+
+			/* Apply background color on hover */
+			td:hover {
+					background-color: #dddddd;
+			}
+
+			/* Style table header */
+			th {
+					background-color: #4CAF50;
+					color: white;
+			}
+			.form
+			{
+				background-color: #eee;
+				max-width: 400px;
+				margin: 10px auto;
+				padding: 10px;
+				display: grid;
+			}
+			.submit
+			{
+				background-color: dodgerblue;
+				color: white;
+			}
+			.info
+			{
+				background-color: burlywood;
+				color: black;
+			}
+			.danger
+			{
+				background-color: crimson;
+				color: white;
+			}
+			.btn-group
+			{
+				display: flex;
+				justify-content: center;
+			}
+			input
+			{
+				width: 100%;
+				padding: 5px;
+			}
+			.form-group
+			{
+				margin: 5px 0;
+			}
+			.export-import
+			{
+				display: grid;
+				margin: 30px auto;
+				max-width: 400px;
+				row-gap: 20px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="form">
+			<button onclick="loadKeys(this)" class="submit">
+				Load Validation
+			</button>
+			<br>
+			<div class="form-group">
+				<div class="labelReq">
+					<span id="Label70" class="aspLabel">نوم</span>
+					<span class="redSpan">*</span>
+				</div>
+				<input type="text" value="" id="uxName" placeholder="نوم">
+			</div>
+			<form method="post" action="https://passport.moi.gov.af/BarcodeSearch/" id="form2" target="_blank">
+				<div class="aspNetHidden">
+					<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="">
+				</div>
+				<div class="aspNetHidden">
+					<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="768A9483">
+					<input type="hidden" name="__SCROLLPOSITIONX" id="__SCROLLPOSITIONX" value="0">
+					<input type="hidden" name="__SCROLLPOSITIONY" id="__SCROLLPOSITIONY" value="0">
+					<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="">
+					<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value=""> 
+					<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="">
+				</div>
+
+				<div class="form-group">
+					<div class="labelReq">
+						<span id="Label70" class="aspLabel">بارکود</span>
+						<span class="redSpan">*</span>
+					</div>
+					<input name="uxCode" type="text" maxlength="50" id="uxCode" class="form-control" rule="{fn:'required'}" required="" placeholder="کود را وارد نمائید">
+				</div>
+
+				<div class="form-group">
+					<div class="labelReq">
+						<span id="Label3" class="aspLabel">تاریخ تولد به شمسی</span>
+						<span class="redSpan">*</span>
+					</div>
+					<input name="uxBirthDate" type="text" maxlength="50" id="uxBirthDate" class="form-control date hasCalendarsPicker" rule="{fn:'required'}" required="" placeholder="تاریخ تولد خود را نظر به فورم وارد کنید">
+				</div>
+				<div class="form-btn">
+					<input type="submit" name="uxSearch" value="جستجو" id="uxSearch" class="submit-btn info">
+				</div>
+
+			</form>
+			<button onclick="saveFormData(this)" class="submit">Save Form</button>
+		</div>
+
+		<div style="max-width: 1366px;margin: 0 auto;">
+			<table>
+				<thead>
+					<tr>
+						<td>#</td>
+						<td>Name</td>
+						<td>Action</td>
+					</tr>
+				</thead>
+				<tbody>
+
+				</tbody>
+			</table>
+			<div class="export-import">
+				<button onclick="onbackup()" class="submit">
+					Export Backup
+				</button>
+				<textarea placeholder="Data" rows="10" style="resize: vertical;"></textarea>
+				<button onclick="importBackup()" class="info">
+					Import Backup
+				</button>
+			</div>
+
+		</div>
+
+			
+		<script>
+			console.clear();
+			const form2 = document.getElementById("form2");
+			const uxCode = document.getElementById("uxCode");
+			const uxBirthDate = document.getElementById("uxBirthDate");
+			const uxSearch = document.getElementById("uxSearch");
+			const __VIEWSTATE = document.getElementById("__VIEWSTATE");
+			const __EVENTVALIDATION = document.getElementById("__EVENTVALIDATION");
+			const tbody = document.querySelector("table tbody");
+			const nameInput = document.getElementById("uxName");
+			function submitHandler(code, date) {
+				uxCode.value = code;
+				uxBirthDate.value = date;
+				uxSearch.click()
+				uxCode.value = "";
+				uxBirthDate.value = "";
+			}
+
+			async function loadKeys(elm) {
+				try {
+					const response = await fetch('https://passport.moi.gov.af/BarcodeSearch/');
+					const text = await response.text();
+					const HTML_ELM = createELM("html");
+					HTML_ELM.insertAdjacentHTML("afterbegin", text);
+					const newViewState = HTML_ELM?.querySelector("#__VIEWSTATE");
+					const newEventValidation = HTML_ELM?.querySelector("#__EVENTVALIDATION");
+					if(!newViewState || !newEventValidation)
+						return alert("ERROR TRY AGAIN And Load it Again");
+
+					__VIEWSTATE.value = newViewState.value;
+					__EVENTVALIDATION.value = newEventValidation.value;
+					alert("Successfully Loaded !");
+					const passport = {
+						__VIEWSTATE: newViewState.value,
+						__EVENTVALIDATION: newEventValidation.value
+					};
+					window.localStorage.setItem("passport", JSON.stringify(passport));
+				} catch (error) {
+					alert("ERROR TRY AGAIN:= " + error.message);
+				}
+			}
+
+			document.onreadystatechange = (e) => {
+				if(document.readyState === "complete")
+				{
+					try {
+						let getKEYS = window.localStorage.getItem("passport");
+						if(getKEYS)
+						{
+							getKEYS = JSON.parse(getKEYS);
+							__VIEWSTATE.value = getKEYS.__VIEWSTATE
+							__EVENTVALIDATION.value = getKEYS.__EVENTVALIDATION
+						}
+							
+					} catch (error) {
+						console.log(error.message)
+					}
+					if(tbody)
+							loadDataToTable(tbody)
+
+				}
+			}
+
+			function loadDataToTable(tbody) {
+				tbody.innerHTML = "";
+				database.forEach((applicant, index) => {
+							tbody.insertAdjacentHTML("beforeend", `
+								<tr>
+									<td>${(index + 1)}</td>
+									<td>${applicant.name}</td>
+									<td>
+										<div class="btn-group">
+											<button class="danger" onclick="deleteHandler('${applicant.barCode}')">Delete</button>
+											<button class="info" onclick="editHandler('${applicant.barCode}')">Edit</button>
+											<button class="Submit" onclick="submitHandler('${applicant.barCode}', '${applicant.date}')">Submit</button>
+										</div>
+									</td>
+								</tr>
+							`)
+						});
+			}
+
+			function saveFormData(elm) {
+				const barCodeText = uxCode?.value?.trim()
+				const barCodeDate = uxBirthDate?.value?.trim();
+				const barCodeName = nameInput?.value?.trim();
+				if(validateText(barCodeName, "Name") || validateText(barCodeText, "BarCode") || validateText(barCodeText, "Date"))
+					return
+				createOne({
+					name: barCodeName,
+					barCode: barCodeText,
+					date: barCodeDate,
+				});
+				loadDataToTable(tbody)
+				uxCode.value = ""
+				uxBirthDate.value = ""
+				nameInput.value = ""
+			}
+
+
+			function validateText(text, name) {
+				let value = text?.trim()?.length <= 0;
+				if(value)
+					alert(name + " Input Is Required!");
+				return value;
+			}
+
+
+
+			function deleteHandler(BAR_CODE) {
+				const isConfirm = confirm("Are You Sure To Delete This Applicant!");
+				if(isConfirm)
+				{
+					deleteOne(BAR_CODE);
+					loadDataToTable(tbody);
+				}
+			}
+
+			function editHandler(BAR_CODE) {
+				const getApplicant = fineOne(BAR_CODE);
+				const barCodeName = prompt("New Name", getApplicant.name);
+				const barCodeText = prompt("New BarCode", getApplicant.barCode);
+				const barCodeDate = prompt("New BarCode", getApplicant.date);;
+				if(validateText(barCodeName, "Name") || validateText(barCodeText, "BarCode") || validateText(barCodeText, "Date"))
+					return;
+				updateOne(BAR_CODE, {
+					name: barCodeName?.trim() || getApplicant.name,
+					barCode: barCodeText?.trim() || getApplicant.barCode,
+					date: barCodeDate?.trim() || getApplicant.date,
+				});
+				loadDataToTable(tbody)
+			}
+
+			function onbackup() {
+				navigator.clipboard.writeText(JSON.stringify(database)).then(res => {})
+			}
+
+			function importBackup() {
+				const textarea = document.querySelector("textarea");
+				const dataText = textarea.value;
+				if(dataText.length <= 0)
+					return alert("Data Field is Required!");
+				try {
+					const objData = JSON.parse(dataText);
+					if(!(Array.isArray(objData)))
+					{
+						alert("Please Enter Correct Type Of Data");
+					}
+					else
+					{
+						insertBulky(objData)
+						loadDataToTable(tbody)
+						alert("SUCCESSFULLY ADDED!")
+					}
+				} catch (error) {
+					alert("Please Enter Correct Type Of Data!")
+				}
+				textarea.value = "";
+			}
+
+		</script>
+
+	</body>
+</html>
+
+
+<!-- [{"name":"Sami","barCode":"P31072016211023001","date":"1395/04/19"},{"name":"BIBI DAYMAH","barCode":"P31082019211023001","date":"1398/05/19"},{"name":"OQBA","barCode":"P31042018211023004","date":"1397/01/19"}] -->
