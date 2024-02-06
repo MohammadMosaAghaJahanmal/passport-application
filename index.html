@@ -385,7 +385,14 @@
 			}
 
 			function onbackup() {
-				navigator.clipboard.writeText(JSON.stringify(database)).then(res => {})
+				const textarea = document.createElement('textarea');
+				textarea.value = JSON.stringify(database);
+				textarea.style.height = "0";
+				textarea.style.overflow = "hidden";
+				document.body.appendChild(textarea);
+				textarea.select();
+				document.execCommand('copy');
+				document.body.removeChild(textarea);
 			}
 
 			function importBackup() {
