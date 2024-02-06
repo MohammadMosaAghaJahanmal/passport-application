@@ -177,10 +177,7 @@
 			</button>
 			<br>
 			<div class="form-group">
-				<div class="labelReq">
-					<span id="Label70" class="aspLabel">نوم</span>
-					<span class="redSpan">*</span>
-				</div>
+				<label id="Label70" class="aspLabel" for="uxName">نوم</label>
 				<input type="text" value="" id="uxName" placeholder="نوم">
 			</div>
 			<form method="post" action="https://passport.moi.gov.af/BarcodeSearch/" id="form2" target="_blank">
@@ -189,31 +186,19 @@
 				</div>
 				<div class="aspNetHidden">
 					<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="768A9483">
-					<input type="hidden" name="__SCROLLPOSITIONX" id="__SCROLLPOSITIONX" value="0">
-					<input type="hidden" name="__SCROLLPOSITIONY" id="__SCROLLPOSITIONY" value="0">
-					<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="">
-					<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value=""> 
 					<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="">
 				</div>
 
 				<div class="form-group">
-					<div class="labelReq">
-						<span id="Label70" class="aspLabel">بارکود</span>
-						<span class="redSpan">*</span>
-					</div>
+						<label id="Label70" class="aspLabel" for="uxCode">بارکود</label>
 					<input name="uxCode" type="text" maxlength="50" id="uxCode" class="form-control" rule="{fn:'required'}" required="" placeholder="کود را وارد نمائید">
 				</div>
 
 				<div class="form-group">
-					<div class="labelReq">
-						<span id="Label3" class="aspLabel">تاریخ تولد به شمسی</span>
-						<span class="redSpan">*</span>
-					</div>
+						<label id="Label3" class="aspLabel" for="uxBirthDate">تاریخ تولد به شمسی</label>
 					<input name="uxBirthDate" type="text" maxlength="50" id="uxBirthDate" class="form-control date hasCalendarsPicker" rule="{fn:'required'}" required="" placeholder="تاریخ تولد خود را نظر به فورم وارد کنید">
 				</div>
-				<div class="form-btn">
 					<input type="submit" name="uxSearch" value="جستجو" id="uxSearch" class="submit-btn info">
-				</div>
 
 			</form>
 			<button onclick="saveFormData(this)" class="submit">Save Form</button>
@@ -228,9 +213,7 @@
 						<td>Action</td>
 					</tr>
 				</thead>
-				<tbody>
-
-				</tbody>
+				<tbody></tbody>
 			</table>
 			<div class="export-import">
 				<button onclick="onbackup()" class="submit">
@@ -241,9 +224,7 @@
 					Import Backup
 				</button>
 			</div>
-
 		</div>
-
 			
 		<script>
 			console.clear();
@@ -298,33 +279,31 @@
 							__VIEWSTATE.value = getKEYS.__VIEWSTATE
 							__EVENTVALIDATION.value = getKEYS.__EVENTVALIDATION
 						}
-							
 					} catch (error) {
 						console.log(error.message)
 					}
 					if(tbody)
 							loadDataToTable(tbody)
-
 				}
 			}
 
 			function loadDataToTable(tbody) {
 				tbody.innerHTML = "";
 				database.forEach((applicant, index) => {
-							tbody.insertAdjacentHTML("beforeend", `
-								<tr>
-									<td>${(index + 1)}</td>
-									<td>${applicant.name}</td>
-									<td>
-										<div class="btn-group">
-											<button class="danger" onclick="deleteHandler('${applicant.barCode}')">Delete</button>
-											<button class="info" onclick="editHandler('${applicant.barCode}')">Edit</button>
-											<button class="Submit" onclick="submitHandler('${applicant.barCode}', '${applicant.date}')">Submit</button>
-										</div>
-									</td>
-								</tr>
-							`)
-						});
+					tbody.insertAdjacentHTML("beforeend", `
+						<tr>
+							<td>${(index + 1)}</td>
+							<td>${applicant.name}</td>
+							<td>
+								<div class="btn-group">
+									<button class="danger" onclick="deleteHandler('${applicant.barCode}')">Delete</button>
+									<button class="info" onclick="editHandler('${applicant.barCode}')">Edit</button>
+									<button class="Submit" onclick="submitHandler('${applicant.barCode}', '${applicant.date}')">Submit</button>
+								</div>
+							</td>
+						</tr>
+					`)
+				});
 			}
 
 			function saveFormData(elm) {
@@ -344,15 +323,12 @@
 				nameInput.value = ""
 			}
 
-
 			function validateText(text, name) {
 				let value = text?.trim()?.length <= 0;
 				if(value)
 					alert(name + " Input Is Required!");
 				return value;
 			}
-
-
 
 			function deleteHandler(BAR_CODE) {
 				const isConfirm = confirm("Are You Sure To Delete This Applicant!");
@@ -406,9 +382,5 @@
 			}
 
 		</script>
-
 	</body>
 </html>
-
-
-<!-- [{"name":"Sami","barCode":"P31072016211023001","date":"1395/04/19"},{"name":"BIBI DAYMAH","barCode":"P31082019211023001","date":"1398/05/19"},{"name":"OQBA","barCode":"P31042018211023004","date":"1397/01/19"}] -->
