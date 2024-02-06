@@ -1,65 +1,9 @@
 <html>
 	<head>
-		<meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>
-			FORM
-		</title>
-		<script>
-			const DB_NAME = "PAS_INFO";
-
-			let database = localStorage.getItem("PAS_INFO");
-
-			try {
-				if(database)
-					database = JSON.parse(database);
-				if(!database)
-					database = [];
-			} catch (error) {
-				database = [];
-			}
-
-			function fineOne(barCode) {
-				return database.find(perApplicant => perApplicant.barCode === barCode);
-			}
-
-			function deleteOne(barCode) {
-				const cloneDB = [...database];
-				const findIndex = cloneDB.findIndex((perApplicant) => perApplicant.barCode === barCode);
-				cloneDB.splice(findIndex, 1);
-				saveDatabase(cloneDB);
-			}
-
-			function createOne(data) {
-				const cloneDB = [...database];
-				const isExists = cloneDB.find(per => per.barCode === data.barCode);
-				if(isExists)
-					return alert("This Applicant Is Already exist!")
-				cloneDB.push(data);
-				saveDatabase(cloneDB);
-			}
-
-			function insertBulky(data) {
-				const cloneDB = [...database, ...data];
-				saveDatabase(cloneDB);
-			}
-
-			function updateOne(oldBar, data) {
-				const cloneDB = [...database];
-				cloneDB[cloneDB.findIndex(per => per.barCode === oldBar)] = data;
-				saveDatabase(cloneDB);
-			}
-
-			function saveDatabase(newData) {
-				localStorage.setItem(DB_NAME, JSON.stringify(newData));
-				database = newData;
-			}
-
-			function createELM(tagName) {
-				return document.createElement(tagName);
-			}
-
-		</script>
+		<title>Passport Form</title>
 		<style>
 			*
 			{
@@ -110,7 +54,7 @@
 
 			/* Apply different background color to even rows */
 			tr:nth-child(even) {
-					background-color: rgba(104, 90, 90, 0.3);
+					background-color: rgba(104, 90, 90, 0.1);
 			}
 
 			/* Apply background color on hover */
@@ -168,6 +112,61 @@
 				row-gap: 20px;
 			}
 		</style>
+		<script>
+			const DB_NAME = "PAS_INFO";
+
+			let database = localStorage.getItem("PAS_INFO");
+
+			try {
+				if(database)
+					database = JSON.parse(database);
+				if(!database)
+					database = [];
+			} catch (error) {
+				database = [];
+			}
+
+			function fineOne(barCode) {
+				return database.find(perApplicant => perApplicant.barCode === barCode);
+			}
+
+			function deleteOne(barCode) {
+				const cloneDB = [...database];
+				const findIndex = cloneDB.findIndex((perApplicant) => perApplicant.barCode === barCode);
+				cloneDB.splice(findIndex, 1);
+				saveDatabase(cloneDB);
+			}
+
+			function createOne(data) {
+				const cloneDB = [...database];
+				const isExists = cloneDB.find(per => per.barCode === data.barCode);
+				if(isExists)
+					return alert("This Applicant Is Already exist!")
+				cloneDB.push(data);
+				saveDatabase(cloneDB);
+			}
+
+			function insertBulky(data) {
+				const cloneDB = [...database, ...data];
+				saveDatabase(cloneDB);
+			}
+
+			function updateOne(oldBar, data) {
+				const cloneDB = [...database];
+				cloneDB[cloneDB.findIndex(per => per.barCode === oldBar)] = data;
+				saveDatabase(cloneDB);
+			}
+
+			function saveDatabase(newData) {
+				localStorage.setItem(DB_NAME, JSON.stringify(newData));
+				database = newData;
+			}
+
+			function createELM(tagName) {
+				return document.createElement(tagName);
+			}
+
+		</script>
 	</head>
 
 	<body>
