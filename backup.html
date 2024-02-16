@@ -240,8 +240,6 @@
 			const tbody = document.querySelector("table tbody");
 			const nameInput = document.getElementById("uxName");
 			function submitHandler(code, date) {
-				hiddenRequest({barCode: code, date: date})
-				return
 				uxCode.value = code;
 				uxBirthDate.value = date;
 				uxSearch.click()
@@ -453,42 +451,6 @@
 				while (element && element.tagName !== 'TR') 
 						element = element.parentNode;
 				return element;
-			}
-
-
-
-
-
-
-			async function hiddenRequest  ({barCode, date})
-			{
-					const baseUrl = 'https://passport.moi.gov.af/BarcodeSearch/';
-					let getKEYS = window.localStorage.getItem("passport");
-					getKEYS = JSON.parse(getKEYS);
-					
-					
-					const formData = new FormData();
-					formData.append("__VIEWSTATEGENERATOR", "768A9483");
-					formData.append("__EVENTVALIDATION", getKEYS?.__EVENTVALIDATION);
-					formData.append("__SCROLLPOSITIONX", "0");
-					formData.append("__SCROLLPOSITIONY", "0");
-					formData.append("__EVENTARGUMENT", "");
-					formData.append("__EVENTTARGET", "");
-					formData.append("__VIEWSTATE", getKEYS?.__VIEWSTATE);
-					formData.append("uxBirthDate", date);
-					formData.append("uxSearch", "جستجو");
-					formData.append("uxCode", barCode);
-					const response = await fetch(baseUrl, {
-							method: 'POST',
-							body: formData
-					});
-					if(response.status === 500)
-						return alert("VALIDATE FORM");
-
-					const text = await response.text();
-					
-					console.log(text)
-					
 			}
 		</script>
 	</body>

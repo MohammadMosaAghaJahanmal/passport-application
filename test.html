@@ -1,0 +1,75 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+      جستجو فورم
+    </title>
+  </head>
+
+<body>
+  <form method="post" action="http://passport.moi.gov.af/BarcodeSearch/" id="form2" target="_blank">
+      
+    <div class="aspNetHidden">
+      <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/dpyYvARftl1DyRzrUs2RfIim4UmwNMNZRpe9+pSTq6U/BHY6SVuxLUnYPlliYB+0NLxMXYm3weXFWnzUhkebrS25Lt4Nbdv2JS1mS/4PTI=">
+    </div>
+
+    <script type="text/javascript">
+      var theForm = document.forms['form2'];
+      if (!theForm) {
+          theForm = document.form2;
+      }
+      function __doPostBack(eventTarget, eventArgument) {
+          if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+              theForm.__EVENTTARGET.value = eventTarget;
+              theForm.__EVENTARGUMENT.value = eventArgument;
+              theForm.submit();
+          }
+      }
+    </script>
+
+
+
+    <div class="aspNetHidden">
+      <input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="768A9483">
+      <input type="hidden" name="__SCROLLPOSITIONX" id="__SCROLLPOSITIONX" value="0">
+      <input type="hidden" name="__SCROLLPOSITIONY" id="__SCROLLPOSITIONY" value="0">
+      <input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="">
+      <input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="">
+      <input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="HHhFP/Rz1fW/FvCGFe01bDX6SgWdcTG2VHrLZ2g6og06BCsuoJLjy3YZYE1Zf+bytV4mmAZ+WdW1LkvVQlty986+AhqRGnATMYXTiwYqc5jIZLJs9CINCQsUWMBoTQnzPTYS4ZL0oMVowJKt2uDAPCZvU5YnWtHZnJtyCWlDj38=">
+    </div>
+
+    <div class="form-group">
+      <span id="uxMessage"></span>
+    </div>
+    <div class="form-group">
+      <div class="labelReq">
+        <span id="Label70" class="aspLabel">بارکود</span>
+        <span class="redSpan">*</span>
+      </div>
+      <input name="uxCode" value="P31072016211023001" type="text" maxlength="50" id="uxCode" class="form-control" rule="{fn:'required'}" required="" placeholder="کود را وارد نمائید">
+    </div>
+    <div class="form-group">
+      <div class="labelReq">
+        <span id="Label3" class="aspLabel">تاریخ تولد به شمسی</span>
+        <span class="redSpan">*</span>
+      </div>
+      <input name="uxBirthDate" value="1395/04/19" type="text" maxlength="50" id="uxBirthDate" class="form-control date hasCalendarsPicker" rule="{fn:'required'}" required="" placeholder="تاریخ تولد خود را نظر به فورم وارد کنید">
+    </div>
+    <div class="form-btn">
+      <input type="submit" name="uxSearch" value="جستجو" id="uxSearch" class="submit-btn">
+    </div>
+  </form>
+  <button class="submit">SUBMIT</button>
+  <script>
+    const submit = document.querySelector(".submit")
+    
+    submit.onclick = () =>
+    {
+      document.body.insertAdjacentHTML("afterbegin", "<h1>LOADING</h1>")
+      document.querySelector("#uxSearch").click()
+    }
+  </script>
+</body>
+</html>

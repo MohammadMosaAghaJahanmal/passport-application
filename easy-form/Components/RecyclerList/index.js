@@ -1,0 +1,56 @@
+import React, { memo, useCallback } from 'react';
+import { DataProvider, LayoutProvider, RecyclerListView } from 'recyclerlistview';
+import ListItem from '../ListItem';
+import { ScreenWidth } from '../../Constant';
+const RecyclerList = (props) =>
+{
+	let dataProvider = new DataProvider((r1, r2) => r1 !== r2).cloneWithRows([...props.applications])
+	console.log("RENDERING RECYCLER")
+	const NORMAL = "NORMAL";
+	
+	const layoutProvider = new LayoutProvider((index) => {
+		return NORMAL
+	}, (type, dim) =>
+	{
+		switch (type) {
+			case NORMAL:
+				dim.width = ScreenWidth,
+				dim.height = 78
+				break;
+			default:
+				dim.width = 0,
+				dim.height = 0
+				break;
+		}
+	});
+
+	
+  const rowRenderer = useCallback((type, item) => {
+    return (
+      <ListItem
+        {...item} 
+        onSubmit={props.onSubmit}
+        onEdit={props.onEdit}
+        onDelete={props.onDelete}
+        onOpen={props.onOpen}
+      />
+    );
+  }, [
+    props.onSubmit,
+    props.onEdit,
+    props.onDelete,
+    props.onOpen,
+  ]);
+
+    return (
+			<RecyclerListView
+				dataProvider={dataProvider}
+				layoutProvider={layoutProvider}
+				rowRenderer={rowRenderer}
+			/>	
+    )
+};
+
+
+
+export default memo(RecyclerList, (prev, props) => prev.applications == props.applications);

@@ -1,0 +1,40 @@
+{
+  "name": "passport-form",
+  "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "cls && npx expo start",
+    "android": "cls && npx expo run:android",
+    "ios": "cls && npx expo run:ios",
+    "web": "cls && npx expo start --web",
+    "build": "cls && cd ./android && gradlew assembleRelease"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "1.21.0",
+    "@react-native-community/netinfo": "11.1.0",
+    "@react-native-picker/picker": "2.6.1",
+    "expo": "~50.0.6",
+    "expo-clipboard": "~5.0.1",
+    "expo-device": "~5.9.3",
+    "expo-splash-screen": "~0.26.4",
+    "expo-status-bar": "~1.11.1",
+    "expo-system-ui": "~2.9.3",
+    "react": "18.2.0",
+    "react-localization": "^1.0.19",
+    "react-native": "0.73.4",
+    "react-native-device-info": "^10.12.0",
+    "react-native-document-picker": "^9.1.1",
+    "react-native-file-viewer": "^2.1.5",
+    "react-native-fs": "^2.20.0",
+    "react-native-html-parser": "^0.1.0",
+    "react-native-share": "^10.0.2",
+    "react-native-sqlite-storage": "^6.0.1",
+    "react-native-webview": "13.6.4",
+    "recyclerlistview": "^4.2.0",
+    "rn-fetch-blob": "^0.12.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true
+}

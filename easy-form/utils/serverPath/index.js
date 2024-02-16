@@ -1,0 +1,1 @@
+export default (path) => (new URL(`https://easyform.jahanmal.xyz/v1${path}`).href); 
