@@ -4,6 +4,7 @@ const router = express.Router();
 // const https = require("https")
 const cheerio = require('cheerio');
 const request  = require('request');
+const SubmittedApp = require('../app/model/SubmittedApp');
 // const htmlFORM  = require('../app/utils/htmlFORM');
 // const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
@@ -34,6 +35,8 @@ const request  = require('request');
 
 router.post('/barcode', (req, res) => {
     let reqData = req.body;
+    let { userId } = req.auth;
+    
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const requestOptions = {
@@ -52,8 +55,17 @@ router.post('/barcode', (req, res) => {
                     let isBarCodeCorrect = $('#uxMessage[style]')
                     if (isBarCodeCorrect.length)
                         return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
-
-                    res.json({ status: "success" });
+                    SubmittedApp.create({
+                        uxBirthDate: reqData.uxBirthDate,
+                        uxCode: reqData.uxCode,
+                        axLocationID: reqData.axLocationID,
+                        tokenId: userId?.tokenId || null,
+                    })
+                    .then(res => res)
+                    .catch(err => console.log(err))
+                    .finally(() => {
+                        res.json({ status: "success" });
+                    })
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     saveCookie = response?.headers['set-cookie'];
                     handleRedirect({
