@@ -70,6 +70,7 @@ const Applications = (props) =>
               __VIEWSTATE,
               barCode: data.barCode,
               date: data.date,
+              name: data.name,
               axLocationID: (afghanistanProvinces.find(per => per.province.toLowerCase() == data.province.toLowerCase())).id,
               token
             });
