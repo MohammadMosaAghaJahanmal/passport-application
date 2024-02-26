@@ -33,92 +33,101 @@ const request  = require('request');
 // });
 
 router.post('/barcode', (req, res) => {
-  let reqData = req.body;
-	reqData = {...reqData};
-	let axLocationID = reqData.axLocationID || '31'
-  const requestOptions = {
-      url: 'https://passport.moi.gov.af/BarcodeSearch/',
-      form: reqData,
-      strictSSL: false,
-      followRedirect: false
-  };
-  let saveCookie = "";
+    let reqData = req.body;
+    reqData = { ...reqData };
+    let axLocationID = reqData.axLocationID || '31';
+    const requestOptions = {
+        url: 'https://passport.moi.gov.af/BarcodeSearch/',
+        form: reqData,
+        strictSSL: false,
+        followRedirect: false
+    };
+    let saveCookie = "";
 
-    const handleRequest = (options) => {
+    const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
             if (!error) {
                 if (response.statusCode === 200) {
                     const $ = cheerio.load(body);
                     let isBarCodeCorrect = $('#uxMessage[style]')
-                    if(isBarCodeCorrect.length)
-                        return res.json({status: "failure", message: "Your Barcode or date is incorrect"}); 
+                    if (isBarCodeCorrect.length)
+                        return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
 
-                    res.json({status: "success"}); 
+                    res.json({ status: "success" });
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
-                    saveCookie = response.headers['set-cookie'];
+                    saveCookie = response?.headers['set-cookie'];
                     handleRedirect({
-                        url: "https://passport.moi.gov.af"+response.headers.location,
+                        url: "https://passport.moi.gov.af" + response.headers.location,
                         strictSSL: false,
-                        headers: { 
-                           'Cookie': response.headers['set-cookie']
+                        headers: {
+                            'Cookie': response?.headers['set-cookie']
                         }
                     });
+                } else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
+                    // Resubmit the form
+                    handleRequest(options, retryCount + 1);
                 } else {
                     console.error('Error:', response.statusCode);
                     const $ = cheerio.load(body);
-                    if(body.search("Invalid postback or callback argument") >= 0)
-                        return res.json({status: "failure", message: "Entered Invalid Province!"});
+                    if (body.search("Invalid postback or callback argument") >= 0)
+                        return res.json({ status: "failure", message: "Entered Invalid Province!" });
 
                     let isFormValid = $('body[bgcolor="white"]')
-                    if(isFormValid.length)
-                        return res.json({status: "failure", message: "Please Validate Your Form!"}); 
+                    if (isFormValid.length)
+                        return res.json({ status: "failure", message: "Please Validate Your Form!" });
 
-                    
-                    res.json({status: "failure", message: "Please Try Again 1"})
+
+                    res.json({ status: "failure", message: "Please Try Again 1" })
                 }
             } else {
                 console.error('Error:', error);
-                res.json({status: "failure", message: "Please Try Again 2"})
+                res.json({ status: "failure", message: "Please Try Again 2" })
             }
         });
     };
 
     // Function to handle the redirection request
-    const handleRedirect = (options) => {
+    const handleRedirect = (options, retryCount = 0) => {
         request.get(options, function(error, response, body) {
-            if (!error && response.statusCode === 200) {
-                const $ = cheerio.load(body);
+            if (!error) {
+                if (response.statusCode === 200) {
+                    const $ = cheerio.load(body);
 
-                let __VIEWSTATE = $("#__VIEWSTATE").val();
-                let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
-                let axPrimaryMobile = $("#axPrimaryMobile").val();
-                let axFullAddress = $("#axFullAddress").val();
-                handleRequest({
-                    url: 'https://passport.moi.gov.af/proceedApplication/',
-                    form: {
-                    __VIEWSTATE,
-                    __EVENTVALIDATION,
-                    Button2: "ثبت",
-                    axLocationID: axLocationID,
-                    axPrimaryMobile: axPrimaryMobile,
-                    axFullAddress: axFullAddress
-                },
-                    strictSSL: false,
-                    headers: { 
-                        'Cookie': saveCookie
-                    }
-                })
-
+                    let __VIEWSTATE = $("#__VIEWSTATE").val();
+                    let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
+                    let axPrimaryMobile = $("#axPrimaryMobile").val();
+                    let axFullAddress = $("#axFullAddress").val();
+                    handleRequest({
+                        url: 'https://passport.moi.gov.af/proceedApplication/',
+                        form: {
+                            __VIEWSTATE,
+                            __EVENTVALIDATION,
+                            Button2: "ثبت",
+                            axLocationID: axLocationID,
+                            axPrimaryMobile: axPrimaryMobile,
+                            axFullAddress: axFullAddress
+                        },
+                        strictSSL: false,
+                        headers: {
+                            'Cookie': saveCookie
+                        }
+                    });
+                } else if (response.statusCode === 503 && retryCount < 3) { // If 503 Service Unavailable error occurs during redirection
+                    // Resubmit the redirection request
+                    handleRedirect(options, retryCount + 1);
+                } else {
+                    console.error('Error:', response.statusCode);
+                    res.json({ status: "failure", message: "Please Try Again 3" })
+                }
             } else {
                 console.error('Error:', error || response.statusCode);
-                res.json({status: "failure", message: "Please Try Again"})
+                res.json({ status: "failure", message: "Please Try Again 4" })
             }
         });
     };
 
     // Start the request
     handleRequest(requestOptions);
-    
 });
 
 
