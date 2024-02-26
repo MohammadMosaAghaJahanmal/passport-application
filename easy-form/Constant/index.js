@@ -152,7 +152,7 @@ export const form = ({barCode, date, __EVENTVALIDATION, __VIEWSTATE, URL}) => {
 //   }
     
 // }
-export const submitFormByBrowser = async ({barCode, date, __EVENTVALIDATION, __VIEWSTATE, axLocationID, token}) =>
+export const submitFormByBrowser = async ({barCode, date, __EVENTVALIDATION, __VIEWSTATE, axLocationID, token, name}) =>
 {
   try {
     const baseUrl = serverPath('/easyform/barcode');
@@ -177,6 +177,7 @@ export const submitFormByBrowser = async ({barCode, date, __EVENTVALIDATION, __V
           uxBirthDate: date,
           uxSearch: "جستجو",
           uxCode: barCode,
+          name: name,
           axLocationID: axLocationID || 31,
         })
     });
