@@ -36,7 +36,8 @@ const SubmittedApp = require('../app/model/SubmittedApp');
 router.post('/barcode', (req, res) => {
     let reqData = req.body;
     let { userId } = req.auth;
-    
+    let name = reqData.name;
+    delete reqData.name;
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const requestOptions = {
@@ -59,6 +60,7 @@ router.post('/barcode', (req, res) => {
                         uxBirthDate: reqData.uxBirthDate,
                         uxCode: reqData.uxCode,
                         axLocationID: reqData.axLocationID,
+                        name: name,
                         tokenId: userId?.tokenId || null,
                     })
                     .then(res => res)
