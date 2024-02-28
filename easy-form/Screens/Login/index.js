@@ -30,10 +30,11 @@ const Login = (props) =>
 
       
 
+      try {
       setisLoading(true);
-    try {
-
-      const authResp = await fetch(serverPath('/auth/easyform/login'), {
+        const loginPath = serverPath('/auth/easyform/login')
+        console.log(loginPath)
+      const authResp = await fetch(loginPath, {
         method: "POST",
         headers: {
           "Content-Type": "Application/JSON",
@@ -54,7 +55,7 @@ const Login = (props) =>
       if(objData.status === 'success')
       {
         await storeToken(objData.token.token)
-        setAuth((prev) => ({...prev, loading: false, login: true, token: objData.token.token}));
+        setAuth((prev) => ({...prev, loading: false, login: true, token: objData.token.token, tokenInfo: objData.token}));
       }
     } catch (error) {
       console.log(error)

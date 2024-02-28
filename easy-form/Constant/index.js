@@ -179,15 +179,79 @@ export const submitFormByBrowser = async ({barCode, date, __EVENTVALIDATION, __V
           uxCode: barCode,
           name: name,
           axLocationID: axLocationID || 31,
-        })
+        }),
     });
 
-    // const text = await response.text();
-    
-    // console.log(text);
+    if(response.status === 500)
+      return {statusCode: response.status}
 
     const objData = await response.json();
-    return objData
+    return {...objData}
+
+  } catch (error) {
+    console.log(error)
+    return {status: "failure", message: error.message}
+  }
+    
+}
+
+export const submitNewApplication = async ({
+  barCode, 
+  date, 
+  __EVENTVALIDATION, 
+  __VIEWSTATE, 
+  axLocationID, 
+  token, 
+  name, 
+  axFullAddress,
+  axPrimaryMobile,
+  ucaDurationTypeID,
+  ucaPaymentTypeID
+}) =>
+{
+  try {
+    const baseUrl = serverPath('/easyform/submitform');
+    
+    // console.log(formData)
+
+    const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers:
+        {
+          "Content-Type": "Application/json",
+          "Authorization": `bearer ${token}`,
+        },
+        body: JSON.stringify({
+          __VIEWSTATEGENERATOR: "768A9483",
+          __EVENTVALIDATION: __EVENTVALIDATION,
+          __SCROLLPOSITIONX: "0",
+          __SCROLLPOSITIONY: "0",
+          __EVENTARGUMENT: "",
+          __EVENTTARGET: "",
+          __VIEWSTATE: __VIEWSTATE,
+          uxBirthDate: date,
+          uxSearch: "جستجو",
+          uxCode: barCode,
+          name: name,
+          axLocationID: axLocationID || 31,
+          axPrimaryMobile: axPrimaryMobile,
+          axFullAddress: axFullAddress,
+          submitForm: {
+            appSave: "ثبت",
+            ucaTypeID: "1",
+            ucaFineTypeID: "1",
+            ucaApplicationTypeID: "1",
+            ucaDurationTypeID: ucaDurationTypeID || "1",
+            ucaPaymentTypeID: ucaPaymentTypeID || "1",
+          }
+        }),
+    });
+
+    if(response.status === 500)
+      return {statusCode: response.status}
+
+    const objData = await response.json();
+    return {...objData}
 
   } catch (error) {
     console.log(error)
@@ -232,4 +296,14 @@ export const afghanistanProvinces = [
   { province: "Urozgan", id: 23 },
   { province: "Wardak", id: 5 },
   { province: "Zabul", id: 24 },
+];
+
+export const passportDuration = [
+  { type: "5 Years", value: "1" },
+  { type: "10 Years", value: "2" },
+];
+
+export const applicantAge = [
+  { type: "د 14 کلونو څخه ډیر عمر", value: "1" },
+  { type: "د 15 کلونو څخه کم عمر", value: "3" },
 ];

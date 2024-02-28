@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import {View, Text, StyleSheet, Alert, TouchableOpacity, BackHandler, Switch} from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import {View, Text, StyleSheet, Alert, TouchableOpacity, BackHandler, Switch, ScrollView} from 'react-native';
 import {Picker} from '@react-native-picker/picker'
-import Constant, { afghanistanProvinces } from '../../Constant';
+import Constant, { afghanistanProvinces, applicantAge, headHeight, passportDuration } from '../../Constant';
 import Button from '../../Components/Button';
 import Input from '../../Components/Input';
 import { insertApplication, updateApplication } from '../../DB';
 import useStore from '../../store/store';
 import {findOne, updateOne} from '../../utils/lightCrud';
+import { AuthContext } from '../../authContext';
 const EditApplication = (props) =>
 {
 
+  const {tokenInfo} = useContext(AuthContext);
   const [globalState, dispatch] = useStore();
   const {applications} = globalState;
   const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +32,17 @@ const EditApplication = (props) =>
     province: props.province,
     checked: props.checked,
   };
+
+  const initAppFieldsState = {
+    axFullAddress: props.province,
+    axPrimaryMobile: tokenInfo.phone,
+    ucaDurationTypeID: "1",
+    ucaPaymentTypeID: "1",
+  };
   const [fields, setFields] = useState({...initFieldsState})
+  const [appFields, setAppFields] = useState({...initAppFieldsState})
   const setFieldHandler = (value, type) => (isLoading || setFields(prev => ({...prev, [type] : value})))
+  const setAppFieldHandler = (value, type) => (isLoading || setAppFields(prev => ({...prev, [type] : value})))
 
   const saveFormHandler = async () => 
   {
@@ -53,6 +64,23 @@ const EditApplication = (props) =>
     }
   }
 
+  const sendFormHandler = async () => 
+  {
+    for (const key in appFields)
+      if (Object.hasOwnProperty.call(appFields, key)) {
+        const value = appFields[key];
+        if(value.length <= 0)
+          return Alert.alert("Info!", key.toUpperCase()+" Input Is Required!");
+      }
+
+    try {
+      await props.onSend({...fields, ...appFields, axFullAddress: fields.province})
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Info!", error.message)
+    }
+  }
+
   return (
       <View style={styles.container}>
         <View style={{...styles.row, ...styles.head}}>
@@ -63,6 +91,7 @@ const EditApplication = (props) =>
             <Text style={styles.closeText}>Back</Text>
           </TouchableOpacity>
         </View>
+        <ScrollView>
         <View style={styles.form}>
           <Input 
             label={'Name'}
@@ -116,7 +145,6 @@ const EditApplication = (props) =>
               ))}
             </Picker>
             </View>
-
           </View>
           <View style={{alignItems: "flex-start", marginBottom: 10}}>
             <Text style={{
@@ -136,15 +164,95 @@ const EditApplication = (props) =>
             />
           </View>
           <Button 
-            label={"Submit Form"}
+            label={"Save Form"}
             onPress={saveFormHandler}
             style={{...styles.btns,...styles.submitBTN}}
             textStyle={{
               color: "rgba(0, 0, 0, 0.5)", 
             }}
             loading={isLoading}
-        />
+          />
+          <View style={{marginTop: 15}}>
+            <View>
+              <Text style={{
+                color: Constant.secondary,
+                fontWeight: "600",
+                marginBottom: 2,
+              }}>Passport Duration</Text>
+              <View style={{
+                    borderWidth: 2,
+                    borderColor: Constant.secondary,
+                    backgroundColor: Constant.whiteGreen,
+                    borderRadius: 5,
+                    overflow: "hidden",
+                    marginBottom: 10,
+                    elevation: 2,
+              }}>
+              <Picker
+                style={{
+                    width: "100%",
+                    alignSelf:"center",
+                    fontSize: 16,
+                    backgroundColor: Constant.whiteGreen,
+                    color: Constant.secondary,
+                }}
+                selectedValue={appFields.ucaDurationTypeID}
+                onValueChange={(itemValue, itemIndex) =>
+                  setAppFieldHandler(itemValue, 'ucaDurationTypeID')
+                }
+              >
+                {passportDuration.map((per) => (
+                  <Picker.Item key={per.value} label={per.type} value={per.value} />
+                ))}
+              </Picker>
+              </View>
+            </View>
+            <View>
+              <Text style={{
+                color: Constant.secondary,
+                fontWeight: "600",
+                marginBottom: 2,
+              }}>Applicant Age</Text>
+              <View style={{
+                    borderWidth: 2,
+                    borderColor: Constant.secondary,
+                    backgroundColor: Constant.whiteGreen,
+                    borderRadius: 5,
+                    overflow: "hidden",
+                    marginBottom: 10,
+                    elevation: 2,
+              }}>
+              <Picker
+                style={{
+                    width: "100%",
+                    alignSelf:"center",
+                    fontSize: 16,
+                    backgroundColor: Constant.whiteGreen,
+                    color: Constant.secondary,
+                }}
+                selectedValue={appFields.ucaPaymentTypeID}
+                onValueChange={(itemValue, itemIndex) =>
+                  setAppFieldHandler(itemValue, 'ucaPaymentTypeID')
+                }
+              >
+                {applicantAge.map((per) => (
+                  <Picker.Item key={per.value} label={per.type} value={per.value} />
+                ))}
+              </Picker>
+              </View>
+            </View>
+            <Button 
+              label={"Send Form"}
+              onPress={sendFormHandler}
+              style={{...styles.btns,...styles.sendBTN}}
+              textStyle={{
+                color: "rgba(0, 0, 0, 0.5)", 
+              }}
+              loading={isLoading}
+            />
+          </View>
         </View>
+        </ScrollView>
       </View>
   )
 };
@@ -157,7 +265,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
-    zIndex: 9999
+    zIndex: 9999,
+    paddingBottom: headHeight
   },
   head:
   {
@@ -199,6 +308,9 @@ const styles = StyleSheet.create({
   submitBTN: {
     backgroundColor: Constant.inputSecondary,
   },
+  sendBTN: {
+    backgroundColor: Constant.secondary,
+  },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -210,20 +322,20 @@ const styles = StyleSheet.create({
     zIndex: 9,
     left: 10
   },
-    closeText:
-    {
-      fontSize: 20,
-      color: Constant.inputSecondary,
-      backgroundColor: Constant.whiteGreen,
-      borderRadius: 50,
-      width: 100,
-      padding: 5,
-      justifyContent: "center",
-      alignItems: "center",
-      alignSelf: "center",
-      textAlign: "center",
-      elevation: 2
-    },
+  closeText:
+  {
+    fontSize: 20,
+    color: Constant.inputSecondary,
+    backgroundColor: Constant.whiteGreen,
+    borderRadius: 50,
+    width: 100,
+    padding: 5,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    textAlign: "center",
+    elevation: 2
+  },
 })
 
 

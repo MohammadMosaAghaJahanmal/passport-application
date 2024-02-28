@@ -8,6 +8,7 @@ import serverPath from '../utils/serverPath';
 import NetInfo from '@react-native-community/netinfo';
 import FullScreenLoader from '../Components/FullScreenLoader';
 const initialState = {
+	tokenInfo: null,
 	token: null,
 	login: false,
 	loading: true,
@@ -66,11 +67,11 @@ const AuthProvider = (props) =>
 					if(objData.status === 'failure')
 						return setAuth((prev) => ({...prev, loading: false, login: false, deviceInfo: combinedId}));
 
-					setAuth((prev) => ({...prev, loading: false, login: true, deviceInfo: combinedId, token: token}));
-
-
 					let SECRETES = await getSecrets()
-					setAuth((prev) => ({...prev, loading: false, login: true, secrets: SECRETES || prev.secrets}));
+					setAuth((prev) => ({...prev, loading: false, login: true, deviceInfo: combinedId, token: token, secrets: SECRETES || prev.secrets, tokenInfo: objData.token}));
+
+
+					// setAuth((prev) => ({...prev, loading: false, login: true, secrets: SECRETES || prev.secrets}));
 				} catch (error) {
 						console.log(error)
 						return setAuth((prev) => ({...prev, loading: false, login: false, deviceInfo: combinedId}));

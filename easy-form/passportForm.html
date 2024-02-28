@@ -1,0 +1,32 @@
+
+
+<select name="ucaTypeID" id="ucaTypeID" vgroup="uca" rule="{fn:'required'}" additional="Price" path="ponline.look.vTypeOfPassport">
+	<option selected="selected" value="0">---</option>
+	<option value="1">عادی</option>
+	<option value="2">تجارت</option>
+</select>
+<select name="ucaDurationTypeID" id="ucaDurationTypeID" vgroup="uca" rule="{fn:'required'}" path="ponline.look.vdurations">
+	<option selected="selected" value="0">---</option>
+	<option value="1">پنج ساله</option>
+	<option value="2">ده ساله</option>
+</select>
+<select name="ucaPaymentTypeID" id="ucaPaymentTypeID" vgroup="uca" rule="{fn:'required'}" path="ponline.look.vPaymentType">
+	<option selected="selected" value="0">---</option>
+	<option value="1">بزرگ سال (بالای ۱۴ سال)</option>
+	<option value="2">مافوق رتبه</option>
+	<option value="3">طفل زیر سن (زیر ۱۵ سال)</option>
+	<option value="4">رایگان</option>
+</select>
+<select name="ucaFineTypeID" id="ucaFineTypeID" vgroup="uca" rule="{fn:'required'}" path="ponline.look.vFine">
+	<option selected="selected" value="0">---</option>
+	<option value="1">ندارد</option>
+	<option value="2">حریق گردیده</option>
+	<option value="3">مفقود گردیده (بالای ۱۴ سال)</option>
+	<option value="4">تخریب گردیده</option>
+	<option value="5">مفقود گردیده (طفل زیر ۱۵ سال)</option>
+	<option value="6">صفحات تکمیل شده</option>
+</select>
+<select name="ucaApplicationTypeID" id="ucaApplicationTypeID" vgroup="uca" rule="{fn:'required'}" where="ID=1" path="ponline.look.ApplicationType">
+	<option selected="selected" value="0">---</option>
+	<option value="1">عادی</option>
+</select>

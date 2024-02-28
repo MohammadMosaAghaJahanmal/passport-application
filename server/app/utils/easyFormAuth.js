@@ -41,7 +41,7 @@ const easyFormAuth = async (req, res, next) =>
             findToken = await updateById(tokenId, Token, {phone, deviceInfo})
             return  res.json({
                 status: "success",
-                token: token?.trim(),
+                token: findToken,
             })
         }
         

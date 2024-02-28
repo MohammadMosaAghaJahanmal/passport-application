@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useContext, useEffect, useState } from 'react';
 import {View, Text, StyleSheet, BackHandler, TouchableOpacity, StatusBar, Alert} from 'react-native';
-import Constant, { afghanistanProvinces, form, submitFormByBrowser} from '../../Constant';
+import Constant, { afghanistanProvinces, form, submitFormByBrowser, submitNewApplication} from '../../Constant';
 import RecyclerList from '../../Components/RecyclerList'
 import FullScreenLoader from '../../Components/FullScreenLoader'
 import useStore from '../../store/store';
@@ -65,7 +65,7 @@ const Applications = (props) =>
           try {
             data = {...data, checked: true, province: (data.province || "Kandahar")}
             setIsLoading(true)
-            const {status, message} = await submitFormByBrowser({
+            const {status, message, statusCode} = await submitFormByBrowser({
               __EVENTVALIDATION,
               __VIEWSTATE,
               barCode: data.barCode,
@@ -74,6 +74,8 @@ const Applications = (props) =>
               axLocationID: (afghanistanProvinces.find(per => per.province.toLowerCase() == data.province.toLowerCase())).id,
               token
             });
+            if(statusCode === 500)
+              Alert.alert("Info!", "The application is taking too long to submit. server will manage this.");
             if(status === "failure")
               Alert.alert("Failure!", message || "Please Try Again !");
             if(status === "success")
@@ -87,8 +89,45 @@ const Applications = (props) =>
         }
           setIsLoading(false)
         }}])
+  }
 
-  
+
+  let onSend = async (data) => {
+      Alert.alert("Send Operation!", "Are you sure to send this form!", [
+        {text: "NO", style: "cancel", },
+        {text: "OKAY", style:"destructive", onPress: async () => {
+          try {
+            setIsEditApplicatio({
+              show: false,
+              data: {}
+            })
+            data = {...data, checked: true, province: (data.province || "Kandahar")}
+            setIsLoading(true)
+            const {status, message, statusCode} = await submitNewApplication({
+              ...data,
+              __EVENTVALIDATION,
+              __VIEWSTATE,
+              barCode: data.barCode,
+              date: data.date,
+              name: data.name,
+              axLocationID: (afghanistanProvinces.find(per => per.province.toLowerCase() == data.province.toLowerCase())).id,
+              token
+            });
+            if(statusCode === 500)
+              Alert.alert("Info!", "The application is taking too long to send. server will manage this.");
+            if(status === "failure")
+              Alert.alert("Failure!", message || "Please Try Again !");
+            if(status === "success")
+            {
+              Alert.alert("Success!", message || "Successfully Changed !");
+              await updateApplication(data);
+              dispatch('setData', {type: "applications", data: [...updateOne(applications, data.barCode, data)]});
+            }
+          } catch (error) {
+            alert(error.message);
+        }
+          setIsLoading(false)
+        }}])
   }
 
   let onDelete = async(barCode) => {
@@ -198,6 +237,7 @@ const Applications = (props) =>
     { (!isLoading && isEditApplicatio.show) &&
         <EditApplication 
           onSetEditApplication={setIsEditApplicatio}
+          onSend={onSend}
           {...isEditApplicatio.data}
         />
       }
