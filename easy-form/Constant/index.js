@@ -186,10 +186,11 @@ export const submitFormByBrowser = async ({barCode, date, __EVENTVALIDATION, __V
     
     // console.log(text);
 
-
-    return await response.json();
+    const objData = await response.json();
+    return objData
 
   } catch (error) {
+    console.log(error)
     return {status: "failure", message: error.message}
   }
     

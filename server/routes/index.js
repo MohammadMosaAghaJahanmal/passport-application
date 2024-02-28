@@ -79,6 +79,7 @@ router.post('/barcode', (req, res) => {
                     });
                 } else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
                     // Resubmit the form
+                    console.log(options, "REQUESTING")
                     handleRequest(options, retryCount + 1);
                 } else {
                     console.error('Error:', response.statusCode);
@@ -128,6 +129,7 @@ router.post('/barcode', (req, res) => {
                     });
                 } else if (response.statusCode === 503 && retryCount < 3) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
+                    console.log(options, "REDIRECTING")
                     handleRedirect(options, retryCount + 1);
                 } else {
                     console.error('Error:', response.statusCode);
@@ -145,17 +147,16 @@ router.post('/barcode', (req, res) => {
 });
 
 
-
 router.post('/provinces', (req, res) => {
-
-  const requestOptions = {
-      url: 'https://passport.moi.gov.af/application/',
-      strictSSL: false,
-      followRedirect: false
-  };
+    console.log("PROVINCES")
+    const requestOptions = {
+        url: 'https://passport.moi.gov.af/application/',
+        strictSSL: false,
+        followRedirect: false
+    };
 
     // Function to handle the request and follow redirects manually
-    const handleRequest = (options) => {
+    const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
             if (!error) {
                 if (response.statusCode === 200) {
@@ -179,6 +180,10 @@ router.post('/provinces', (req, res) => {
                     res.json({
                         status: "failure", message: "Please Try Again"
                     })
+                } else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
+                    // Resubmit the form
+                    console.log(options,"REQ AGAIN")
+                    handleRequest(options, retryCount + 1);
                 } else {
                     console.error('Error:', response.statusCode);
                     res.json({status: "failure", message: "Please Try Again"})
@@ -191,9 +196,8 @@ router.post('/provinces', (req, res) => {
     };
 
     handleRequest(requestOptions);
-    
-});
 
+});
 
 
 // router.post('/openapp', (req, res, next) =>
