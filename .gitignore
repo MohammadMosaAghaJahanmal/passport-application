@@ -3,6 +3,7 @@
 # dependencies
 easy-form/node_modules/
 server/node_modules/
+PASSPORT INFO
 
 # Expo
 .expo/
