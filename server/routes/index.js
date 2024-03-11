@@ -177,7 +177,7 @@ router.post('/provinces', (req, res) => {
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     console.error('Error:', response.statusCode);
                     res.json({
-                        status: "failure", message: "Please Try Again"
+                        status: "failure", message: "Please Try Again 3"
                     })
                 } else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
                     // Resubmit the form
@@ -185,11 +185,11 @@ router.post('/provinces', (req, res) => {
                     handleRequest(options, retryCount + 1);
                 } else {
                     console.error('Error:', response.statusCode);
-                    res.json({status: "failure", message: "Please Try Again"})
+                    res.json({status: "failure", message: "Please Try Again 2"})
                 }
             } else {
                 console.error('Error:', error);
-                res.json({status: "failure", message: "Please Try Again"})
+                res.json({status: "failure", message: "Please Try Again 1"})
             }
         });
     };
