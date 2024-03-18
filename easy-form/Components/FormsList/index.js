@@ -1,8 +1,8 @@
 import React, { memo, useCallback } from 'react';
 import { DataProvider, LayoutProvider, RecyclerListView } from 'recyclerlistview';
-import ListItem from '../ListItem';
 import { ScreenWidth } from '../../Constant';
-const RecyclerList = (props) =>
+import FormsItem from '../FormsItem';
+const FormsList = (props) =>
 {
 	let dataProvider = new DataProvider((r1, r2) => r1 !== r2).cloneWithRows([...props.applications])
 	const NORMAL = "NORMAL";
@@ -26,19 +26,17 @@ const RecyclerList = (props) =>
 	
   const rowRenderer = useCallback((type, item) => {
     return (
-      <ListItem
-        {...item} 
+      <FormsItem
+        {...{data: item}} 
         onSubmit={props.onSubmit}
         onEdit={props.onEdit}
         onDelete={props.onDelete}
-        onOpen={props.onOpen}
       />
     );
   }, [
     props.onSubmit,
     props.onEdit,
     props.onDelete,
-    props.onOpen,
   ]);
 
     return (
@@ -52,4 +50,4 @@ const RecyclerList = (props) =>
 
 
 
-export default memo(RecyclerList, (prev, props) => prev.applications == props.applications);
+export default memo(FormsList, (prev, props) => prev.applications == props.applications);

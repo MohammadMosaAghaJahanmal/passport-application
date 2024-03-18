@@ -96,6 +96,8 @@ const Forms = (props) =>
   }
 
   const showApplicationsHandler = async () => props.onModalChange(true)
+  const newApplicationHandler = async () => props.onNewApplication(true)
+  const showForms = async () => props.onNewForms(true)
   const exportDataHandler = async () => {
     try {
       setIsLoading(true)
@@ -151,6 +153,7 @@ const Forms = (props) =>
   }
 
 
+
   const showProvinces = async () => {
     Alert.alert("Active Provinces", (provinces.map(per => (per.name)).join("\n")))
   }
@@ -166,9 +169,30 @@ const Forms = (props) =>
         }}
         loading={isLoading}
       />
+      <View style={{          
+        borderTopColor: "rgba(0, 0, 0, 0.2)", 
+        borderTopWidth: 1,
+        width: "90%",
+        alignSelf: "center",
+        marginTop: 10,
+        marginBottom: 5,
+        }}></View>
+      <Button 
+        label={"New Application"}
+        onPress={newApplicationHandler}
+        style={{
+          ...styles.btns, 
+          ...styles.validateBTN, 
+          backgroundColor: Constant.inputSecondary, 
+        }}
+        textStyle={{
+          color: "rgba(0, 0, 0, 0.5)", 
+        }}
+        loading={isLoading}
+      />
       <View style={styles.form}>
         <Text style={styles.header}>
-          Save Form
+          Barcode Form
         </Text>
         <Input 
           label={'Name'}
@@ -189,7 +213,7 @@ const Forms = (props) =>
           value={fields.date}
         />
         <Button 
-          label={"Save Form"}
+          label={"Save Barcode"}
           onPress={saveFormHandler}
           style={{...styles.btns,...styles.saveBTN}}
           textStyle={{
@@ -204,7 +228,16 @@ const Forms = (props) =>
           Database
         </Text>
         <Button
-            label={"Show Applications"}
+            label={"Show New Applications"}
+            onPress={showForms}
+            style={{...styles.btns, marginBottom: 10, backgroundColor: "#F2C18D"}}
+            textStyle={{
+              color: "rgba(0, 0, 0, 0.5)", 
+            }}
+            loading={isLoading}
+          />
+        <Button
+            label={"Show Barcodes"}
             onPress={showApplicationsHandler}
             style={{...styles.btns}}
             textStyle={{

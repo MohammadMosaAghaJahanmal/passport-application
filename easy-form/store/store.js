@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 let globalState = {
     applications: [],
     provinces: [],
+    newforms: [],
 };
 let actions = {};
 let listeners = [];

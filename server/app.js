@@ -43,6 +43,7 @@ app.set('trust proxy', 1);
 app.use('/v1/admin', expressjwt({algorithms: [ALGORITHM], secret: SECRET}), rejectUser("admin"), adminRouter);
 app.use('/v1/auth', authRouter);
 app.use('/v1/easyform', expressjwt({algorithms: [ALGORITHM], secret: SECRET}), checkingToken,  indexRouter);
+// app.use('/v1/easyform',  indexRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   res.json({

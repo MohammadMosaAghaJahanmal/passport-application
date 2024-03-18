@@ -3,7 +3,7 @@ import languages from '../localization';
 import DeviceInfo from 'react-native-device-info';
 import useStore from '../store/store';
 import {setLang, getSecrets, getProvinces, getToken} from '../LocalStorage';
-import {createTable, getApplications} from '../DB'
+import {createTables, getApplications, getForms} from '../DB'
 import serverPath from '../utils/serverPath';
 import NetInfo from '@react-native-community/netinfo';
 import FullScreenLoader from '../Components/FullScreenLoader';
@@ -42,7 +42,7 @@ const AuthProvider = (props) =>
 		{
 
 			let combinedId;
-			await createTable();
+			await createTables();
 			if(!auth.backendRequet)
 			{
 				try {
@@ -99,9 +99,13 @@ const AuthProvider = (props) =>
 		(async() => {
 			if(auth.login)
 			{
-				let allData = await getApplications();
-				if(allData)
-					dispatch("setData", {type: "applications", data: allData});
+				let getAllApplications = await getApplications();
+				if(getAllApplications)
+					dispatch("setData", {type: "applications", data: getAllApplications});
+
+				let getAllForms = await getForms();
+				if(getAllForms)
+					dispatch("setData", {type: "newforms", data: getAllForms});
 
 				let provinces = await getProvinces();
 				if(provinces)

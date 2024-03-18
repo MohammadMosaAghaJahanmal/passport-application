@@ -5,7 +5,7 @@ import RecyclerList from '../../Components/RecyclerList'
 import FullScreenLoader from '../../Components/FullScreenLoader'
 import useStore from '../../store/store';
 import { AuthContext } from '../../authContext';
-import { deleteApplication, updateApplication } from '../../DB';
+import { deleteApplication, updateApplication, clearApplications } from '../../DB';
 import { deleteOne, updateOne } from '../../utils/lightCrud';
 import NumberInput from '../../Components/NumberInput';
 import EditApplication from '../EditApplication';
@@ -64,7 +64,7 @@ const Applications = (props) =>
         {text: "OKAY", style:"destructive", onPress: async () => {
           try {
             data = {...data, checked: true, province: (data.province || "Kandahar")}
-            setIsLoading(true)
+            // setIsLoading(true)
             const {status, message, statusCode} = await submitFormByBrowser({
               __EVENTVALIDATION,
               __VIEWSTATE,
@@ -102,7 +102,7 @@ const Applications = (props) =>
               data: {}
             })
             data = {...data, checked: true, province: (data.province || "Kandahar")}
-            setIsLoading(true)
+            // setIsLoading(true)
             const {status, message, statusCode} = await submitNewApplication({
               ...data,
               __EVENTVALIDATION,
@@ -187,16 +187,36 @@ const Applications = (props) =>
     }));
   }, [applications])
 
+  const clearApplicationsHandler = async () =>
+  {
+    Alert.alert("Delete Operation!", "Are you sure to delete All Barcodes!", [
+      {text: "NO", style: "cancel", },
+      {text: "OKAY", style:"destructive", onPress: async () => {
+        try {
+          await clearApplications()
+          dispatch('setData', {type: "applications", data: []});
+          Alert.alert("Success", "Successfully deleted!")
+        } catch (error) {
+          console.log(error.message)   
+          Alert.alert("Info!", error.message);
+        }
+      }},
+    ])
+  }
+
   console.log("RENDERING APPLICATIONS")
   return (
     <>
     <View style={styles.container}>
       <View style={{...styles.row, ...styles.head}}>
         <TouchableOpacity style={{position: "absolute",zIndex: 9,right: 10}} activeOpacity={0.8} onPress={()=>setIsSearching(true)}>
-          <Text style={{...styles.closeText, width: 40, backgroundColor: "rgba(255, 255, 255, 0.6)"}}>🔍</Text>
+          <Text style={{...styles.closeText, width: 36, backgroundColor: "rgba(255, 255, 255, 0.6)"}}>🔍</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={{position: "absolute",zIndex: 9,right: 55}} activeOpacity={0.8} onPress={clearApplicationsHandler}>
+          <Text style={{...styles.closeText, width: 36, backgroundColor: "rgba(255, 255, 255, 0.6)"}}>🗑️</Text>
         </TouchableOpacity>
         <Text style={{fontWeight: "bold", color: Constant.white, fontSize: 17}}>
-          APPLICATIONS
+          BARCODES
         </Text>
         <TouchableOpacity style={styles.closeBTN} activeOpacity={0.8} onPress={()=>props.onModalChange(false)}>
           <Text style={styles.closeText}>Back</Text>

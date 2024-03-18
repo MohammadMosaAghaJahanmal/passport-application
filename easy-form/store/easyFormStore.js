@@ -8,6 +8,7 @@ const easyFormStore = () =>
   const initialState = (payload, globalState) => ({
     applications: [],
     provinces: [],
+    newforms: [],
   });
   
   return initState({

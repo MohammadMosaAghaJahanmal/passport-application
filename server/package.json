@@ -7,6 +7,7 @@
     "serve": "node --tls-min-v1.0 index.js"
   },
   "dependencies": {
+    "@antiadmin/anticaptchaofficial": "^1.0.45",
     "axios": "^1.6.7",
     "bcrypt": "^5.1.0",
     "cheerio": "^1.0.0-rc.12",

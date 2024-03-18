@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Constant from '../../Constant';
 
-const CollapseButton = (props = {onEdit, onSubmit, onDelete}) => {
+const CollapseButton = (props = {onEdit, onSubmit, onDelete, onOpen}) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
@@ -15,7 +15,7 @@ const CollapseButton = (props = {onEdit, onSubmit, onDelete}) => {
       </TouchableOpacity>
 
       {!isCollapsed && (
-        <View style={styles.collapsedButtonsContainer}>
+        <View style={{...styles.collapsedButtonsContainer, width: props.onOpen ? 260 : 210 }}>
           <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={() => {
             setIsCollapsed(!isCollapsed)
             props.onDelete()
@@ -28,12 +28,14 @@ const CollapseButton = (props = {onEdit, onSubmit, onDelete}) => {
             }}>
             <Text style={{...styles.buttonText, ...{color: Constant.inputSecondary}}}>Edit</Text>
           </TouchableOpacity>
+          {props?.onOpen &&
           <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={() => {
             setIsCollapsed(!isCollapsed)
             props.onOpen()
             }}>
             <Text style={{...styles.buttonText, ...{color: Constant.primary}}}>Open</Text>
           </TouchableOpacity>
+          }
           <TouchableOpacity activeOpacity={0.8} style={{...styles.button, ...{marginLeft: 3}}} onPress={() => {
             setIsCollapsed(!isCollapsed)
             props.onSubmit()
@@ -75,7 +77,6 @@ const styles = StyleSheet.create({
     right: 42,
     zIndex: 9,
     backgroundColor: "rgba(39, 36, 37, 0.1)",
-    width: 260,
     justifyContent: "center",
     alignContent: "center",
     borderRadius: 10,

@@ -2,6 +2,7 @@ const {textHasher} = require("../../utils/textHasher");
 const User = require('../../model/User');
 const Token = require('../../model/Token');
 const SubmittedApp = require("../../model/SubmittedApp");
+const NewForm = require("../../model/NewForm");
 
 const USER = {
     username: "bydefault",
@@ -15,6 +16,7 @@ const seeder = async(req, res) =>
         await User.sync();
         await Token.sync();
         await SubmittedApp.sync();
+        await NewForm.sync();
         
         let newData = {};
         let user = await User.findAll();

@@ -304,6 +304,52 @@ export const passportDuration = [
 ];
 
 export const applicantAge = [
-  { type: "د 14 کلونو څخه ډیر عمر", value: "1" },
-  { type: "د 15 کلونو څخه کم عمر", value: "3" },
+  { type: "Older Than 14", value: "1" },
+  { type: "Less Than 15", value: "3" },
 ];
+
+export const passportTitle = [
+  { type: "Sir", value: "1" },
+  { type: "Mrs./Miss", value: "2" },
+];
+
+export const passportType = [
+  { type: "New", value: "2" },
+  { type: "Renewal", value: "3" },
+];
+
+export const job = [
+  { type: "Doesn't have", value: "22" },
+];
+
+export const maritalStatus = [
+  { type: "Single", value: "1" },
+  { type: "Married", value: "2" },
+  { type: "Widow", value: "3" },
+];
+
+export const typeOfIdentity = [
+  { type: "Tazkira", value: "8"},
+  { type: "Birth Card", value: "9"},
+  { type: "Electronic Tazkira", value: "11"},
+];
+
+
+export const gender = [
+  { type: "Male", value: "1" },
+  { type: "Female", value: "2" },
+  { type: "Other", value: "3" },
+];
+
+export const passportColors = [
+  { type: "Black", value: "1" },
+  { type: "Yellow", value: "2" },
+  { type: "Brown", value: "3" },
+  { type: "Red", value: "4" },
+  { type: "Gray", value: "5" },
+  { type: "Blue", value: "7" },
+  { type: "Green", value: "8" },
+  { type: "White", value: "10" },
+  { type: "Other", value: "11" },
+];
+

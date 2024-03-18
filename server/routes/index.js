@@ -5,6 +5,9 @@ const router = express.Router();
 const cheerio = require('cheerio');
 const request  = require('request');
 const SubmittedApp = require('../app/model/SubmittedApp');
+const { createApplication, testApplication } = require('../app/controllers/createApplication');
+
+
 // const htmlFORM  = require('../app/utils/htmlFORM');
 // const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
@@ -33,7 +36,21 @@ const SubmittedApp = require('../app/model/SubmittedApp');
 // }
 // });
 
-router.post('/barcode', (req, res) => {
+
+router.get("/", async (req, res, next) => {
+
+    // try {
+    //     let a = await ac.solveImage('', true)
+    //     console.log(a, "_________")
+    // } catch (error) {
+    //     console.log(error)
+    // }
+
+
+    res.json({status: "success"})
+})
+
+router.post('/barcode', async (req, res) => {
     let reqData = req.body;
     let { userId } = req.auth;
     let name = reqData.name;
@@ -47,6 +64,17 @@ router.post('/barcode', (req, res) => {
         followRedirect: false
     };
     let saveCookie = "";
+
+    let isExist = await SubmittedApp.findOne({
+        where: {
+            uxBirthDate: reqData.uxBirthDate,
+            uxCode: reqData.uxCode,
+            axLocationID: axLocationID,
+        }
+    });
+    if(isExist)
+    return res.json({status: "success"});
+
     const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
             if (!error) {
@@ -55,12 +83,19 @@ router.post('/barcode', (req, res) => {
                     let isBarCodeCorrect = $('#uxMessage[style]')
                     if (isBarCodeCorrect.length)
                         return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
-                    SubmittedApp.create({
-                        uxBirthDate: reqData.uxBirthDate,
-                        uxCode: reqData.uxCode,
-                        axLocationID: reqData.axLocationID,
-                        name: name,
-                        tokenId: userId?.tokenId || null,
+                    SubmittedApp.findOrCreate({
+                        where:{
+                            uxBirthDate: reqData.uxBirthDate,
+                            uxCode: reqData.uxCode,
+                            axLocationID: axLocationID,
+                        },
+                        defaults: {
+                            uxBirthDate: reqData.uxBirthDate,
+                            uxCode: reqData.uxCode,
+                            axLocationID: axLocationID,
+                            name: name,
+                            tokenId: userId?.tokenId || null,
+                        }
                     })
                     .then(res => res)
                     .catch(err => console.log(err))
@@ -76,7 +111,7 @@ router.post('/barcode', (req, res) => {
                             'Cookie': response?.headers['set-cookie']
                         }
                     });
-                } else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
+                } else if (response.statusCode === 503 && retryCount < 5) { // Retry only a certain number of times
                     // Resubmit the form
                     console.log(options, "REQUESTING")
                     handleRequest(options, retryCount + 1);
@@ -126,7 +161,7 @@ router.post('/barcode', (req, res) => {
                             'Cookie': saveCookie
                         }
                     });
-                } else if (response.statusCode === 503 && retryCount < 3) { // If 503 Service Unavailable error occurs during redirection
+                } else if (response.statusCode === 503 && retryCount < 5) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
                     console.log(options, "REDIRECTING")
                     handleRedirect(options, retryCount + 1);
@@ -177,7 +212,7 @@ router.post('/provinces', (req, res) => {
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     console.error('Error:', response.statusCode);
                     res.json({
-                        status: "failure", message: "Please Try Again 3"
+                        status: "failure", message: "No Prvinces "
                     })
                 } else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
                     // Resubmit the form
@@ -198,7 +233,7 @@ router.post('/provinces', (req, res) => {
 
 });
 
-router.post('/submitform', (req, res) => {
+router.post('/submitform', async(req, res) => {
     let reqData = req.body;
     let { userId } = req.auth;
     let name = reqData.name;
@@ -214,6 +249,19 @@ router.post('/submitform', (req, res) => {
     let saveCookie = "";
     // console.log(reqData, "submitform")
     // return res.json({'status': "success"})
+
+    let isExist = await SubmittedApp.findOne({
+        where: {
+            uxBirthDate: reqData.uxBirthDate,
+            uxCode: reqData.uxCode,
+            axLocationID: axLocationID,
+        }
+    });
+
+    if(isExist)
+        return res.json({status: "success"});
+
+
     const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
             if (!error) {
@@ -231,12 +279,19 @@ router.post('/submitform', (req, res) => {
                         return handleRequest(newOptions);
                     }
 
-                    SubmittedApp.create({
-                        uxBirthDate: reqData.uxBirthDate,
-                        uxCode: reqData.uxCode,
-                        axLocationID: axLocationID,
-                        name: name,
-                        tokenId: userId?.tokenId || null,
+                    SubmittedApp.findOrCreate({
+                        where:{
+                            uxBirthDate: reqData.uxBirthDate,
+                            uxCode: reqData.uxCode,
+                            axLocationID: axLocationID,
+                        },
+                        defaults: {
+                            uxBirthDate: reqData.uxBirthDate,
+                            uxCode: reqData.uxCode,
+                            axLocationID: axLocationID,
+                            name: name,
+                            tokenId: userId?.tokenId || null,
+                        }
                     })
                     .then(res => res)
                     .catch(err => console.log(err))
@@ -328,6 +383,11 @@ router.post('/submitform', (req, res) => {
 //     console.log(data)
 //     res.send(htmlFORM({...data}))
 // });
+
+router.post('/application', createApplication);
+
+
+
 
 module.exports = router;
 

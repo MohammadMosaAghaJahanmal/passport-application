@@ -72,7 +72,7 @@ const SearchApplication = (props) =>
 
   return (
       <View style={styles.container}>
-        <View style={{...styles.row, ...styles.head}}>
+        <View style={{...styles.row, ...styles.head, marginTop: 0}}>
           <Text style={{fontWeight: "bold", color: Constant.white, fontSize: 17}}>
             Search Application
           </Text>
