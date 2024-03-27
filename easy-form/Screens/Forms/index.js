@@ -60,6 +60,32 @@ const Forms = (props) =>
     }
     setIsLoading(false);
   }
+  const loadKeyApplication = async () => 
+  {
+    try {
+    setIsLoading(true)
+
+    const response = await fetchApi('https://passport.moi.gov.af/search/')
+    const text = await response.text();
+    const secrt = extractKeysFromHTML(text);
+    if(!secrt.__EVENTVALIDATION || !secrt.__VIEWSTATE)
+    {
+      setIsLoading(false);
+      return Alert.alert("Failure !", "Please Try Again!");
+    }
+    
+    await setSecrets(secrt);
+
+    setAuth(prev => ({...prev, secrets:secrt}));
+    
+    Alert.alert("Success", "Successfully Validated!")
+    
+    } catch (error) {
+      Alert.alert("ERROR !", "Please Try Again!");
+      console.log(error, "ERR")
+    }
+    setIsLoading(false);
+  }
   
   const saveFormHandler = async () => 
   {
@@ -160,15 +186,26 @@ const Forms = (props) =>
 
   return (
     <ScrollView>
-      <Button 
-        label={"Validate Form"}
-        onPress={loadKeyhandler}
-        style={{...styles.btns,...styles.validateBTN}}
-        textStyle={{
-          color: "rgba(0, 0, 0, 0.5)", 
-        }}
-        loading={isLoading}
-      />
+      <View style={{...styles.row, width: "90%", alignSelf: "center", alignItems: "center"}}>
+        <Button
+          label={"Validate Barcode"}
+          onPress={loadKeyhandler}
+          style={{...styles.btns,...styles.exportBTN,...styles.validateBTN}}
+          textStyle={{
+            color: "rgba(0, 0, 0, 0.5)", 
+          }}
+          loading={isLoading}
+        />
+        <Button
+          label={"Validate Application"}
+          onPress={loadKeyApplication}
+          style={{...styles.btns,...styles.exportBTN, backgroundColor: Constant.simpleWhiteGreen}}
+          textStyle={{
+            color: "rgba(0, 0, 0, 0.5)", 
+          }}
+          loading={isLoading}
+        />
+      </View>
       <View style={{          
         borderTopColor: "rgba(0, 0, 0, 0.2)", 
         borderTopWidth: 1,
@@ -184,6 +221,7 @@ const Forms = (props) =>
           ...styles.btns, 
           ...styles.validateBTN, 
           backgroundColor: Constant.inputSecondary, 
+          width: "90%"
         }}
         textStyle={{
           color: "rgba(0, 0, 0, 0.5)", 
@@ -330,8 +368,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   validateBTN: {    
-    width: "90%",
-    marginTop: 5,
     backgroundColor: Constant.simpleGreen,
   },
   form: {

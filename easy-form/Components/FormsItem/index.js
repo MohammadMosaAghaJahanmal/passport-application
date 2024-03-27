@@ -38,6 +38,7 @@ const FormsItem = (props) =>
               onSubmit={()=>props.onSubmit(props.data)}
               onEdit={()=>props.onEdit(props.data)}
               onDelete={()=>props.onDelete(props.data.uxSerial)}
+              onOpen={()=>props.onOpen(props.data)}
             />
         </View>
       </ScrollView>

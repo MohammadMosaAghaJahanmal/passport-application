@@ -19,7 +19,9 @@ import useStore from '../../store/store';
 import {findOne, updateOne} from '../../utils/lightCrud';
 import { AuthContext } from '../../authContext';
 import validator from '../../validators/application'
-import serverPath from '../../utils/serverPath';
+import generateRandomString from '../../utils/generateRandomString';
+
+
 const NewApplication = (props) =>
 {
 
@@ -41,33 +43,33 @@ const NewApplication = (props) =>
   const initFieldsState = {
     uxTitleID:"1",
     uxCriminalRecord:"2",
-    uxFamilyNameLocal:"",
-    uxFamilyName:"",
-    uxGivenNamesLocal:"",
-    uxGivenNames:"",
-    uxFatherNameLocal:"",
-    uxFatherName:"",
-    uxGrandFatherNameLocal:"",
-    uxGrandFatherName:"",
-    uxBirthDate_Shamsi:"",
-    uxBirthDate:"",
+    uxFamilyNameLocal:generateRandomString(3, "ps"),
+    uxFamilyName:generateRandomString(3, "en"),
+    uxGivenNamesLocal:generateRandomString(3, "ps"),
+    uxGivenNames:generateRandomString(3, "en"),
+    uxFatherNameLocal:generateRandomString(3, "ps"),
+    uxFatherName:generateRandomString(3, "en"),
+    uxGrandFatherNameLocal:generateRandomString(3, "ps"),
+    uxGrandFatherName:generateRandomString(3, "en"),
+    uxBirthDate_Shamsi:"1380/01/01",
+    uxBirthDate:"2001-03-21",
     uxProfessionID:"22",
     _Profession:"22",
     uxBirthLocationID:"31",
     uxResidenceCountryID:"31",
     uxMaritalStatusID:"1",
     uxNIDTypeID:"11",
-    uxSerial:"",
+    uxSerial:generateRandomString(8, "num"),
     uxJuld:"",
     uxPage:"",
     uxNo:"",
-    uxNID:"",
+    uxNID:generateRandomString(8, "num"),
     uxGenderID:"1",
     uxHairColorID:"1",
     uxEyeColorID:"1",
-    uxBodyHeightCM:"",
+    uxBodyHeightCM:"170",
     uxCode:"",
-    axFullAddress: "",
+    axFullAddress: generateRandomString(8, "ps"),
     axPrimaryMobile: tokenInfo.phone,
     ucaDurationTypeID: "1",
     ucaPaymentTypeID: "1",

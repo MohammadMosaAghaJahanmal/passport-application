@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useContext, useEffect, useState } from 'react';
 import {View, Text, StyleSheet, BackHandler, TouchableOpacity, StatusBar, Alert} from 'react-native';
-import Constant from '../../Constant';
+import Constant, { form, searchForm } from '../../Constant';
 import FullScreenLoader from '../../Components/FullScreenLoader'
 import useStore from '../../store/store';
 import { AuthContext } from '../../authContext';
@@ -10,11 +10,14 @@ import NumberInput from '../../Components/NumberInput';
 import FormsList from '../../Components/FormsList';
 import serverPath from '../../utils/serverPath';
 import EditNewForm from '../EditNewForm';
+import { requestStoragePermission } from '../../utils/exportImportData';
+import RNFS from 'react-native-fs'
+import FileViewer from 'react-native-file-viewer';
 
 const NewForms = (props) =>
 {
   
-  const {token} = useContext(AuthContext)
+  const {token, secrets} = useContext(AuthContext)
   const [globalState, dispatch] = useStore();
   const {newforms} = globalState;
   const initPagination = {
@@ -98,6 +101,26 @@ const NewForms = (props) =>
         setIsLoading(false)
       }}])
   }
+
+  
+  let onOpen = async (data) => {
+    try {
+      setIsLoading(true);
+      let isGranted = await requestStoragePermission();
+      if (!isGranted)
+        return Alert.alert("Info", "You have to accept the permission to open the application file");
+  
+      const path = RNFS.CachesDirectoryPath + "/easyform.html";
+      await RNFS.writeFile(path, searchForm({...data, __EVENTVALIDATION: secrets.__EVENTVALIDATION, __VIEWSTATE: secrets.__VIEWSTATE}), "utf8");
+      await FileViewer.open(path, "utf8")
+
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Info!", error.message);
+    }
+    setIsLoading(false);
+  };
+
 
 
   let onDelete = async(tazkira) => {
@@ -185,6 +208,7 @@ const NewForms = (props) =>
             onDelete={onDelete}
             onEdit={onEdit}
             onSubmit={onSubmit}
+            onOpen={onOpen}
 					/>	
         </View>
           :

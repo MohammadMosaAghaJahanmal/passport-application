@@ -1,8 +1,8 @@
 const cheerio = require('cheerio');
 const request  = require('request');
-const fs = require("fs");
-const path = require("path");
-const HTML_FILE_PATH = fs.readFileSync(path.join(process.cwd(), "passportHTML.html"))
+// const fs = require("fs");
+// const path = require("path");
+// const HTML_FILE_PATH = fs.readFileSync(path.join(process.cwd(), "passportHTML.html"))
 const ac = require("@antiadmin/anticaptchaofficial");
 const NewForm = require('../../model/NewForm');
 ac.setAPIKey('be0f3a3a94868bae1ff1c534d6490680');
@@ -15,7 +15,7 @@ c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAACxSURBVHhe7dChAcAgEMBA6P5
 TE6YnTE6IjREaMjRkeMjhgdMTpidMToiNERoyNGR4yOGB0xOmJ0xOiI0RGjI0ZHjI4YHTE6YnTE6IjREa
 MjRkeMjhgdMTpidMToiNERoyNGR4yOGB0xOmJ0xOiI0RGjE2t9N5gIGP/YYZ0AAAAASUVORK5CYII=`
 
-const $ = cheerio.load(HTML_FILE_PATH);
+// const $ = cheerio.load(HTML_FILE_PATH);
 
 
 
@@ -43,7 +43,7 @@ const createApplication = async(req, res) => {
 
 	let axPrimaryMobile = reqData.axPrimaryMobile
 	delete reqData.axPrimaryMobile
-	const handleRequest = (options, retryCount = 0) => {
+	const handleRequest = (options, retryCount = 0, errCode) => {
 		request.post(options, async function(error, response, body) {
 			if (!error) {
 				if (response.statusCode === 200) {
@@ -54,6 +54,7 @@ const createApplication = async(req, res) => {
 					let Image1 = $('#Image1')?.attr("src");
 					let Image2 = $('#Image2')?.attr("src");
 					let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
+					console.log(uxCode)
 					if(uxCode || uxCode?.length > 10 && !savedApp)
 					{
 						try {
@@ -67,9 +68,18 @@ const createApplication = async(req, res) => {
 									tokenId
 								}
 							});
+							return res.json({status: "success", data: savedApp})
 						} catch (error) {
 							return res.json({status: "failure", message: "Entered Incorrect Data"})
 						}
+					}
+					if(options?.form?.txtCaptchaCode.length > 3 && errCode === 503)
+					{
+						console.log("RETRING", retryCount);
+						if(retryCount < 3)
+							return handleRequest(options, retryCount + 1);
+
+						return res.json({status: "failure", message: "Something went Wrong"})
 					}
 					if(!uxCode || uxCode?.length <=0 )
 					{
@@ -96,6 +106,8 @@ const createApplication = async(req, res) => {
 												let secret2 = $('#BDC_BackWorkaround_c_application_default_bdcaptcha')?.attr("value");
 												let secret3 = $('#BDC_Hs_c_application_default_bdcaptcha')?.attr("value");
 												let secret4 = $('#BDC_SP_c_application_default_bdcaptcha')?.attr("value");
+												let uxWorkItemID = $('#uxWorkItemID')?.attr("value");
+												let ucaName = $('#uxWorkItemID')?.attr("value");
 
 												
 												const submitMainFormOptions = {
@@ -104,10 +116,20 @@ const createApplication = async(req, res) => {
 													BDC_BackWorkaround_c_application_default_bdcaptcha: secret2,
 													BDC_Hs_c_application_default_bdcaptcha: secret3,
 													BDC_SP_c_application_default_bdcaptcha: secret4,
+													__EVENTTARGET: "",
+													__EVENTARGUMENT: "",
+													__LASTFOCUS: "",
+													__VIEWSTATEGENERATOR: "D73ECB15",
+													__SCROLLPOSITIONX: 0,
+													__SCROLLPOSITIONY: 1200,
+													uxWorkItemID,
 													txtCaptchaCode,
 													uxSaveMainForm: "ثبت",
 													__VIEWSTATE,
 													__EVENTVALIDATION,
+													ucaName,
+													uxCurrentTab: 0,
+													uxOptions: '{Fine: { 0:0 ,1:0,2:0,3:5500,4:24500,5:3250,6:0,7:0}, Duration: {0:0,1:1,2:2}, ApplicationType: {0:0,1:1,2:4,3:1}, TypeOfPassport: {0:0,1:5500,2:16000,3:6700,4:7000}, PaymentType: {0:0,1:0,2:-2250,3:-2250,4:-5500,5:0}}'
 												} 
 												handleRequest({
 													url: requestOptions.url,
@@ -116,7 +138,7 @@ const createApplication = async(req, res) => {
 													headers: {
 															'Cookie': saveCookie
 													}
-												});
+												}, -1);
 										} catch (error) {
 												return res.json({status: "failure", message: "Please Try Again. 10"})
 										}
@@ -137,7 +159,7 @@ const createApplication = async(req, res) => {
 					} 
 					else if(!(!uxCode || uxCode?.length <=0) && (Image1?.search("passport.moi") < 0 || Image2?.search("passport.moi") < 0))
 					{
-						handleRequest({
+						return handleRequest({
 							url: requestOptions.url,
 							form: {
 									__VIEWSTATE,
@@ -153,10 +175,10 @@ const createApplication = async(req, res) => {
 									'Cookie': saveCookie
 							}
 						});
-						return
+						
 					}else if(!axPrimaryMobileElm || axPrimaryMobileElm?.length <=0)
 					{
-						handleRequest({
+						return handleRequest({
 							url: 'https://passport.moi.gov.af/proceedApplication/',
 							form: {
 									__VIEWSTATE,
@@ -170,7 +192,7 @@ const createApplication = async(req, res) => {
 							headers: {
 									'Cookie': saveCookie
 							}
-					});
+						});
 					}
 					res.json({status: "success", data: savedApp})
 				} else if (response.statusCode === 301 || response.statusCode === 302) {
@@ -182,7 +204,7 @@ const createApplication = async(req, res) => {
 				} else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
 					// Resubmit the form
 					console.log(options,"REQ AGAIN")
-					handleRequest(options, retryCount + 1);
+					handleRequest(options, retryCount + 1, 503);
 				} else {
 					if (body.search("Invalid postback or callback argument") >= 0)
 						return res.json({ status: "failure", message: "Entered Invalid Province!" });

@@ -31,12 +31,14 @@ const FormsList = (props) =>
         onSubmit={props.onSubmit}
         onEdit={props.onEdit}
         onDelete={props.onDelete}
+        onOpen={props.onOpen}
       />
     );
   }, [
     props.onSubmit,
     props.onEdit,
     props.onDelete,
+    props.onOpen,
   ]);
 
     return (
