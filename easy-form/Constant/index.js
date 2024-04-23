@@ -113,7 +113,6 @@ export const form = ({barCode, date, __EVENTVALIDATION, __VIEWSTATE, URL}) => {
 `
     return HTML_TEXT;
 }
-
 export const searchForm = ({uxGivenNamesLocal, uxFatherNameLocal, uxGrandFatherNameLocal, uxBirthDate_Shamsi, __EVENTVALIDATION, __VIEWSTATE, URL}) => {
     let HTML_TEXT = `
     <html xmlns="http://www.w3.org/1999/xhtml">
@@ -128,7 +127,7 @@ export const searchForm = ({uxGivenNamesLocal, uxFatherNameLocal, uxGrandFatherN
   
   <body>
 
-  <form method="post" action="http://passport.moi.gov.af/search/" id="form2" style='display: none'>
+  <form method="post" action="https://passport.moi.gov.af/search/" id="form2" style='display: none'>
         
       <div class="aspNetHidden">
         <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="${__VIEWSTATE}">
@@ -149,16 +148,16 @@ export const searchForm = ({uxGivenNamesLocal, uxFatherNameLocal, uxGrandFatherN
         <span id="uxMessage"></span>
       </div>
       <div class="form-group">
-        <input name="uxName" value="${uxGivenNamesLocal}" type="text" maxlength="50" id="uxName" class="form-control" rule="{fn:'required'}" required="" >
+        <input name="uxName" value="${uxGivenNamesLocal}" type="text" maxlength="50" id="uxName" class="form-control input DariValidator" rule="{fn:'required'}" datatextfield="Dari" required="" placeholder="اسم خود را نظر به فورم وارد کنید">
       </div>
       <div class="form-group">
-        <input name="uxFatherName" value="${uxFatherNameLocal}" type="text" maxlength="50" id="uxFatherName" class="form-control" rule="{fn:'required'}" required="" >
+        <input name="uxFatherName" value="${uxFatherNameLocal}" type="text" maxlength="50" id="uxFatherName" class="form-control input DariValidator" rule="{fn:'required'}" datatextfield="Dari" required="" placeholder="ولد خود را نظر به فورم وارد کنید">
       </div>
       <div class="form-group">
-        <input name="uxGrandFatherName" value="${uxGrandFatherNameLocal}" type="text" maxlength="50" id="uxGrandFatherName" class="form-control" rule="{fn:'required'}" required="" >
+        <input name="uxGrandFatherName" value="${uxGrandFatherNameLocal}" type="text" maxlength="50" id="uxGrandFatherName" class="form-control input DariValidator" rule="{fn:'required'}" datatextfield="Dari" required="" placeholder="ولدیت خود را نظر به فورم وارد کنید">
       </div>
       <div class="form-group">
-        <input name="uxBirthDate" value="${uxBirthDate_Shamsi}" type="text" maxlength="50" id="uxBirthDate" class="form-control" rule="{fn:'required'}" required="" >
+        <input name="uxBirthDate" value="${uxBirthDate_Shamsi}" type="text" maxlength="50" id="uxBirthDate" class="form-control date hasCalendarsPicker" rule="{fn:'required'}" required="" placeholder="تاریخ تولد خود را نظر به فورم وارد کنید">
       </div>
       <div class="form-btn">
         <input type="submit" name="uxSearch" value="جستجو" id="uxSearch" class="submit-btn">
@@ -231,7 +230,7 @@ export const submitFormByBrowser = async ({barCode, date, __EVENTVALIDATION, __V
           __VIEWSTATEGENERATOR: "768A9483",
           __EVENTVALIDATION: __EVENTVALIDATION,
           __SCROLLPOSITIONX: "0",
-          __SCROLLPOSITIONY: "0",
+          __SCROLLPOSITIONY: "500",
           __EVENTARGUMENT: "",
           __EVENTTARGET: "",
           __VIEWSTATE: __VIEWSTATE,

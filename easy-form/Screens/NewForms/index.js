@@ -110,7 +110,7 @@ const NewForms = (props) =>
       if (!isGranted)
         return Alert.alert("Info", "You have to accept the permission to open the application file");
   
-      const path = RNFS.CachesDirectoryPath + "/easyform.html";
+      const path = RNFS.CachesDirectoryPath + "/forms.html";
       await RNFS.writeFile(path, searchForm({...data, __EVENTVALIDATION: secrets.__EVENTVALIDATION, __VIEWSTATE: secrets.__VIEWSTATE}), "utf8");
       await FileViewer.open(path, "utf8")
 

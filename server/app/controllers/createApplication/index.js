@@ -1,10 +1,14 @@
 const cheerio = require('cheerio');
 const request  = require('request');
-// const fs = require("fs");
-// const path = require("path");
-// const HTML_FILE_PATH = fs.readFileSync(path.join(process.cwd(), "passportHTML.html"))
+const fs = require("fs");
+const path = require("path");
+const HTML_FILE_PATH =  (fileName) => path.join(process.cwd(), `TEST_FILES/${fileName}.html`)
 const ac = require("@antiadmin/anticaptchaofficial");
 const NewForm = require('../../model/NewForm');
+const BOT_HTML = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'index.html'), "utf-8");
+const BOT_JS = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'script.js'), "utf-8");
+const {JSDOM} = require("jsdom");
+
 ac.setAPIKey('be0f3a3a94868bae1ff1c534d6490680');
 ac.setSoftId(0);
 
@@ -22,11 +26,36 @@ MjRkeMjhgdMTpidMToiNERoyNGR4yOGB0xOmJ0xOiI0RGjE2t9N5gIGP/YYZ0AAAAASUVORK5CYII=`
 const createApplication = async(req, res) => {
 	let reqData = req.body;
 	let { userId } = req.auth;
+	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
+	// let random = 135
+	// let saveCookie = "ASP.NET_SessionId=oa00b1f23xs5r4titrorbv3v";
+	let saveCookie = "";
+	let bypassHeader = { 
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+		// 'Accept-Encoding': 'gzip, deflate, br, zstd',
+		'Accept-Language': 'en-US,en;q=0.9', 
+		'Cache-Control': 'no-cache', 
+		'Pragma': 'no-cache', 
+		'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
+		'Sec-Ch-Ua-Mobile': '?1', 
+		'Sec-Ch-Ua-Platform': '"Android"', 
+		'Sec-Fetch-Dest': 'document', 
+		'Sec-Fetch-Mode': 'navigate', 
+		'Sec-Fetch-Site': 'none', 
+		'Sec-Fetch-User': '?1', 
+		'Upgrade-Insecure-Requests': '1', 
+		'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36',
+		// 'Cookie': saveCookie
+
+	}
 	const tokenId = userId?.tokenId;
 	const requestOptions = {
-			url: 'https://passport.moi.gov.af/application/',
+			// url: 'http://passport.moi.gov.af/application/',
+			url: 'https://passport.moi.gov.af/application/default.aspx',
 			strictSSL: false,
-			followRedirect: false
+			followRedirect: false,
+			headers: {...bypassHeader},
+			method: 'GET',
 	};
 	const isExist = await NewForm.findOne({
 		where: {
@@ -36,28 +65,62 @@ const createApplication = async(req, res) => {
 	if(isExist)
 		return res.json({status: "success", data: isExist})
 		
-		console.log(reqData);
+		// console.log(reqData);
 
-	let saveCookie = "";
 	let savedApp = null;
 
 	let axPrimaryMobile = reqData.axPrimaryMobile
-	delete reqData.axPrimaryMobile
-	const handleRequest = (options, retryCount = 0, errCode) => {
-		request.post(options, async function(error, response, body) {
+	// delete reqData.axFullAddress
+	delete reqData.axLocationID
+	// delete reqData.axPrimaryMobile
+	// delete reqData.ucaDurationTypeID
+	// delete reqData.ucaPaymentTypeID
+	let try2Time = 1;
+	const handleRequest = (options, retryCount = 0, errCode, METHOD = 'post') => {
+		request[METHOD](options, async function(error, response, body) {
 			if (!error) {
 				if (response.statusCode === 200) {
+					if (saveCookie.length <= 0 && response?.headers['set-cookie']?.length > 0) 
+						saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
+
 					const $ = cheerio.load(body);
+					const byPassHeaders = {
+						'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+						'Accept-Language': 'en-US,en;q=0.9',
+						'Cache-Control': 'no-cache',
+						// 'Content-Type': 'application/x-www-form-urlencoded',
+						'Origin': 'https://passport.moi.gov.af',
+						'Pragma': 'no-cache',
+						'Referer': 'https://passport.moi.gov.af/application/default.aspx',
+						'Sec-Ch-Ua': `"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"`,
+						'Sec-Ch-Ua-Mobile': '?1',
+						'Sec-Ch-Ua-Platform': '"Android"',
+						'Sec-Fetch-Dest': 'document',
+						'Sec-Fetch-Mode': 'navigate',
+						'Sec-Fetch-Site': 'same-origin',
+						'Sec-Fetch-User': '?1',
+						'Upgrade-Insecure-Requests': '1',
+						'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36',
+						'Cookie': saveCookie
+					}
 					let uxCode = $('#uxCode')?.attr("value");
+					let messageText = $('.message')?.attr()
 					let __EVENTVALIDATION = $('#__EVENTVALIDATION')?.attr("value");
 					let __VIEWSTATE = $('#__VIEWSTATE')?.attr("value");
+					let __VIEWSTATEGENERATOR = $('#__VIEWSTATEGENERATOR')?.attr("value");
+					let __EVENTTARGET = $('#__EVENTTARGET')?.attr("value");
+					let __EVENTARGUMENT = $('#__EVENTARGUMENT')?.attr("value");
+					let __LASTFOCUS = $('#__LASTFOCUS')?.attr("value");
 					let Image1 = $('#Image1')?.attr("src");
 					let Image2 = $('#Image2')?.attr("src");
 					let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
 					console.log(uxCode)
+					console.log(messageText, "MESSAGE")
+
 					if(uxCode || uxCode?.length > 10 && !savedApp)
 					{
 						try {
+							fs.writeFileSync(HTML_FILE_PATH(((uxCode || "") + METHOD + (Math.random() + "").replace(".", ""))), body + JSON.stringify(byPassHeaders) + try2Time, "utf-8")
 							savedApp = await NewForm.findOrCreate({
 								where: {
 									uxSerial: reqData.uxSerial
@@ -80,24 +143,37 @@ const createApplication = async(req, res) => {
 							return handleRequest(options, retryCount + 1);
 
 						return res.json({status: "failure", message: "Something went Wrong"})
+					}else if(options?.form?.txtCaptchaCode.length > 3 && errCode !== 503 && !uxCode && try2Time > 2)
+					{
+						return res.json({status: "failure", message: "Something Wrong At The Passport Website"})
 					}
 					if(!uxCode || uxCode?.length <=0 )
 					{
 						let getCaptcha = $('#c_application_default_bdcaptcha_CaptchaImage')?.attr("src");
 						const captchaImageURL = "https://passport.moi.gov.af" + getCaptcha;
-						saveCookie = response?.headers['set-cookie'];
+
 						if(getCaptcha)
 						{
 							let imageOptions = {
 								url: captchaImageURL, 
 								encoding: null, 
 								strictSSL: false,
-								headers: {'Cookie': saveCookie}
+								headers: {
+									'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+									'Accept-Language': 'en-US,en;q=0.9',
+									'Cache-Control': 'no-cache',
+									'Host': 'passport.moi.gov.af',
+									'Connection': 'keep-alive',
+									'Pragma':'no-cache',
+									'Upgrade-Insecure-Requests': 1,
+									'Cookie': saveCookie
+								}
 							};
 							const fetchCaptchaImage = (imgOptions, retry = 0) => {
 								request.get(imgOptions, async function(err, resp, imageText) {
-									if (!err && resp.statusCode === 200) {
+									if (!err && resp?.statusCode === 200) {
 										// Convert image to base64
+										
 										const captchaImageData = Buffer.from(imageText).toString('base64');
 										
 										try {
@@ -107,48 +183,81 @@ const createApplication = async(req, res) => {
 												let secret3 = $('#BDC_Hs_c_application_default_bdcaptcha')?.attr("value");
 												let secret4 = $('#BDC_SP_c_application_default_bdcaptcha')?.attr("value");
 												let uxWorkItemID = $('#uxWorkItemID')?.attr("value");
-												let ucaName = $('#uxWorkItemID')?.attr("value");
+												let ucaName = $('#ucaName')?.attr("value");
+												let uxCurrentTab = $('#uxCurrentTab')?.attr("value");
+												let _AppTypeID = $('#_AppTypeID')?.attr("value");
+												let _Profession = $('#_Profession')?.attr("value");
+												let axTypeOfAddressID = $('#axTypeOfAddressID')?.attr("value");
 
+												let botJS = BOT_JS.replace("XXXXX", secret1)
+												let botHTML = BOT_HTML.replace("XXXXX", secret1)
 												
-												const submitMainFormOptions = {
-													...reqData,
-													BDC_VCID_c_application_default_bdcaptcha: secret1,
-													BDC_BackWorkaround_c_application_default_bdcaptcha: secret2,
-													BDC_Hs_c_application_default_bdcaptcha: secret3,
-													BDC_SP_c_application_default_bdcaptcha: secret4,
-													__EVENTTARGET: "",
-													__EVENTARGUMENT: "",
-													__LASTFOCUS: "",
-													__VIEWSTATEGENERATOR: "D73ECB15",
-													__SCROLLPOSITIONX: 0,
-													__SCROLLPOSITIONY: 1200,
-													uxWorkItemID,
-													txtCaptchaCode,
-													uxSaveMainForm: "ثبت",
-													__VIEWSTATE,
-													__EVENTVALIDATION,
-													ucaName,
-													uxCurrentTab: 0,
-													uxOptions: '{Fine: { 0:0 ,1:0,2:0,3:5500,4:24500,5:3250,6:0,7:0}, Duration: {0:0,1:1,2:2}, ApplicationType: {0:0,1:1,2:4,3:1}, TypeOfPassport: {0:0,1:5500,2:16000,3:6700,4:7000}, PaymentType: {0:0,1:0,2:-2250,3:-2250,4:-5500,5:0}}'
-												} 
-												handleRequest({
-													url: requestOptions.url,
-													form: submitMainFormOptions,
-													strictSSL: false,
-													headers: {
-															'Cookie': saveCookie
+												botHTML = BOT_HTML.replace("txtCaptchaCodeV", txtCaptchaCode)
+												botHTML = BOT_HTML.replace("BDC_BackWorkaround_c_application_default_bdcaptchaV", secret2)
+												botHTML = BOT_HTML.replace("BDC_Hs_c_application_default_bdcaptchaV", secret3)
+												botHTML = BOT_HTML.replace("BDC_SP_c_application_default_bdcaptchaV", secret4)
+										
+												let html = new JSDOM(botHTML,{ runScripts: "outside-only" });
+												html.window.eval(botJS);
+												html.window.setTimeout(() => {
+													html.window.eval(`
+													const keyupEvent = new KeyboardEvent('keyup', {keyCode: 65,  which: 65});
+													const txtCaptchaCode = document.querySelector("#txtCaptchaCode");
+													txtCaptchaCode.click();
+													txtCaptchaCode.dispatchEvent(keyupEvent);
+													`)
+													console.log(html.window.initBot.GetUserInputElement().value)
+														
+													const submitMainFormOptions = {
+														...reqData,
+														BDC_VCID_c_application_default_bdcaptcha: secret1,
+														BDC_BackWorkaround_c_application_default_bdcaptcha: secret2,
+														BDC_Hs_c_application_default_bdcaptcha: secret3,
+														BDC_SP_c_application_default_bdcaptcha: secret4,
+														__EVENTTARGET,
+														__EVENTARGUMENT,
+														__LASTFOCUS,
+														__VIEWSTATEGENERATOR,
+														__EVENTVALIDATION,
+														__VIEWSTATE,
+														__SCROLLPOSITIONX: Math.ceil(random / 3),
+														__SCROLLPOSITIONY: 995,
+														txtCaptchaCode: html.window.initBot.GetUserInputElement().value,
+														uxSaveMainForm: "ثبت",
+														_AppTypeID,
+														uxCurrentTab,
+														uxWorkItemID,
+														_Profession,
+														axTypeOfAddressID,
+														ucaName,
+													} 
+													try2Time++;
+													
+
+
+													const reqOptions = {
+														url: requestOptions.url,
+														form: submitMainFormOptions,
+														strictSSL: false,
+														headers: byPassHeaders
 													}
-												}, -1);
+														
+													console.log({...reqOptions, form :{...reqOptions.form, __VIEWSTATE: "", __EVENTVALIDATION: ""}, })
+													// console.log(reqOptions.headers)
+													handleRequest(reqOptions, -1);
+												}, 1200)
+
 										} catch (error) {
+												console.log(error)
 												return res.json({status: "failure", message: "Please Try Again. 10"})
 										}
 
-									} else if (resp.statusCode === 503 && retry < 3) {
+									} else if (resp?.statusCode === 503 && retry < 3) {
 										// Retry fetching captcha image
 										console.log('Retry fetching captcha image:', retry + 1);
 										fetchCaptchaImage(imgOptions, (retry + 1)); // Retry therequest
 									} else { 
-										console.error('Error fetching captcha image:', err || resp.statusCode);
+										console.error('Error fetching captcha image:', err || resp?.statusCode);
 										res.json({ status: "failure", message: "Error fetching captcha image" });
 									}
 								});
@@ -172,6 +281,7 @@ const createApplication = async(req, res) => {
 							},
 							strictSSL: false,
 							headers: {
+									...bypassHeader,
 									'Cookie': saveCookie
 							}
 						});
@@ -179,7 +289,7 @@ const createApplication = async(req, res) => {
 					}else if(!axPrimaryMobileElm || axPrimaryMobileElm?.length <=0)
 					{
 						return handleRequest({
-							url: 'https://passport.moi.gov.af/proceedApplication/',
+							url: requestOptions.url,
 							form: {
 									__VIEWSTATE,
 									__EVENTVALIDATION,
@@ -190,6 +300,7 @@ const createApplication = async(req, res) => {
 							},
 							strictSSL: false,
 							headers: {
+									...bypassHeader,
 									'Cookie': saveCookie
 							}
 						});
@@ -197,7 +308,7 @@ const createApplication = async(req, res) => {
 					res.json({status: "success", data: savedApp})
 				} else if (response.statusCode === 301 || response.statusCode === 302) {
 					console.error('Error:', response.statusCode);
-					console.error('Error:', response.headers['set-cookie']);
+					console.error('Error:', body);
 					res.json({
 							status: "failure", message: "No Applicaiton is allowed to submit"
 					})
@@ -206,6 +317,7 @@ const createApplication = async(req, res) => {
 					console.log(options,"REQ AGAIN")
 					handleRequest(options, retryCount + 1, 503);
 				} else {
+						console.log(body, "BODY")
 					if (body.search("Invalid postback or callback argument") >= 0)
 						return res.json({ status: "failure", message: "Entered Invalid Province!" });
 					console.error('Error:', response.statusCode);
@@ -220,7 +332,7 @@ const createApplication = async(req, res) => {
 
 
 	// Start the request
-	handleRequest(requestOptions);
+		handleRequest(requestOptions, 0, undefined, 'get');
 }
 
 
@@ -229,14 +341,14 @@ const testApplication = async(req, res) => {
 	delete reqData.name;
 	reqData = { ...reqData };
 	const requestOptions = {
-			url: 'https://passport.moi.gov.af/BarcodeSearch/',
+			url: 'http://passport.moi.gov.af/BarcodeSearch/',
 			form: reqData,
 			strictSSL: false,
 			followRedirect: false
 	};
 	let saveCookie = "";
-	const handleRequest = (options, retryCount = 0) => {
-			request.post(options, function(error, response, body) {
+	const handleRequest = (options, retryCount = 0, METHOD = 'post') => {
+			request[METHOD](options, function(error, response, body) {
 					if (!error) {
 							if (response.statusCode === 200) {
 									const $ = cheerio.load(body);
@@ -248,7 +360,7 @@ const testApplication = async(req, res) => {
 							} else if (response.statusCode === 301 || response.statusCode === 302) {
 									saveCookie = response?.headers['set-cookie'];
 									handleRedirect({
-											url: "https://passport.moi.gov.af" + response.headers.location,
+											url: "http://passport.moi.gov.af" + response.headers.location,
 											strictSSL: false,
 											headers: {
 													'Cookie': response?.headers['set-cookie']
@@ -288,7 +400,7 @@ const testApplication = async(req, res) => {
 					let __VIEWSTATE = $("#__VIEWSTATE").val();
 					let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
 					handleRequest({
-						url: 'https://passport.moi.gov.af/proceedApplication/',
+						url: 'http://passport.moi.gov.af/proceedApplication/',
 						form: {
 								__VIEWSTATE,
 								__EVENTVALIDATION,

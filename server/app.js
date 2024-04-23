@@ -14,7 +14,11 @@ const app = express();
 const SECRET = process.env.SECRET || "Rg7!sH9:easyform$jR212345";
 const ALGORITHM = process.env.ALGORITHM || "HS256";
 const checkingToken = require("./app/utils/tokenChecker")
-
+// const request = require("request");
+// const {JSDOM} = require("jsdom");
+// const fs = require("fs");
+// const BOT_HTML = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'index.html'), "utf-8");
+// const BOT_JS = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'script.js'), "utf-8");
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -43,14 +47,38 @@ app.set('trust proxy', 1);
 app.use('/v1/admin', expressjwt({algorithms: [ALGORITHM], secret: SECRET}), rejectUser("admin"), adminRouter);
 app.use('/v1/auth', authRouter);
 app.use('/v1/easyform', expressjwt({algorithms: [ALGORITHM], secret: SECRET}), checkingToken,  indexRouter);
-// app.use('/v1/easyform',  indexRouter);
-// catch 404 and forward to error handler
+
 app.use(function(req, res, next) {
   res.json({
     status: "failure",
     message: "Please Update Your Application"
   })
 });
+
+// app.use(async (req, res) => {
+
+//     let botJS = BOT_JS.replace("XXXXX", "4958575131b6416f873c108dc3cf4543")
+//     let botHTML = BOT_HTML.replace("XXXXX", "4958575131b6416f873c108dc3cf4543")
+//     botHTML = BOT_HTML.replace("txtCaptchaCodeV", "ABCD3")
+    
+//     let html = new JSDOM(botHTML,{ runScripts: "outside-only" });
+//     html.window.eval(botJS);
+//     html.window.setTimeout(() => {
+//         html.window.eval(`
+//         const keyupEvent = new KeyboardEvent('keyup', {keyCode: 65,  which: 65});
+//         const txtCaptchaCode = document.querySelector("#txtCaptchaCode");
+//         txtCaptchaCode.click();
+//         txtCaptchaCode.dispatchEvent(keyupEvent);
+//         `)
+//         console.log(html.window.initBot.GetUserInputElement().value)
+//     }, 1000)
+//     res.json({
+//         status: "success",
+//         botJS
+//     })
+
+// });
+
 
 // error handler
 app.use(function(err, req, res, next) {
