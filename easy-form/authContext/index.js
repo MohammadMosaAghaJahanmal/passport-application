@@ -54,7 +54,7 @@ const AuthProvider = (props) =>
 					if(!token)
 						return setAuth((prev) => ({...prev, loading: false, login: false, deviceInfo: combinedId}));
 					
-					const authResp = await fetch(serverPath('/auth/easyform/token'), {
+					const authResp = await fetch(await serverPath('/auth/easyform/token'), {
 						method: "POST",
 						headers: {
 							"Content-Type": "Application/JSON",

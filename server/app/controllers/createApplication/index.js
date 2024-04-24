@@ -2,7 +2,6 @@ const cheerio = require('cheerio');
 const request  = require('request');
 const fs = require("fs");
 const path = require("path");
-const HTML_FILE_PATH =  (fileName) => path.join(process.cwd(), `TEST_FILES/${fileName}.html`)
 const ac = require("@antiadmin/anticaptchaofficial");
 const NewForm = require('../../model/NewForm');
 const BOT_HTML = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'index.html'), "utf-8");
@@ -19,7 +18,6 @@ c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAACxSURBVHhe7dChAcAgEMBA6P5
 TE6YnTE6IjREaMjRkeMjhgdMTpidMToiNERoyNGR4yOGB0xOmJ0xOiI0RGjI0ZHjI4YHTE6YnTE6IjREa
 MjRkeMjhgdMTpidMToiNERoyNGR4yOGB0xOmJ0xOiI0RGjE2t9N5gIGP/YYZ0AAAAASUVORK5CYII=`
 
-// const $ = cheerio.load(HTML_FILE_PATH);
 
 
 
@@ -80,7 +78,7 @@ const createApplication = async(req, res) => {
 		request[METHOD](options, async function(error, response, body) {
 			if (!error) {
 				if (response.statusCode === 200) {
-					if (saveCookie.length <= 0 && response?.headers['set-cookie']?.length > 0) 
+					if (saveCookie?.length <= 0 && response?.headers['set-cookie']?.length > 0) 
 						saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
 
 					const $ = cheerio.load(body);
@@ -104,9 +102,11 @@ const createApplication = async(req, res) => {
 						'Cookie': saveCookie
 					}
 					let uxCode = $('#uxCode')?.attr("value");
+					// if(try2Time >= 3)
+					// 	uxCode = 19726348383
 					let messageText = $('.message')?.attr()
 					let __EVENTVALIDATION = $('#__EVENTVALIDATION')?.attr("value");
-					let __VIEWSTATE = $('#__VIEWSTATE')?.attr("value");
+					let __VIEWSTATE = $('#__VIEWSTATE')?.attr("value"); 
 					let __VIEWSTATEGENERATOR = $('#__VIEWSTATEGENERATOR')?.attr("value");
 					let __EVENTTARGET = $('#__EVENTTARGET')?.attr("value");
 					let __EVENTARGUMENT = $('#__EVENTARGUMENT')?.attr("value");
@@ -115,12 +115,10 @@ const createApplication = async(req, res) => {
 					let Image2 = $('#Image2')?.attr("src");
 					let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
 					console.log(uxCode)
-					console.log(messageText, "MESSAGE")
 
-					if(uxCode || uxCode?.length > 10 && !savedApp)
+					if((uxCode || uxCode?.length > 10) && savedApp==null)
 					{
 						try {
-							fs.writeFileSync(HTML_FILE_PATH(((uxCode || "") + METHOD + (Math.random() + "").replace(".", ""))), body + JSON.stringify(byPassHeaders) + try2Time, "utf-8")
 							savedApp = await NewForm.findOrCreate({
 								where: {
 									uxSerial: reqData.uxSerial
@@ -131,23 +129,27 @@ const createApplication = async(req, res) => {
 									tokenId
 								}
 							});
-							return res.json({status: "success", data: savedApp})
+							console.log("TRYING TO SAVE")
+							// return res.json({status: "success", data: savedApp})
 						} catch (error) {
 							return res.json({status: "failure", message: "Entered Incorrect Data"})
 						}
 					}
-					if(options?.form?.txtCaptchaCode.length > 3 && errCode === 503)
+					if(options?.form?.txtCaptchaCode?.length > 3 && errCode === 503)
 					{
 						console.log("RETRING", retryCount);
 						if(retryCount < 3)
-							return handleRequest(options, retryCount + 1);
+						{
+							handleRequest(options, retryCount + 1);
+							return 
+						}
 
 						return res.json({status: "failure", message: "Something went Wrong"})
-					}else if(options?.form?.txtCaptchaCode.length > 3 && errCode !== 503 && !uxCode && try2Time > 2)
+					}else if(options?.form?.txtCaptchaCode?.length > 3 && errCode !== 503 && !uxCode && try2Time > 2)
 					{
 						return res.json({status: "failure", message: "Something Wrong At The Passport Website"})
 					}
-					if(!uxCode || uxCode?.length <=0 )
+					if((!uxCode || uxCode?.length <=0) )
 					{
 						let getCaptcha = $('#c_application_default_bdcaptcha_CaptchaImage')?.attr("src");
 						const captchaImageURL = "https://passport.moi.gov.af" + getCaptcha;
@@ -172,7 +174,6 @@ const createApplication = async(req, res) => {
 							const fetchCaptchaImage = (imgOptions, retry = 0) => {
 								request.get(imgOptions, async function(err, resp, imageText) {
 									if (!err && resp?.statusCode === 200) {
-										// Convert image to base64
 										
 										const captchaImageData = Buffer.from(imageText).toString('base64');
 										
@@ -185,18 +186,15 @@ const createApplication = async(req, res) => {
 												let uxWorkItemID = $('#uxWorkItemID')?.attr("value");
 												let ucaName = $('#ucaName')?.attr("value");
 												let uxCurrentTab = $('#uxCurrentTab')?.attr("value");
-												let _AppTypeID = $('#_AppTypeID')?.attr("value");
-												let _Profession = $('#_Profession')?.attr("value");
 												let axTypeOfAddressID = $('#axTypeOfAddressID')?.attr("value");
 
 												let botJS = BOT_JS.replace("XXXXX", secret1)
 												let botHTML = BOT_HTML.replace("XXXXX", secret1)
-												
-												botHTML = BOT_HTML.replace("txtCaptchaCodeV", txtCaptchaCode)
-												botHTML = BOT_HTML.replace("BDC_BackWorkaround_c_application_default_bdcaptchaV", secret2)
-												botHTML = BOT_HTML.replace("BDC_Hs_c_application_default_bdcaptchaV", secret3)
-												botHTML = BOT_HTML.replace("BDC_SP_c_application_default_bdcaptchaV", secret4)
-										
+												botHTML = botHTML.replace("XXXXX", secret1)
+												botHTML = botHTML.replace("txtCaptchaCodeV", txtCaptchaCode)
+												botHTML = botHTML.replace("BDC_BackWorkaround_c_application_default_bdcaptchaV", secret2)
+												botHTML = botHTML.replace("BDC_Hs_c_application_default_bdcaptchaV", secret3)
+												botHTML = botHTML.replace("BDC_SP_c_application_default_bdcaptchaV", secret4)
 												let html = new JSDOM(botHTML,{ runScripts: "outside-only" });
 												html.window.eval(botJS);
 												html.window.setTimeout(() => {
@@ -206,7 +204,6 @@ const createApplication = async(req, res) => {
 													txtCaptchaCode.click();
 													txtCaptchaCode.dispatchEvent(keyupEvent);
 													`)
-													console.log(html.window.initBot.GetUserInputElement().value)
 														
 													const submitMainFormOptions = {
 														...reqData,
@@ -224,10 +221,9 @@ const createApplication = async(req, res) => {
 														__SCROLLPOSITIONY: 995,
 														txtCaptchaCode: html.window.initBot.GetUserInputElement().value,
 														uxSaveMainForm: "ثبت",
-														_AppTypeID,
+														_AppTypeID: 2,
 														uxCurrentTab,
 														uxWorkItemID,
-														_Profession,
 														axTypeOfAddressID,
 														ucaName,
 													} 
@@ -242,8 +238,7 @@ const createApplication = async(req, res) => {
 														headers: byPassHeaders
 													}
 														
-													console.log({...reqOptions, form :{...reqOptions.form, __VIEWSTATE: "", __EVENTVALIDATION: ""}, })
-													// console.log(reqOptions.headers)
+													console.log({...reqOptions, form :{...reqOptions.form, __VIEWSTATE: "", __EVENTVALIDATION: ""}, headers: {} })
 													handleRequest(reqOptions, -1);
 												}, 1200)
 
@@ -266,18 +261,23 @@ const createApplication = async(req, res) => {
 							return
 						}
 					} 
-					else if(!(!uxCode || uxCode?.length <=0) && (Image1?.search("passport.moi") < 0 || Image2?.search("passport.moi") < 0))
+					else if((uxCode?.length > 10) && (Image1?.search("userPhoto") < 0))
 					{
+						console.log("SAVING IMAGE")
+						console.log(Image1)
+						console.log(Image2)
 						return handleRequest({
 							url: requestOptions.url,
 							form: {
 									__VIEWSTATE,
 									__EVENTVALIDATION,
+									uxCode,
 									Button4: "ثبت",
 									uxPhotoData: base64Image,
 									uxSignatureData: base64Image,
 									uxPhotoFileName: "C:\\fakepath\\filepath.png",
 									uxSignatureFileName: "C:\\fakepath\\filepath.png",
+									
 							},
 							strictSSL: false,
 							headers: {
@@ -288,15 +288,22 @@ const createApplication = async(req, res) => {
 						
 					}else if(!axPrimaryMobileElm || axPrimaryMobileElm?.length <=0)
 					{
+						console.log("SAVING PROVINCE", axPrimaryMobileElm)
+
 						return handleRequest({
 							url: requestOptions.url,
 							form: {
 									__VIEWSTATE,
 									__EVENTVALIDATION,
+									uxCode,
 									Button2: "ثبت",
 									axLocationID: reqData.axLocationID || 31,
 									axPrimaryMobile: axPrimaryMobile || "0712345678",
-									axFullAddress: reqData.axFullAddress 
+									axFullAddress: reqData.axFullAddress || "شیستابنایستب",
+									uxPhotoData: base64Image,
+									uxSignatureData: base64Image,
+									uxPhotoFileName: "C:\\fakepath\\filepath.png",
+									uxSignatureFileName: "C:\\fakepath\\filepath.png",
 							},
 							strictSSL: false,
 							headers: {
@@ -353,7 +360,7 @@ const testApplication = async(req, res) => {
 							if (response.statusCode === 200) {
 									const $ = cheerio.load(body);
 									let isBarCodeCorrect = $('#uxMessage[style]')
-									if (isBarCodeCorrect.length)
+									if (isBarCodeCorrect?.length)
 											return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
 											res.json({ status: "success" });
 
@@ -377,7 +384,7 @@ const testApplication = async(req, res) => {
 											return res.json({ status: "failure", message: "Entered Invalid Province!" });
 
 									let isFormValid = $('body[bgcolor="white"]')
-									if (isFormValid.length)
+									if (isFormValid?.length)
 											return res.json({ status: "failure", message: "Please Validate Your Form!", body });
 
 

@@ -215,7 +215,7 @@ export const searchForm = ({uxGivenNamesLocal, uxFatherNameLocal, uxGrandFatherN
 export const submitFormByBrowser = async ({barCode, date, __EVENTVALIDATION, __VIEWSTATE, axLocationID, token, name}) =>
 {
   try {
-    const baseUrl = serverPath('/easyform/barcode');
+    const baseUrl = await serverPath('/easyform/barcode');
     
     // console.log(formData)
 
@@ -270,7 +270,7 @@ export const submitNewApplication = async ({
 }) =>
 {
   try {
-    const baseUrl = serverPath('/easyform/submitform');
+    const baseUrl = await serverPath('/easyform/submitform');
     
     // console.log(formData)
 

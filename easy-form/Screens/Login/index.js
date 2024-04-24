@@ -8,6 +8,9 @@ import Shape from '../../Components/Shape';
 import {getToken, setToken as storeToken} from '../../LocalStorage'
 import { AuthContext } from '../../authContext';
 import serverPath from '../../utils/serverPath';
+import nativeFetchApi from '../../utils/nativeFetchApi';
+
+// import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = (props) =>
 {
@@ -15,6 +18,7 @@ const Login = (props) =>
   const {setAuth, deviceInfo, } = useContext(AuthContext)
   const [phone, setPhone] = useState("");
   const [token, setToken] = useState("");
+  // const [path, setPath] = useState("http://:8080");
   const [isLoading, setisLoading] = useState(false);
   const submitHandler = async () =>
   {
@@ -32,15 +36,12 @@ const Login = (props) =>
 
       try {
       setisLoading(true);
-        const loginPath = serverPath('/auth/easyform/login')
-        console.log(loginPath)
-      const authResp = await fetch(loginPath, {
-        method: "POST",
-        headers: {
-          "Content-Type": "Application/JSON",
-        },
+      const loginPath = await serverPath('/auth/easyform/login')
+      let authResp = await fetch(loginPath,{
+        method: "POST", 
+        headers: {"Content-Type": "Application/JSON"}, 
         body: JSON.stringify({deviceInfo, phone, token})
-      });
+      })
       if(authResp.status == 429)
       {
         Alert.alert("Warning", "Too Many Tries. Please Try Again After A While!")
@@ -54,6 +55,8 @@ const Login = (props) =>
       }
       if(objData.status === 'success')
       {
+        // await AsyncStorage.setItem("SERVER_PATH", path)
+        console.log(objData.token.token)
         await storeToken(objData.token.token)
         setAuth((prev) => ({...prev, loading: false, login: true, token: objData.token.token, tokenInfo: objData.token}));
       }
@@ -94,6 +97,13 @@ const Login = (props) =>
         Welcome To Easy Form App
       </Text>
       <SimpleCard style={styles.card}>
+        {/* <Input 
+            label="Server PATH" 
+            style={{marginBottom: 20}}
+            placeholder="URL"
+            value={path}
+            onChange={setPath}
+          /> */}
         <Input 
           label="Phone" 
           style={{marginBottom: 20}}

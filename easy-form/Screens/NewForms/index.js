@@ -67,7 +67,7 @@ const NewForms = (props) =>
           delete data.id
           delete data.status
 
-          const baseUrl = serverPath('/easyform/application');
+          const baseUrl = await serverPath('/easyform/application');
   
           const response = await fetch(baseUrl, {
               method: 'POST',

@@ -21,7 +21,6 @@ const easyFormAuth = async (req, res, next) =>
                 status: "failure"
             })
         let findToken = await Token.findByPk(tokenId);
-            console.log(findToken)
         if (!findToken) {
             return res.json({
                 message: "Entered Incorrect Token",

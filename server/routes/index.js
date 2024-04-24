@@ -201,10 +201,27 @@ router.post('/barcode', async (req, res) => {
 
 router.post('/provinces', (req, res) => {
     console.log("PROVINCES")
+    let bypassHeader = { 
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+		'Accept-Language': 'en-US,en;q=0.9', 
+		'Cache-Control': 'no-cache', 
+		'Pragma': 'no-cache', 
+		'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
+		'Sec-Ch-Ua-Mobile': '?1', 
+		'Sec-Ch-Ua-Platform': '"Android"', 
+		'Sec-Fetch-Dest': 'document', 
+		'Sec-Fetch-Mode': 'navigate', 
+		'Sec-Fetch-Site': 'none', 
+		'Sec-Fetch-User': '?1', 
+		'Upgrade-Insecure-Requests': '1', 
+		'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36',
+
+	}
     const requestOptions = {
         url: 'https://passport.moi.gov.af/application/',
         strictSSL: false,
-        followRedirect: false
+        followRedirect: false,
+        headers: {...bypassHeader},
     };
 
     // Function to handle the request and follow redirects manually

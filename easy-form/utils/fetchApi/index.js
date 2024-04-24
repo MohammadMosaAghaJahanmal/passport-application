@@ -1,6 +1,6 @@
 import serverPath from "../serverPath";
 
-const fetchApi = ({path, method, body}) => fetch(serverPath(path), {
+const fetchApi = async({path, method, body}) => fetch(await serverPath(path), {
   method: method,
   credentials: "include",
   headers: {

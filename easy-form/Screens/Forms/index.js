@@ -155,7 +155,7 @@ const Forms = (props) =>
   const fetchProvince = async () => {
     try {
       setIsLoading(true);
-      let response = await fetch(serverPath("/easyform/provinces"), {
+      let response = await fetch(await serverPath("/easyform/provinces"), {
         method: "POST",
         headers: {
           "Authorization": `bearer ${token}`
