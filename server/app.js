@@ -39,7 +39,7 @@ app.use(cookieSession({
 }));
 
 app.use(cors({
-  origin: ['http://localhost:8081', 'http://localhost:3000'],
+  origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost:5500'],
   methods: "GET,POST,PUT,DELETE",
   credentials: true
 }));

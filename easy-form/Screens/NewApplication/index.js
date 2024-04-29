@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import {View, Text, StyleSheet, Alert, TouchableOpacity, BackHandler, Switch, ScrollView, StatusBar} from 'react-native';
+import {View, Text, StyleSheet, Alert, TouchableOpacity, BackHandler, ScrollView, StatusBar} from 'react-native';
 import {Picker} from '@react-native-picker/picker'
 import Constant, { 
   afghanistanProvinces, 
@@ -16,7 +16,7 @@ import Button from '../../Components/Button';
 import Input from '../../Components/Input';
 import { insertForm } from '../../DB';
 import useStore from '../../store/store';
-import {findOne, updateOne} from '../../utils/lightCrud';
+import {findOne} from '../../utils/lightCrud';
 import { AuthContext } from '../../authContext';
 import validator from '../../validators/application'
 import generateRandomString from '../../utils/generateRandomString';
@@ -25,8 +25,8 @@ import generateRandomString from '../../utils/generateRandomString';
 const NewApplication = (props) =>
 {
 
-  const {tokenInfo, token} = useContext(AuthContext);
-  const [globalState, dispatch] = useStore();
+  const {tokenInfo} = useContext(AuthContext);
+  const [globalState, dispatch] = useStore(false);
   const {newforms} = globalState;
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,7 +40,7 @@ const NewApplication = (props) =>
       BackHandler.removeEventListener("hardwareBackPress", subscription)
   }, []);
 
-  const initFieldsState = {
+  const initFieldsState = () => ({
     uxTitleID:"1",
     uxCriminalRecord:"2",
     uxFamilyNameLocal:generateRandomString(8, "ps"),
@@ -74,31 +74,47 @@ const NewApplication = (props) =>
     axLocationID: "31",
     ucaDurationTypeID: "1",
     ucaPaymentTypeID: "1",
-  };
+  });
 
-  const [fields, setFields] = useState({...initFieldsState})
+  const [fields, setFields] = useState({...initFieldsState()});
+  const [bulkySaveCounte, setBulkySaveCounte] = useState('1');
   const setFieldHandler = (value, type) => (isLoading || setFields(prev => ({...prev, [type] : value})))
 
   const saveFormHandler = async () => 
   {
-    
+    if(isLoading)
+      return;
+
     const {data, message} = validator(fields)
     if(message)
       return Alert.alert("Failure", message);
     if(fields.uxNIDTypeID == "8" && (fields.uxJuld.trim().length <= 0 || fields.uxPage.trim().length <= 0 || fields.uxNo.trim().length <= 0))
       return Alert.alert("Failure", "Juld, Page And Reg Number fields are Required!");
-      data.uxNID = JSON.stringify({S: data.uxSerial, J: data.uxJuld, P: data.uxPage, N:data.uxNo})
-
     try {
+      setIsLoading(true)
+      const parseCounte = Number.parseInt(bulkySaveCounte);
+      let counte = parseCounte <= 1 ? 1 : parseCounte;
+      let allData = [];
+      for (let i = 0; i < counte; i++) {
+        let appData = {
+          ...initFieldsState(), 
+          axLocationID: data.axLocationID,
+          uxResidenceCountryID: data.uxResidenceCountryID,
+          uxBirthLocationID: data.uxBirthLocationID
+        }
+        if(i == 0)
+          appData = data;
+        appData.uxNID = JSON.stringify({S: appData.uxSerial, J: appData.uxJuld, P: appData.uxPage, N:appData.uxNo})
+        const exist = findOne(newforms, appData.uxSerial, "uxSerial")
+        if(exist)
+          return Alert.alert("Info !", "This Tazkira Id Is Already Exist!");
+        await insertForm(appData);
+        allData.push(appData)
+      }
+    dispatch('setData', {type: "newforms", data: [...newforms, ...allData]});
+    Alert.alert("Success", `Application${counte > 1 ? "s" : ''} Succesfully Created!`);
+    props.onNewApplication(false);
 
-      const exist = findOne(newforms, data.uxSerial, "uxSerial")
-      if(exist)
-        return Alert.alert("Info !", "This Tazkira Id Is Already Exist!");
-      
-      await insertForm(data);
-      dispatch('setData', {type: "newforms", data: [...newforms, data]});
-      Alert.alert("Success", "Application Succesfully Updated!");
-      props.onNewApplication(false);
 
     } catch (error) {
       console.log(error)
@@ -117,6 +133,15 @@ const NewApplication = (props) =>
         </View>
         <ScrollView>
         <View style={styles.form}>
+          <Input 
+            label={"How Many Applications"}
+            style={{...styles.input, ...styles.barCode, marginBottom: 5}}
+            onChange={(value) => {setBulkySaveCounte(value.replace(/\D/, ''))}}
+            value={bulkySaveCounte}
+            keyboardType={"number-pad"}
+            maxLength={2}
+
+            />
           <View style={styles.row}>
             <View style={{width: "49%"}}>
               <Text style={styles.pickerLabel}>Title</Text>

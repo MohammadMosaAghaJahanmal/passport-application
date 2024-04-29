@@ -7,6 +7,7 @@ const NewForm = require('../../model/NewForm');
 const BOT_HTML = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'index.html'), "utf-8");
 const BOT_JS = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'script.js'), "utf-8");
 const {JSDOM} = require("jsdom");
+const passportFormSetProvince = require('../../utils/passportFormSetProvince')
 
 ac.setAPIKey('be0f3a3a94868bae1ff1c534d6490680');
 ac.setSoftId(0);
@@ -24,6 +25,11 @@ MjRkeMjhgdMTpidMToiNERoyNGR4yOGB0xOmJ0xOiI0RGjE2t9N5gIGP/YYZ0AAAAASUVORK5CYII=`
 const createApplication = async(req, res) => {
 	let reqData = req.body;
 	let { userId } = req.auth;
+	let PROVINCE__EVENTVALIDATION = reqData?.__EVENTVALIDATION;
+	let PROVINCE__VIEWSTATE = reqData?.__VIEWSTATE;
+	delete reqData.__EVENTVALIDATION
+	delete reqData.__VIEWSTATE
+	
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
 	// let random = 135
 	// let saveCookie = "ASP.NET_SessionId=oa00b1f23xs5r4titrorbv3v";
@@ -68,6 +74,7 @@ const createApplication = async(req, res) => {
 	let savedApp = null;
 
 	let axPrimaryMobile = reqData.axPrimaryMobile
+	let axLocationID = reqData.axLocationID
 	// delete reqData.axFullAddress
 	delete reqData.axLocationID
 	// delete reqData.axPrimaryMobile
@@ -86,7 +93,6 @@ const createApplication = async(req, res) => {
 						'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
 						'Accept-Language': 'en-US,en;q=0.9',
 						'Cache-Control': 'no-cache',
-						// 'Content-Type': 'application/x-www-form-urlencoded',
 						'Origin': 'https://passport.moi.gov.af',
 						'Pragma': 'no-cache',
 						'Referer': 'https://passport.moi.gov.af/application/default.aspx',
@@ -102,8 +108,6 @@ const createApplication = async(req, res) => {
 						'Cookie': saveCookie
 					}
 					let uxCode = $('#uxCode')?.attr("value");
-					// if(try2Time >= 3)
-					// 	uxCode = 19726348383
 					let messageText = $('.message')?.attr()
 					let __EVENTVALIDATION = $('#__EVENTVALIDATION')?.attr("value");
 					let __VIEWSTATE = $('#__VIEWSTATE')?.attr("value"); 
@@ -111,12 +115,11 @@ const createApplication = async(req, res) => {
 					let __EVENTTARGET = $('#__EVENTTARGET')?.attr("value");
 					let __EVENTARGUMENT = $('#__EVENTARGUMENT')?.attr("value");
 					let __LASTFOCUS = $('#__LASTFOCUS')?.attr("value");
-					let Image1 = $('#Image1')?.attr("src");
-					let Image2 = $('#Image2')?.attr("src");
-					let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
+					// let Image1 = $('#Image1')?.attr("src");
+					// let Image2 = $('#Image2')?.attr("src");
+					// let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
 					console.log(uxCode)
-
-					if((uxCode || uxCode?.length > 10) && savedApp==null)
+					if((uxCode?.length > 10) && savedApp==null)
 					{
 						try {
 							savedApp = await NewForm.findOrCreate({
@@ -130,26 +133,70 @@ const createApplication = async(req, res) => {
 								}
 							});
 							console.log("TRYING TO SAVE")
+							console.log("TRYING TO Province")
+
+							return handleRequest({
+								url: requestOptions.url,
+								form: {
+										__VIEWSTATE,
+										__EVENTVALIDATION,
+										uxCode,
+										Button2: "ثبت",
+										axLocationID: axLocationID || 31,
+										axPrimaryMobile: axPrimaryMobile || "0712345678",
+										axFullAddress: reqData.axFullAddress || "شیستابنایستب",
+								},
+								strictSSL: false,
+								headers: {
+										...bypassHeader,
+										'Cookie': saveCookie
+								}
+							});
+
 							// return res.json({status: "success", data: savedApp})
-						} catch (error) {
+						} catch (dbErr) {
+							console.log(dbErr)
 							return res.json({status: "failure", message: "Entered Incorrect Data"})
 						}
 					}
 					if(options?.form?.txtCaptchaCode?.length > 3 && errCode === 503)
 					{
 						console.log("RETRING", retryCount);
-						if(retryCount < 3)
+						if(retryCount < 5)
 						{
 							handleRequest(options, retryCount + 1);
 							return 
 						}
-
-						return res.json({status: "failure", message: "Something went Wrong"})
+						return res.json({status: "failure", message: "Something went Wrong 11"})
 					}else if(options?.form?.txtCaptchaCode?.length > 3 && errCode !== 503 && !uxCode && try2Time > 2)
 					{
+						savedApp = await NewForm.findOrCreate({
+							where: {
+								uxSerial: reqData.uxSerial
+							},
+							defaults: {
+								...reqData, 
+								tokenId
+							}
+						});
+						passportFormSetProvince(req, res, {
+							__VIEWSTATEGENERATOR: "59A49A67",
+              __SCROLLPOSITIONX: "0",
+              __SCROLLPOSITIONY: "500",
+              __EVENTARGUMENT: "",
+              __EVENTTARGET: "",
+							__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+              __VIEWSTATE: PROVINCE__VIEWSTATE,
+							uxName: reqData.uxGivenNamesLocal,
+              uxFatherName: reqData.uxFatherNameLocal,
+              uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+              uxBirthDate: reqData.uxBirthDate_Shamsi,
+              uxSearch: "جستجو",
+              axLocationID: axLocationID,
+						}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 						return res.json({status: "failure", message: "Something Wrong At The Passport Website"})
 					}
-					if((!uxCode || uxCode?.length <=0) )
+					if((!uxCode || uxCode?.length <=0) && savedApp == null)
 					{
 						let getCaptcha = $('#c_application_default_bdcaptcha_CaptchaImage')?.attr("src");
 						const captchaImageURL = "https://passport.moi.gov.af" + getCaptcha;
@@ -226,6 +273,8 @@ const createApplication = async(req, res) => {
 														uxWorkItemID,
 														axTypeOfAddressID,
 														ucaName,
+														// uxBirthLocationID: 35,
+														// uxResidenceCountryID: 35,
 													} 
 													try2Time++;
 													
@@ -261,58 +310,63 @@ const createApplication = async(req, res) => {
 							return
 						}
 					} 
-					else if((uxCode?.length > 10) && (Image1?.search("userPhoto") < 0))
-					{
-						console.log("SAVING IMAGE")
-						console.log(Image1)
-						console.log(Image2)
-						return handleRequest({
-							url: requestOptions.url,
-							form: {
-									__VIEWSTATE,
-									__EVENTVALIDATION,
-									uxCode,
-									Button4: "ثبت",
-									uxPhotoData: base64Image,
-									uxSignatureData: base64Image,
-									uxPhotoFileName: "C:\\fakepath\\filepath.png",
-									uxSignatureFileName: "C:\\fakepath\\filepath.png",
+					// if((uxCode?.length > 10) && (Image1?.search("userPhoto") < 0) && savedApp != null)
+					// {
+					// 	console.log("SAVING IMAGE")
+					// 	console.log(Image1)
+					// 	console.log(Image2)
+					// 	return handleRequest({
+					// 		url: requestOptions.url,
+					// 		form: {
+					// 				__VIEWSTATE,
+					// 				__EVENTVALIDATION,
+					// 				uxCode,
+					// 				Button4: "ثبت",
+					// 				uxPhotoData: base64Image,
+					// 				uxSignatureData: base64Image,
+					// 				uxPhotoFileName: "C:\\fakepath\\filepath.png",
+					// 				uxSignatureFileName: "C:\\fakepath\\filepath.png",
 									
-							},
-							strictSSL: false,
-							headers: {
-									...bypassHeader,
-									'Cookie': saveCookie
-							}
-						});
+					// 		},
+					// 		strictSSL: false,
+					// 		headers: {
+					// 				...bypassHeader,
+					// 				'Cookie': saveCookie
+					// 		}
+					// 	});
 						
-					}else if(!axPrimaryMobileElm || axPrimaryMobileElm?.length <=0)
-					{
-						console.log("SAVING PROVINCE", axPrimaryMobileElm)
+					// }
+					// if((!axPrimaryMobileElm || axPrimaryMobileElm?.length <=0) && savedApp != null)
+					// {
+					// 	console.log("SAVING PROVINCE", axPrimaryMobileElm)
 
-						return handleRequest({
-							url: requestOptions.url,
-							form: {
-									__VIEWSTATE,
-									__EVENTVALIDATION,
-									uxCode,
-									Button2: "ثبت",
-									axLocationID: reqData.axLocationID || 31,
-									axPrimaryMobile: axPrimaryMobile || "0712345678",
-									axFullAddress: reqData.axFullAddress || "شیستابنایستب",
-									uxPhotoData: base64Image,
-									uxSignatureData: base64Image,
-									uxPhotoFileName: "C:\\fakepath\\filepath.png",
-									uxSignatureFileName: "C:\\fakepath\\filepath.png",
-							},
-							strictSSL: false,
-							headers: {
-									...bypassHeader,
-									'Cookie': saveCookie
-							}
-						});
-					}
-					res.json({status: "success", data: savedApp})
+					// 	return handleRequest({
+					// 		url: requestOptions.url,
+					// 		form: {
+					// 				__VIEWSTATE,
+					// 				__EVENTVALIDATION,
+					// 				uxCode,
+					// 				Button2: "ثبت",
+					// 				axLocationID: reqData.axLocationID || 31,
+					// 				// axLocationID: 35,
+					// 				axPrimaryMobile: axPrimaryMobile || "0712345678",
+					// 				axFullAddress: reqData.axFullAddress || "شیستابنایستب",
+					// 				uxPhotoData: base64Image,
+					// 				uxSignatureData: base64Image,
+					// 				uxPhotoFileName: "C:\\fakepath\\filepath.png",
+					// 				uxSignatureFileName: "C:\\fakepath\\filepath.png",
+					// 		},
+					// 		strictSSL: false,
+					// 		headers: {
+					// 				...bypassHeader,
+					// 				'Cookie': saveCookie
+					// 		}
+					// 	});
+					// }
+						let savedForm = Array.isArray(savedApp) ? savedApp[0] : savedApp;
+						savedForm.isChanged = true;
+						await savedForm?.save()
+					res.json({status: "success", data: savedForm})
 				} else if (response.statusCode === 301 || response.statusCode === 302) {
 					console.error('Error:', response.statusCode);
 					console.error('Error:', body);
@@ -321,7 +375,8 @@ const createApplication = async(req, res) => {
 					})
 				} else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
 					// Resubmit the form
-					console.log(options,"REQ AGAIN")
+					console.log({...options, headers: {} },"REQ AGAIN")
+
 					handleRequest(options, retryCount + 1, 503);
 				} else {
 						console.log(body, "BODY")

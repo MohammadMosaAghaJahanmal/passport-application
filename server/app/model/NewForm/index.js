@@ -34,10 +34,11 @@ NewForm.init(
     uxHairColorID: {type: DataTypes.STRING, allowNull: true},
     uxEyeColorID: {type: DataTypes.STRING, allowNull: true},
     uxBodyHeightCM: {type:DataTypes.INTEGER, allowNull: true},
+    isChanged: {type: DataTypes.BOOLEAN, defaultValue: false},
     status: DataTypes.INTEGER,
     uxCode: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       unique: true,
     },
     tokenId: { 

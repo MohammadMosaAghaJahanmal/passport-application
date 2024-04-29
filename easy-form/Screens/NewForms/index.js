@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useContext, useEffect, useState } from 'react';
 import {View, Text, StyleSheet, BackHandler, TouchableOpacity, StatusBar, Alert} from 'react-native';
-import Constant, { form, searchForm } from '../../Constant';
+import Constant, { searchForm } from '../../Constant';
 import FullScreenLoader from '../../Components/FullScreenLoader'
 import useStore from '../../store/store';
 import { AuthContext } from '../../authContext';
@@ -18,6 +18,8 @@ const NewForms = (props) =>
 {
   
   const {token, secrets} = useContext(AuthContext)
+  const {__EVENTVALIDATION, __VIEWSTATE} = secrets
+
   const [globalState, dispatch] = useStore();
   const {newforms} = globalState;
   const initPagination = {
@@ -39,9 +41,9 @@ const NewForms = (props) =>
   useEffect(() => {
     setPagination(prev => ({
       ...prev,
-      max: Math.ceil(newforms.length / prev.show),
-      total: newforms.length,
-      thisPageApps: newforms.slice((prev.page * prev.show) - prev.show, (prev.page * prev.show))
+      max: Math.ceil(newforms?.length / prev.show),
+      total: newforms?.length,
+      thisPageApps: newforms?.slice((prev.page * prev.show) - prev.show, (prev.page * prev.show))
     }));
 
     StatusBar.setBackgroundColor(Constant.secondary, false);
@@ -54,19 +56,67 @@ const NewForms = (props) =>
   }, [newforms]);
 
 
-
-
-  let onSubmit = async (data) => {
-    if(data?.uxCode?.length > 0)
-      return Alert.alert("Info!", "This Form Is Already Submitted You Can't Submit it again!");
-       
-    Alert.alert("Submit Operation!", "Are you sure to submit this application!", [
+  let onChangeProvince = async (data) => {
+    Alert.alert("Submit Operation!", "Are you sure to Change the province of this application!", [
       {text: "NO", style: "cancel", },
       {text: "OKAY", style:"destructive", onPress: async () => {
         try {
+          setIsLoading(true)
+          const response = await fetch(await serverPath('/easyform/search'),
+          {
+            method: "POST",
+            headers:
+            {
+              "Content-Type": "Application/json",
+              "Authorization": `bearer ${token}`,
+            },
+            body: JSON.stringify({
+              __VIEWSTATEGENERATOR: "59A49A67",
+              __SCROLLPOSITIONX: "0",
+              __SCROLLPOSITIONY: "500",
+              __EVENTARGUMENT: "",
+              __EVENTTARGET: "",
+              __EVENTVALIDATION,
+              __VIEWSTATE,
+              uxName: data.uxGivenNamesLocal,
+              uxFatherName: data.uxFatherNameLocal,
+              uxGrandFatherName: data.uxGrandFatherNameLocal,
+              uxBirthDate: data.uxBirthDate_Shamsi,
+              uxSearch: "جستجو",
+              axLocationID: data.axLocationID,
+              uxSerial: data.uxSerial,
+            })
+            
+          });
+          if(response.status === 500)
+            Alert.alert("Info!", "The changes is taking too long to submit. server will manage this.");
+          const objData = await response.json()
+          if(objData.status === "failure")
+            Alert.alert("Failure!", objData.message || "Please Try Again !");
+          if(objData.status === "success")
+          {
+            Alert.alert("Success!", objData.message || "Successfully Changed !");
+          }
+        } catch (error) {
+          alert(error.message);
+      }
+        setIsLoading(false)
+      }}])
+  }
+
+  let onSubmit = async (data) => {
+
+       
+    Alert.alert("Submit Operation!", "Are you sure to submit this application!", [
+      {text: "NO", style: "cancel"},
+      {text: "Change", style: "default", onPress: ()=>onChangeProvince(data)},
+      {text: "Submit", style:"destructive", onPress: async () => {
+        if(data?.uxCode?.length > 0)
+          return Alert.alert("Info!", "This Form Is Already Submitted You Can't Submit it again!");
+        try {
           delete data.id
           delete data.status
-
+          setIsLoading(true)
           const baseUrl = await serverPath('/easyform/application');
   
           const response = await fetch(baseUrl, {
@@ -76,13 +126,17 @@ const NewForms = (props) =>
                 "Content-Type": "Application/json",
                 "Authorization": `bearer ${token}`,
               },
-              body: JSON.stringify(data),
+              body: JSON.stringify({
+                ...data,
+                __EVENTVALIDATION,
+                __VIEWSTATE,
+              }),
           });
           
           if(response.status === 500)
           {
             setIsLoading(false)
-            Alert.alert("Info!", "The application is taking too long to submit. server will manage this.");
+            Alert.alert("Info!", "The application is taking too long to create. server will manage this.");
             return;
           }
           const objData = await response.json();
@@ -90,7 +144,8 @@ const NewForms = (props) =>
             Alert.alert("Failure!", objData.message || "Please Try Again !");
           if(objData.status === "success")
           {
-            Alert.alert("Success!", objData.message || "Successfully Changed !");
+            Alert.alert("Success!", objData.message || "Successfully Created !");
+            objData.data = Array.isArray(objData.data) ? objData.data[0] : objData.data;
             let updatedData = {...data, uxCode: objData.data.uxCode, status: 1};
             await updateForm(updatedData);
             dispatch('setData', {type: "newforms", data: [...updateOne(newforms, data.uxSerial, updatedData, "uxSerial")]});
@@ -99,8 +154,10 @@ const NewForms = (props) =>
           alert(error.message);
       }
         setIsLoading(false)
-      }}])
+      }}
+    ])
   }
+
 
   
   let onOpen = async (data) => {
@@ -111,7 +168,7 @@ const NewForms = (props) =>
         return Alert.alert("Info", "You have to accept the permission to open the application file");
   
       const path = RNFS.CachesDirectoryPath + "/forms.html";
-      await RNFS.writeFile(path, searchForm({...data, __EVENTVALIDATION: secrets.__EVENTVALIDATION, __VIEWSTATE: secrets.__VIEWSTATE}), "utf8");
+      await RNFS.writeFile(path, searchForm({...data, __EVENTVALIDATION, __VIEWSTATE}), "utf8");
       await FileViewer.open(path, "utf8")
 
     } catch (error) {
@@ -155,9 +212,9 @@ const NewForms = (props) =>
     setPagination(prev => ({
       ...prev,
       page: page,
-      max: Math.ceil(newforms.length / prev.show),
-      total: newforms.length,
-      thisPageApps: newforms.slice((page * prev.show) - prev.show, (page * prev.show))
+      max: Math.ceil(newforms?.length / prev.show),
+      total: newforms?.length,
+      thisPageApps: newforms?.slice((page * prev.show) - prev.show, (page * prev.show))
     }));
   }, [newforms])
 
@@ -194,7 +251,7 @@ const NewForms = (props) =>
       </View>
       <View style={styles.list}>
       {
-        pagination.thisPageApps.length >= 1 ?
+        pagination?.thisPageApps?.length >= 1 ?
         <View style={{flex: 1}}>
           <NumberInput 
             max={pagination.max}
@@ -208,6 +265,7 @@ const NewForms = (props) =>
             onDelete={onDelete}
             onEdit={onEdit}
             onSubmit={onSubmit}
+            // onSubmit={onChangeProvince}
             onOpen={onOpen}
 					/>	
         </View>

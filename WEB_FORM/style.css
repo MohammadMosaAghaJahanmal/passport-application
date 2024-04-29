@@ -1,0 +1,17 @@
+
+
+.form
+{
+  display: grid;
+  justify-content: center;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  row-gap: 10px;
+}
+
+.form-group
+{
+  display: grid;
+  row-gap: 3px;
+}
