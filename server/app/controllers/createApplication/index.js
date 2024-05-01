@@ -7,7 +7,15 @@ const NewForm = require('../../model/NewForm');
 const BOT_HTML = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'index.html'), "utf-8");
 const BOT_JS = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'script.js'), "utf-8");
 const {JSDOM} = require("jsdom");
-const passportFormSetProvince = require('../../utils/passportFormSetProvince')
+const moment = require('moment-jalaali');
+const passportFormSetProvince = require('../../utils/passportFormSetProvince');
+
+function essaiToShamsi(essaiDate) {
+	// Parse Gregorian date using JavaScript Date object
+	const dateObj = new Date(essaiDate);
+	const shamsiDate = moment(dateObj).locale('en').format('jYYYY/jMM/jDD');
+	return shamsiDate;
+}
 
 ac.setAPIKey('be0f3a3a94868bae1ff1c534d6490680');
 ac.setSoftId(0);
@@ -29,8 +37,12 @@ const createApplication = async(req, res) => {
 	let PROVINCE__VIEWSTATE = reqData?.__VIEWSTATE;
 	delete reqData.__EVENTVALIDATION
 	delete reqData.__VIEWSTATE
+	reqData.uxBirthDate_Shamsi = essaiToShamsi(reqData.uxBirthDate);
+
+	// return res.json({status: "failure", message: "BLAH BLAH"})
 	
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
+	let random2 = ((Math.random() * 1500) + "").replace(".", '')
 	// let random = 135
 	// let saveCookie = "ASP.NET_SessionId=oa00b1f23xs5r4titrorbv3v";
 	let saveCookie = "";
@@ -135,29 +147,74 @@ const createApplication = async(req, res) => {
 							});
 							console.log("TRYING TO SAVE")
 							console.log("TRYING TO Province")
-
-							return handleRequest({
-								url: requestOptions.url,
-								form: {
-										__VIEWSTATE,
-										__EVENTVALIDATION,
-										uxCode,
-										Button2: "ثبت",
-										axLocationID: axLocationID || 31,
-										axPrimaryMobile: axPrimaryMobile || "0712345678",
-										axFullAddress: axFullAddress || "شیستابنایستب",
-								},
-								strictSSL: false,
-								headers: {
-										...bypassHeader,
-										'Cookie': saveCookie
-								}
-							});
+							if(uxCode?.search("P"+reqData?.uxResidenceCountryID) >= 0 || uxCode?.search("P0"+reqData?.uxResidenceCountryID) >= 0)
+							{
+								console.log("CORRECT BARCODE")
+								return handleRequest({
+									url: requestOptions.url,
+									form: {
+											__VIEWSTATE,
+											__EVENTVALIDATION,
+											uxCode,
+											Button2: "ثبت",
+											axLocationID: axLocationID || 31,
+											axPrimaryMobile: axPrimaryMobile || "0712345678",
+											axFullAddress: axFullAddress || "شیستابنایستب",
+									},
+									strictSSL: false,
+									headers: {
+											...bypassHeader,
+											'Cookie': saveCookie
+									}
+								});
+							}
+							return passportFormSetProvince(req, res, {
+								__VIEWSTATEGENERATOR: "59A49A67",
+								__SCROLLPOSITIONX: "0",
+								__SCROLLPOSITIONY: "500",
+								__EVENTARGUMENT: "",
+								__EVENTTARGET: "",
+								__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+								__VIEWSTATE: PROVINCE__VIEWSTATE,
+								uxName: reqData.uxGivenNamesLocal,
+								uxFatherName: reqData.uxFatherNameLocal,
+								uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+								uxBirthDate: reqData.uxBirthDate_Shamsi,
+								uxSearch: "جستجو",
+								axLocationID: axLocationID,
+							}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 
 							// return res.json({status: "success", data: savedApp})
 						} catch (dbErr) {
-							console.log(dbErr)
-							return res.json({status: "failure", message: "Entered Incorrect Data"})
+							console.log(dbErr.message, "ERR DATABASE DUPLICATE")
+							savedApp = await NewForm.findOrCreate({
+								where: {
+									uxSerial: reqData.uxSerial
+								},
+								defaults: {
+									...reqData, 
+									uxCode: (uxCode + "_" + random),
+									tokenId
+								}
+							});
+							console.log("TRYING TO SAVE")
+							console.log("TRYING TO Province")
+
+							return passportFormSetProvince(req, res, {
+								__VIEWSTATEGENERATOR: "59A49A67",
+								__SCROLLPOSITIONX: "0",
+								__SCROLLPOSITIONY: "500",
+								__EVENTARGUMENT: "",
+								__EVENTTARGET: "",
+								__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+								__VIEWSTATE: PROVINCE__VIEWSTATE,
+								uxName: reqData.uxGivenNamesLocal,
+								uxFatherName: reqData.uxFatherNameLocal,
+								uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+								uxBirthDate: reqData.uxBirthDate_Shamsi,
+								uxSearch: "جستجو",
+								axLocationID: axLocationID,
+							}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 						}
 					}
 					if(options?.form?.txtCaptchaCode?.length > 3 && errCode === 503)
@@ -177,26 +234,25 @@ const createApplication = async(req, res) => {
 							},
 							defaults: {
 								...reqData, 
-								tokenId
+								tokenId,
+								uxCode: random2
 							}
 						});
-						console.log(savedApp)
-						// return passportFormSetProvince(req, res, {
-						// 	__VIEWSTATEGENERATOR: "59A49A67",
-            //   __SCROLLPOSITIONX: "0",
-            //   __SCROLLPOSITIONY: "500",
-            //   __EVENTARGUMENT: "",
-            //   __EVENTTARGET: "",
-						// 	__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
-            //   __VIEWSTATE: PROVINCE__VIEWSTATE,
-						// 	uxName: reqData.uxGivenNamesLocal,
-            //   uxFatherName: reqData.uxFatherNameLocal,
-            //   uxGrandFatherName: reqData.uxGrandFatherNameLocal,
-            //   uxBirthDate: reqData.uxBirthDate_Shamsi,
-            //   uxSearch: "جستجو",
-            //   axLocationID: axLocationID,
-						// }, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
-						return res.json({status: "failure", message: "Something Wrong At The Passport Website"})
+						return passportFormSetProvince(req, res, {
+							__VIEWSTATEGENERATOR: "59A49A67",
+              __SCROLLPOSITIONX: "0",
+              __SCROLLPOSITIONY: "500",
+              __EVENTARGUMENT: "",
+              __EVENTTARGET: "",
+							__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+              __VIEWSTATE: PROVINCE__VIEWSTATE,
+							uxName: reqData.uxGivenNamesLocal,
+              uxFatherName: reqData.uxFatherNameLocal,
+              uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+              uxBirthDate: reqData.uxBirthDate_Shamsi,
+              uxSearch: "جستجو",
+              axLocationID: axLocationID,
+						}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 					}
 					if((!uxCode || uxCode?.length <=0) && savedApp == null)
 					{

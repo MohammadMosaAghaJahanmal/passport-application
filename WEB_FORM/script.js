@@ -47,8 +47,8 @@ const initFieldsState = ({axLocationID, uxBirthLocationID, uxResidenceCountryID}
   uxFatherName:generateRandomString(8, "en"),
   uxGrandFatherNameLocal:generateRandomString(8, "ps"),
   uxGrandFatherName:generateRandomString(8, "en"),
-  uxBirthDate_Shamsi:"1380/01/01",
-  uxBirthDate:"2001-03-21",
+  // uxBirthDate_Shamsi:"1380/01/01",
+  uxBirthDate:`199${generateRandomString(1, "num")}-${(Number.parseInt(generateRandomString(1, "num"))) + 1}-${Number.parseInt(generateRandomString(1, "num")) + 1}`,
   uxProfessionID:"22",
   _Profession:"22",
   uxBirthLocationID:uxBirthLocationID || "31",
@@ -145,7 +145,7 @@ submit.addEventListener('click', (e) => {
 validate.addEventListener("click", loadKeys)
 async function loadKeys(e) {
   try {
-    const response = await fetch('https://passport.moi.gov.af/BarcodeSearch/');
+    const response = await fetch('https://passport.moi.gov.af/search/default.aspx');
     const text = await response.text();
     const HTML_ELM = createELM("html");
     HTML_ELM.insertAdjacentHTML("afterbegin", text);

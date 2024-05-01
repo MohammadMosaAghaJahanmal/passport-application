@@ -130,8 +130,8 @@ router.post('/barcode', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: axPrimaryMobile || "071234567",
-                            axFullAddress: axFullAddress || "address"
+                            axPrimaryMobile: (axPrimaryMobile+"0") || "071234567",
+                            axFullAddress: (axFullAddress+"0") || "address"
                         },
                         strictSSL: false,
                         headers: {
@@ -161,6 +161,7 @@ router.post('/barcode', async (req, res) => {
 router.post('/search', async (req, res) => {
     let reqData = req.body;
     console.log(reqData)
+    let uxCode = null;
     let uxSerial = reqData.uxSerial;
     delete reqData.uxSerial;
     let axLocationID = reqData.axLocationID || '31';
@@ -210,12 +211,17 @@ router.post('/search', async (req, res) => {
                     if(completeRequest <= 1 && retryCount < 5)
                     {
                         const reqHeaders = {...requestOptions, headers: {...requestOptions.headers, 'Cookie': saveCookie}};
+                        console.log(reqHeaders)
                         console.log("REREQUESTING", reqHeaders)
                             handleRequest(reqHeaders, (retryCount + 1));
                         return
                     }
+                    if(uxCode === null && $('#uxCode')?.attr("value")?.length > 3)
+                        uxCode = $('#uxCode')?.attr("value");
+                    if(uxCode != null && uxCode?.length > 3)
+                        isExist.uxCode = uxCode;
                     isExist.isChanged = true;
-                    isExist.axLocationID = req.axLocationID;
+                    isExist.axLocationID = axLocationID;
                     isExist.save()
                     .then(res => res)
                     .catch(err => console.log(err))
@@ -279,8 +285,8 @@ router.post('/search', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: axPrimaryMobile || "0712345678",
-                            axFullAddress: axFullAddress || "address"
+                            axPrimaryMobile: (axPrimaryMobile+"0") || "0712345678",
+                            axFullAddress: (axFullAddress+"0") || "address"
                         },
                         strictSSL: false,
                         headers: {

@@ -61,7 +61,7 @@ const NewForms = (props) =>
       {text: "NO", style: "cancel", },
       {text: "OKAY", style:"destructive", onPress: async () => {
         try {
-          setIsLoading(true)
+          // setIsLoading(true)
           const response = await fetch(await serverPath('/easyform/search'),
           {
             method: "POST",
@@ -116,7 +116,7 @@ const NewForms = (props) =>
         try {
           delete data.id
           delete data.status
-          setIsLoading(true)
+          // setIsLoading(true)
           const baseUrl = await serverPath('/easyform/application');
   
           const response = await fetch(baseUrl, {
@@ -162,7 +162,7 @@ const NewForms = (props) =>
   
   let onOpen = async (data) => {
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       let isGranted = await requestStoragePermission();
       if (!isGranted)
         return Alert.alert("Info", "You have to accept the permission to open the application file");

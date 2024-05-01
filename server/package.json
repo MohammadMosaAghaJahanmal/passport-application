@@ -25,6 +25,7 @@
     "joi": "^17.7.0",
     "jsdom": "^24.0.0",
     "jsonwebtoken": "^9.0.0",
+    "moment-jalaali": "^0.10.0",
     "morgan": "~1.9.1",
     "mysql2": "^3.6.2",
     "nodemon": "^2.0.22",

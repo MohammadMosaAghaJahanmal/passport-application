@@ -2,6 +2,9 @@ const request = require("request");
 const cheerio = require('cheerio');
 
 const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) => {
+	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
+
+    console.log("TRING TO SAVE FROM SEARCH FORM", saveCookie, reqData)
   let axLocationID = reqData.axLocationID || '31';
   const bypassHeaders = { 
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
@@ -27,7 +30,7 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
       headers: bypassHeaders
   };
 
-
+  let uxCode = null;
   if(!isExist)
       return res.json({status: "failure", message: "This Application is not registered at the system"});
   if(isExist?.isChanged && isExist?.axLocationID == axLocationID)
@@ -39,15 +42,23 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
               if (response.statusCode === 200) {
 
                   const $ = cheerio.load(body);
+                  if(uxCode === null && $('#uxCode')?.attr("value")?.length > 3)
+					uxCode = $('#uxCode')?.attr("value");
+                    
                   let isBarCodeCorrect = $('#uxMessage[style]')
                   if (isBarCodeCorrect.length)
                   return res.json({ status: "failure", message: "Your Credintials or date is incorrect" });
 
                   isExist.isChanged = true;
-                  isExist.axLocationID = req.axLocationID;
+                  if(uxCode != null && uxCode?.length > 3)
+                    isExist.uxCode = uxCode;
+                  isExist.axLocationID = axLocationID;
                   isExist.save()
                   .then(res => res)
-                  .catch(err => console.log(err))
+                  .catch(err => {
+                    console.log(err)
+                    isExist.uxCode = uxCode + "_" + random;
+                    })
                   .finally(() => {
                       res.json({ status: "success" });
                   })
@@ -59,10 +70,7 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                   handleRedirect({
                       url: "https://passport.moi.gov.af" + response.headers.location,
                       strictSSL: false,
-                      headers: {
-                          'Cookie': saveCookie,
-                          ...bypassHeaders,
-                      }
+                      headers: bypassHeaders
                   });
               } else if (response.statusCode === 503 && retryCount < 5) { // Retry only a certain number of times
                   // Resubmit the form
@@ -111,10 +119,7 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                           axFullAddress: axFullAddress || "address"
                       },
                       strictSSL: false,
-                      headers: {
-                          ...bypassHeaders,
-                          'Cookie': saveCookie
-                      }
+                      headers: bypassHeaders
                   });
               } else if (response.statusCode === 503 && retryCount < 5) { // If 503 Service Unavailable error occurs during redirection
                   // Resubmit the redirection request
