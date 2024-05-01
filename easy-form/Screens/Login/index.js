@@ -8,8 +8,6 @@ import Shape from '../../Components/Shape';
 import {getToken, setToken as storeToken} from '../../LocalStorage'
 import { AuthContext } from '../../authContext';
 import serverPath from '../../utils/serverPath';
-import nativeFetchApi from '../../utils/nativeFetchApi';
-
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = (props) =>
@@ -18,7 +16,7 @@ const Login = (props) =>
   const {setAuth, deviceInfo, } = useContext(AuthContext)
   const [phone, setPhone] = useState("");
   const [token, setToken] = useState("");
-  // const [path, setPath] = useState("http://:8080");
+  // const [path, setPath] = useState("http://192.168.43:8080");
   const [isLoading, setisLoading] = useState(false);
   const submitHandler = async () =>
   {
@@ -37,6 +35,7 @@ const Login = (props) =>
       try {
       setisLoading(true);
       const loginPath = await serverPath('/auth/easyform/login')
+      // let authResp = await fetch(`${path}/v1/auth/easyform/login`,{
       let authResp = await fetch(loginPath,{
         method: "POST", 
         headers: {"Content-Type": "Application/JSON"}, 

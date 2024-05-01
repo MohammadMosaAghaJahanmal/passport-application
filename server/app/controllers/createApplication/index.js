@@ -75,9 +75,10 @@ const createApplication = async(req, res) => {
 
 	let axPrimaryMobile = reqData.axPrimaryMobile
 	let axLocationID = reqData.axLocationID
-	// delete reqData.axFullAddress
+	let axFullAddress = reqData.axFullAddress
+	delete reqData.axFullAddress
 	delete reqData.axLocationID
-	// delete reqData.axPrimaryMobile
+	delete reqData.axPrimaryMobile
 	// delete reqData.ucaDurationTypeID
 	// delete reqData.ucaPaymentTypeID
 	let try2Time = 1;
@@ -144,7 +145,7 @@ const createApplication = async(req, res) => {
 										Button2: "ثبت",
 										axLocationID: axLocationID || 31,
 										axPrimaryMobile: axPrimaryMobile || "0712345678",
-										axFullAddress: reqData.axFullAddress || "شیستابنایستب",
+										axFullAddress: axFullAddress || "شیستابنایستب",
 								},
 								strictSSL: false,
 								headers: {
@@ -179,21 +180,22 @@ const createApplication = async(req, res) => {
 								tokenId
 							}
 						});
-						passportFormSetProvince(req, res, {
-							__VIEWSTATEGENERATOR: "59A49A67",
-              __SCROLLPOSITIONX: "0",
-              __SCROLLPOSITIONY: "500",
-              __EVENTARGUMENT: "",
-              __EVENTTARGET: "",
-							__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
-              __VIEWSTATE: PROVINCE__VIEWSTATE,
-							uxName: reqData.uxGivenNamesLocal,
-              uxFatherName: reqData.uxFatherNameLocal,
-              uxGrandFatherName: reqData.uxGrandFatherNameLocal,
-              uxBirthDate: reqData.uxBirthDate_Shamsi,
-              uxSearch: "جستجو",
-              axLocationID: axLocationID,
-						}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
+						console.log(savedApp)
+						// return passportFormSetProvince(req, res, {
+						// 	__VIEWSTATEGENERATOR: "59A49A67",
+            //   __SCROLLPOSITIONX: "0",
+            //   __SCROLLPOSITIONY: "500",
+            //   __EVENTARGUMENT: "",
+            //   __EVENTTARGET: "",
+						// 	__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+            //   __VIEWSTATE: PROVINCE__VIEWSTATE,
+						// 	uxName: reqData.uxGivenNamesLocal,
+            //   uxFatherName: reqData.uxFatherNameLocal,
+            //   uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+            //   uxBirthDate: reqData.uxBirthDate_Shamsi,
+            //   uxSearch: "جستجو",
+            //   axLocationID: axLocationID,
+						// }, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 						return res.json({status: "failure", message: "Something Wrong At The Passport Website"})
 					}
 					if((!uxCode || uxCode?.length <=0) && savedApp == null)

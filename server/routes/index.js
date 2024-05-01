@@ -130,8 +130,8 @@ router.post('/barcode', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: axPrimaryMobile,
-                            axFullAddress: axFullAddress
+                            axPrimaryMobile: axPrimaryMobile || "071234567",
+                            axFullAddress: axFullAddress || "address"
                         },
                         strictSSL: false,
                         headers: {
@@ -279,8 +279,8 @@ router.post('/search', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: axPrimaryMobile,
-                            axFullAddress: axFullAddress
+                            axPrimaryMobile: axPrimaryMobile || "0712345678",
+                            axFullAddress: axFullAddress || "address"
                         },
                         strictSSL: false,
                         headers: {

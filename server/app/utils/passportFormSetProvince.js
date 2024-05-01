@@ -41,7 +41,7 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                   const $ = cheerio.load(body);
                   let isBarCodeCorrect = $('#uxMessage[style]')
                   if (isBarCodeCorrect.length)
-                  return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
+                  return res.json({ status: "failure", message: "Your Credintials or date is incorrect" });
 
                   isExist.isChanged = true;
                   isExist.axLocationID = req.axLocationID;
@@ -107,8 +107,8 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                           __EVENTVALIDATION,
                           Button2: "ثبت",
                           axLocationID: axLocationID,
-                          axPrimaryMobile: axPrimaryMobile,
-                          axFullAddress: axFullAddress
+                          axPrimaryMobile: axPrimaryMobile || "0712345678",
+                          axFullAddress: axFullAddress || "address"
                       },
                       strictSSL: false,
                       headers: {

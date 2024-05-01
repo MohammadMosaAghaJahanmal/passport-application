@@ -76,26 +76,29 @@ function submitData(appForms = [], passport) {
 
 
   appForms.forEach((per, index) => {
-    fetch(serverPath('/easyform/application'), {
-      method: 'POST',
-      headers:
-      {
-        "Content-Type": "Application/json",
-        "Authorization": `bearer ${token}`,
-      },
-      body: JSON.stringify({
-        ...per,
-        ...passport
-      }),
-    })
-    .then(res => res.json())
-    .then(res => console.log(res, {
-      uxGivenNamesLocal: per.uxGivenNamesLocal,
-      uxFatherNameLocal: per.uxFatherNameLocal,
-      uxGrandFatherNameLocal: per.uxGrandFatherNameLocal,
-      uxBirthDate_Shamsi: per.uxBirthDate_Shamsi,
-    } ))
-    .catch(err => console.error(err.message))
+    setTimeout(() => {
+      fetch(serverPath('/easyform/application'), {
+        method: 'POST',
+        headers:
+        {
+          "Content-Type": "Application/json",
+          "Authorization": `bearer ${token}`,
+          
+        },
+        body: JSON.stringify({
+          ...per,
+          ...passport
+        }),
+      })
+      .then(res => res.json())
+      .then(res => console.log(res, {
+        uxGivenNamesLocal: per.uxGivenNamesLocal,
+        uxFatherNameLocal: per.uxFatherNameLocal,
+        uxGrandFatherNameLocal: per.uxGrandFatherNameLocal,
+        uxBirthDate_Shamsi: per.uxBirthDate_Shamsi,
+      } ))
+      .catch(err => console.error(err.message))
+    }, 1200);
 
   })
 }
