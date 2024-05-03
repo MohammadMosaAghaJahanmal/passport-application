@@ -1,4 +1,41 @@
 let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOnsidG9rZW5JZCI6M30sImlhdCI6MTcwNzg3OTY1MiwiZXhwIjoxNzk0Mjc5NjUyfQ.PUnDQbmq4Vi4i39XbS90k5xdK03cvu-IS4feEO5Yt3k`;
+let backupData = [];
+const afghanistanProvinces = [
+  { province: "Badakhshan", id: 16 },
+  { province: "Badghis", id: 32 },
+  { province: "Baghlan", id: 10 },
+  { province: "Balkh", id: 27 },
+  { province: "Bamyan", id: 11 },
+  { province: "Daykundi", id: 22 },
+  { province: "Farah", id: 34 },
+  { province: "Faryab", id: 29 },
+  { province: "Ghazni", id: 12 },
+  { province: "Ghor", id: 21 },
+  { province: "Helmand", id: 30 },
+  { province: "Herat", id: 33 },
+  { province: "Jowzjan", id: 28 },
+  { province: "Kabul", id: 2 },
+  { province: "Kandahar", id: 31 },
+  { province: "Kapisa", id: 3 },
+  { province: "Khost", id: 26 },
+  { province: "Kunar", id: 14 },
+  { province: "Kunduz", id: 18 },
+  { province: "Laghman", id: 8 },
+  { province: "Logar", id: 6 },
+  { province: "Nangarhar", id: 7 },
+  { province: "Nimroz", id: 35 },
+  { province: "Nuristan", id: 15 },
+  { province: "Paktia", id: 13 },
+  { province: "Paktika", id: 25 },
+  { province: "Panjshir", id: 9 },
+  { province: "Parwan", id: 4 },
+  { province: "Samangan", id: 19 },
+  { province: "Sar-e Pol", id: 20 },
+  { province: "Takhar", id: 17 },
+  { province: "Urozgan", id: 23 },
+  { province: "Wardak", id: 5 },
+  { province: "Zabul", id: 24 },
+];
 function createELM(tagName) {
   return document.createElement(tagName);
 }
@@ -112,6 +149,68 @@ const uxResidenceCountryID = document.getElementById("uxResidenceCountryID")
 const axLocationID = document.getElementById("axLocationID")
 const submit = document.getElementById("submit")
 const validate = document.getElementById("validate")
+const form2 = document.getElementById("form2");
+const uxName = document.getElementById("uxName");
+const uxFatherName = document.getElementById("uxFatherName");
+const uxGrandFatherName = document.getElementById("uxGrandFatherName");
+const uxBirthDate = document.getElementById("uxBirthDate");
+const uxSearch = document.getElementById("uxSearch");
+const __VIEWSTATE = document.getElementById("__VIEWSTATE");
+const __EVENTVALIDATION = document.getElementById("__EVENTVALIDATION");
+const tbody = document.querySelector("table tbody");
+const nameInput = document.getElementById("uxName");
+const loadData = document.getElementById("loadData");
+
+function submitHandler(name, fatherName, grandFather, date) {
+  uxName.value = name;
+  uxFatherName.value = fatherName;
+  uxGrandFatherName.value = grandFather;
+  uxBirthDate.value = date;
+  uxSearch.click()
+}
+async function changeProvince(name, fatherName, grandFather, date, uxSerial) {
+  try {
+    if(!confirm("Are U Sure To Change The province"))
+      return
+    const response = await fetch(serverPath('/easyform/search'),
+    {
+      method: "POST",
+      headers:
+      {
+        "Content-Type": "Application/json",
+        "Authorization": `bearer ${token}`,
+      },
+      body: JSON.stringify({
+        __VIEWSTATEGENERATOR: "59A49A67",
+        __SCROLLPOSITIONX: "0",
+        __SCROLLPOSITIONY: "500",
+        __EVENTARGUMENT: "",
+        __EVENTTARGET: "",
+        __EVENTVALIDATION: __EVENTVALIDATION.value,
+        __VIEWSTATE: __VIEWSTATE.value,
+        uxName: name,
+        uxFatherName: fatherName,
+        uxGrandFatherName: grandFather,
+        uxBirthDate: date,
+        uxSearch: "جستجو",
+        axLocationID: axLocationID.value,
+        uxSerial: uxSerial,
+      })
+      
+    });
+    if(response.status === 500)
+      alert("Info! " + "The changes is taking too long to submit. server will manage this.");
+    const objData = await response.json()
+    if(objData.status === "failure")
+      alert((objData.message || "Please Try Again !"));
+    if(objData.status === "success")
+    {
+      alert((objData.message || "Successfully Changed !"));
+    }
+  } catch (error) {
+    alert(error.message);
+  }
+}
 
 let allData = [];
 
@@ -156,6 +255,8 @@ async function loadKeys(e) {
     if(!newViewState?.value || !newEventValidation?.value)
       return alert("تېروتنه. د فورمی باوری کولو تڼی بیا کښیکاږی");
 
+    __VIEWSTATE.value = newViewState.value;
+    __EVENTVALIDATION.value = newEventValidation.value;
     alert("په بریالیتوب سره باوری شوه");
     const passport = {
       __VIEWSTATE: newViewState.value,
@@ -164,5 +265,92 @@ async function loadKeys(e) {
     window.localStorage.setItem("passport", JSON.stringify(passport));
   } catch (error) {
     alert("تېروتنه بیاکوښښ وکی " + error.message);
+  }
+}
+
+
+
+loadData.addEventListener("click", async(e) => {
+  try {
+    
+    const response = await fetch(serverPath('/easyform/fulldata'), {
+      method: 'GET',
+      headers:
+      {
+        "Content-Type": "Application/json",
+        "Authorization": `bearer ${token}`,
+        
+      }});
+    const objData = await response.json();
+    if(objData.status === 'success')
+    {
+      loadDataToTable(objData.data, tbody)
+      alert("Successfully Loaded")
+    }
+  } catch (error) {
+   console.log(error) 
+   alert(error.message)
+  }
+
+})
+
+
+function loadDataToTable(data, tbody) {
+  backupData = [];
+  tbody.innerHTML = "";
+  data.forEach((applicant, index) => {
+    // backupData.push(`${afghanistanProvinces.find(per => per.id == applicant.axLocationID)?.province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi},0,${applicant.uxGivenNamesLocal}`)
+    let Province = afghanistanProvinces.find(per => per.id == applicant.axLocationID)?.province;
+    backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi}`)
+    tbody.insertAdjacentHTML("beforeend", 
+        '<tr>' +
+          '<td class="number">' + 
+            '<label for="checkBox">' + (index + 1) + 
+              '<input type="checkbox" id="checkBox">' + 
+            '</label>' +
+          '</td>' +
+          '<td class="app-name">' + applicant.uxGivenNamesLocal + '</td>' +
+          '<td class="app-name">' + applicant.uxFatherNameLocal + '</td>' +
+          '<td class="app-name">' + applicant.uxGrandFatherNameLocal + '</td>' +
+          '<td class="app-name">' + applicant.uxBirthDate_Shamsi + '</td>' +
+          '<td class="app-name">' + applicant.uxCode + '</td>' +
+          '<td class="app-name">' + Province + '</td>' +
+          '<td class="action">' +
+            '<div class="btn-group">' +
+            '<button class="Submit" onclick="changeProvince(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\')">Change</button>' +
+                '<button class="Submit" onclick="submitHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\')">Open</button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>'
+    );
+});
+}
+
+function onbackup() {
+  const textarea = document.createElement('textarea');
+  textarea.value = backupData.join('\n');
+  textarea.style.height = "0";
+  textarea.style.overflow = "hidden";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+}
+
+
+document.onreadystatechange = (e) => {
+  if(document.readyState === "complete")
+  {
+    try {
+      let getKEYS = window.localStorage.getItem("passport");
+      if(getKEYS)
+      {
+        getKEYS = JSON.parse(getKEYS);
+        __VIEWSTATE.value = getKEYS.__VIEWSTATE
+        __EVENTVALIDATION.value = getKEYS.__EVENTVALIDATION
+      }
+    } catch (error) {
+      console.log(error.message)
+    }
   }
 }

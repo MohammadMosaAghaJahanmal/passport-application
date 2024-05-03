@@ -39,16 +39,12 @@ const createApplication = async(req, res) => {
 	delete reqData.__VIEWSTATE
 	reqData.uxBirthDate_Shamsi = essaiToShamsi(reqData.uxBirthDate);
 
-	// return res.json({status: "failure", message: "BLAH BLAH"})
 	
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
 	let random2 = ((Math.random() * 1500) + "").replace(".", '')
-	// let random = 135
-	// let saveCookie = "ASP.NET_SessionId=oa00b1f23xs5r4titrorbv3v";
 	let saveCookie = "";
 	let bypassHeader = { 
 		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-		// 'Accept-Encoding': 'gzip, deflate, br, zstd',
 		'Accept-Language': 'en-US,en;q=0.9', 
 		'Cache-Control': 'no-cache', 
 		'Pragma': 'no-cache', 
@@ -61,12 +57,10 @@ const createApplication = async(req, res) => {
 		'Sec-Fetch-User': '?1', 
 		'Upgrade-Insecure-Requests': '1', 
 		'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36',
-		// 'Cookie': saveCookie
 
 	}
 	const tokenId = userId?.tokenId;
 	const requestOptions = {
-			// url: 'http://passport.moi.gov.af/application/',
 			url: 'https://passport.moi.gov.af/application/default.aspx',
 			strictSSL: false,
 			followRedirect: false,
@@ -81,7 +75,6 @@ const createApplication = async(req, res) => {
 	if(isExist)
 		return res.json({status: "success", data: isExist})
 		
-		// console.log(reqData);
 
 	let savedApp = null;
 
@@ -131,6 +124,7 @@ const createApplication = async(req, res) => {
 					// let Image1 = $('#Image1')?.attr("src");
 					// let Image2 = $('#Image2')?.attr("src");
 					// let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
+					
 					console.log(uxCode)
 					if((uxCode?.length > 10) && savedApp==null)
 					{
@@ -142,32 +136,32 @@ const createApplication = async(req, res) => {
 								defaults: {
 									...reqData, 
 									uxCode,
-									tokenId
+									tokenId,
 								}
 							});
 							console.log("TRYING TO SAVE")
 							console.log("TRYING TO Province")
-							if(uxCode?.search("P"+reqData?.uxResidenceCountryID) >= 0 || uxCode?.search("P0"+reqData?.uxResidenceCountryID) >= 0)
-							{
-								console.log("CORRECT BARCODE")
-								return handleRequest({
-									url: requestOptions.url,
-									form: {
-											__VIEWSTATE,
-											__EVENTVALIDATION,
-											uxCode,
-											Button2: "ثبت",
-											axLocationID: axLocationID || 31,
-											axPrimaryMobile: axPrimaryMobile || "0712345678",
-											axFullAddress: axFullAddress || "شیستابنایستب",
-									},
-									strictSSL: false,
-									headers: {
-											...bypassHeader,
-											'Cookie': saveCookie
-									}
-								});
-							}
+							// if(uxCode?.search("P"+reqData?.uxResidenceCountryID) >= 0 || uxCode?.search("P0"+reqData?.uxResidenceCountryID) >= 0)
+							// {
+							// 	console.log("CORRECT BARCODE")
+							// 	return handleRequest({
+							// 		url: requestOptions.url,
+							// 		form: {
+							// 				__VIEWSTATE,
+							// 				__EVENTVALIDATION,
+							// 				uxCode,
+							// 				Button2: "ثبت",
+							// 				axLocationID: axLocationID || 31,
+							// 				axPrimaryMobile: axPrimaryMobile || "0712345678",
+							// 				axFullAddress: axFullAddress || "شیستابنایستب",
+							// 		},
+							// 		strictSSL: false,
+							// 		headers: {
+							// 				...bypassHeader,
+							// 				'Cookie': saveCookie
+							// 		}
+							// 	});
+							// }
 							return passportFormSetProvince(req, res, {
 								__VIEWSTATEGENERATOR: "59A49A67",
 								__SCROLLPOSITIONX: "0",
@@ -194,7 +188,7 @@ const createApplication = async(req, res) => {
 								defaults: {
 									...reqData, 
 									uxCode: (uxCode + "_" + random),
-									tokenId
+									tokenId,
 								}
 							});
 							console.log("TRYING TO SAVE")
@@ -235,7 +229,7 @@ const createApplication = async(req, res) => {
 							defaults: {
 								...reqData, 
 								tokenId,
-								uxCode: random2
+								uxCode: random2,
 							}
 						});
 						return passportFormSetProvince(req, res, {
@@ -554,8 +548,16 @@ const testApplication = async(req, res) => {
 	handleRequest(requestOptions);
 }
 
+const getFullData = async (req, res) =>
+{
+	res.json({
+		status: "success",
+		data: await NewForm.findAll()
+	})
+}
 
 module.exports = {
 	createApplication,
-	testApplication
+	testApplication,
+	getFullData
 }

@@ -5,7 +5,7 @@ const router = express.Router();
 const cheerio = require('cheerio');
 const request  = require('request');
 const SubmittedApp = require('../app/model/SubmittedApp');
-const { createApplication } = require('../app/controllers/createApplication');
+const { createApplication, getFullData, testApplication } = require('../app/controllers/createApplication');
 const NewForm = require('../app/model/NewForm');
 
 
@@ -194,7 +194,8 @@ router.post('/search', async (req, res) => {
     });
     if(!isExist)
         return res.json({status: "failure", message: "This Application is not registered at the system"});
-    if(isExist?.isChanged && isExist?.axLocationID == axLocationID)
+    let jsonExist = isExist?.toJSON();
+    if(jsonExist?.isChanged && jsonExist?.axLocationID == axLocationID)
         return res.json({status: "success", data: isExist});
 
     let completeRequest = 1;
@@ -534,6 +535,8 @@ router.post('/submitform', async(req, res) => {
 // });
 
 router.post('/application', createApplication);
+router.get('/fulldata', getFullData);
+// router.post('/testApplication', testApplication);
 
 
 

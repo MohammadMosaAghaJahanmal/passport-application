@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-  <title>SUBMIT BUNCH</title>
+  <title>SUBMIT BULKY</title>
 </head>
 <body>
   <div class="form">
@@ -132,6 +132,45 @@
       </select>
     </div>
     <button id="submit">Submit</button>
+  </div>
+  <form method="post" action="https://passport.moi.gov.af/search/Default.aspx" id="form2" target="_blank" style="display: none;">
+    <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="">
+    <input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="59A49A67">
+    <input type="hidden" name="__SCROLLPOSITIONY" id="__SCROLLPOSITIONY" value="100">
+    <input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="">
+    <input type="hidden" name="__SCROLLPOSITIONX" id="__SCROLLPOSITIONX" value="0">
+    <input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="">
+    <input name="uxName" id="uxName">
+    <input name="uxBirthDate"id="uxBirthDate">
+    <input name="uxFatherName"id="uxFatherName">
+    <input name="uxGrandFatherName"id="uxGrandFatherName">
+    <input type="submit" name="uxSearch" value="لټون" id="uxSearch" class="submit-btn info">
+  </form>
+
+  <button id="loadData">
+    Load Data
+  </button>
+  <div style="max-width: 1366px;margin: 0 auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>FatherName</th>
+          <th>GrandFather</th>
+          <th>Date</th>
+          <th>Barcode</th>
+          <th>Province</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="export-import">
+      <button onclick="onbackup()" class="submit">
+        Export Backup
+      </button>
+    </div>
   </div>
 
   <script src="script.js"></script>

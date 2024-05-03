@@ -23,6 +23,7 @@ NewForm.init(
     _Profession: {type: DataTypes.STRING, allowNull: true},
     uxBirthLocationID: {type: DataTypes.STRING, allowNull: true},
     uxResidenceCountryID: {type: DataTypes.STRING, allowNull: true},
+    axLocationID: {type: DataTypes.STRING, allowNull: true},
     uxMaritalStatusID: {type: DataTypes.STRING, allowNull: true},
     uxNIDTypeID: {type: DataTypes.STRING, allowNull: true},
     uxSerial: {type: DataTypes.STRING, allowNull: true},

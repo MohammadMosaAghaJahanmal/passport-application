@@ -58,9 +58,12 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                   .catch(err => {
                     console.log(err)
                     isExist.uxCode = uxCode + "_" + random;
+                    isExist.axLocationID = axLocationID;
+                    isExist.isChanged = true;
+                    return isExist.save()
                     })
                   .finally(() => {
-                      res.json({ status: "success" });
+                      res.json({ status: "success", data:isExist });
                   })
                       // res.json({ status: "success" });
               } else if (response.statusCode === 301 || response.statusCode === 302) {

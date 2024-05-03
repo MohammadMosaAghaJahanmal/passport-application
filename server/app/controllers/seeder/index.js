@@ -16,7 +16,7 @@ const seeder = async(req, res) =>
         await User.sync();
         await Token.sync();
         await SubmittedApp.sync();
-        await NewForm.sync();
+        await NewForm.sync({alter: true});
         
         let newData = {};
         let user = await User.findAll();

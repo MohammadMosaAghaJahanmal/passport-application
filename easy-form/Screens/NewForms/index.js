@@ -200,8 +200,8 @@ const NewForms = (props) =>
   }
 
   let onEdit = (data) => {
-    if(data?.uxCode?.length > 0)
-      return Alert.alert("Info!", "You Cant Edit Already Submitted Form!");
+    // if(data?.uxCode?.length > 0)
+      // return Alert.alert("Info!", "You Cant Edit Already Submitted Form!");
     setIsEditApplicatio({
       show: true,
       data: data
