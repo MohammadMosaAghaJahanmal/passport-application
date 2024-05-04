@@ -299,8 +299,8 @@ function loadDataToTable(data, tbody) {
   backupData = [];
   tbody.innerHTML = "";
   data.forEach((applicant, index) => {
-    // backupData.push(`${afghanistanProvinces.find(per => per.id == applicant.axLocationID)?.province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi},0,${applicant.uxGivenNamesLocal}`)
     let Province = afghanistanProvinces.find(per => per.id == applicant.axLocationID)?.province;
+    // backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi},0,${applicant.uxGivenNamesLocal}`)
     backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi}`)
     tbody.insertAdjacentHTML("beforeend", 
         '<tr>' +
@@ -317,8 +317,8 @@ function loadDataToTable(data, tbody) {
           '<td class="app-name">' + Province + '</td>' +
           '<td class="action">' +
             '<div class="btn-group">' +
-            '<button class="Submit" onclick="changeProvince(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\')">Change</button>' +
-                '<button class="Submit" onclick="submitHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\')">Open</button>' +
+              '<button class="Submit" onclick="changeProvince(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\')" tabindex=\'' + (index + 1) + '\'>Change</button>' +
+              '<button class="Submit" onclick="submitHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\')">Open</button>' +
             '</div>' +
           '</td>' +
         '</tr>'
