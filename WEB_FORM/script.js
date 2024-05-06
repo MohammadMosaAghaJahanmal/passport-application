@@ -39,17 +39,10 @@ const afghanistanProvinces = [
 function createELM(tagName) {
   return document.createElement(tagName);
 }
-// let counter  = 0;
 let serverPath = (path) => {
-  // counter++;
-  // let compare = (counter % ports.length);
-  // console.log(counter, compare)
-  // let balancerPort = ports[(compare === 0) ? (ports.length - 1) : (compare - 1) ];
-  // console.log(balancerPort)
-  // return (new URL(`http://192.168.43.87:${balancerPort}/v1${path}`).href)
   return (new URL(`http://localhost:8080/v1${path}`).href)
-  // return (new URL(`${await AsyncStorage.getItem("SERVER_PATH")}/v1${path}`).href)
 }; 
+
 function generateRandomString(length, type) {
   let characters = '';
 
@@ -305,8 +298,8 @@ function loadDataToTable(data, tbody) {
     tbody.insertAdjacentHTML("beforeend", 
         '<tr>' +
           '<td class="number">' + 
-            '<label for="checkBox">' + (index + 1) + 
-              '<input type="checkbox" id="checkBox">' + 
+            '<label>' + (index + 1) + 
+              '<input type="checkbox">' + 
             '</label>' +
           '</td>' +
           '<td class="app-name">' + applicant.uxGivenNamesLocal + '</td>' +

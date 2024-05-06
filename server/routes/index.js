@@ -12,6 +12,7 @@ const NewForm = require('../app/model/NewForm');
 
 router.post('/barcode', async (req, res) => {
     let reqData = req.body;
+    console.log(reqData)
     let { userId } = req.auth;
     let name = reqData.name;
     delete reqData.name;

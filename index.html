@@ -116,6 +116,9 @@
 			}
 		</style>
 		<script>
+			let serverPath = (path) => {
+				return (new URL(`http://localhost:8080/v1${path}`).href)
+			}; 
 			const DB_NAME = "PAS_INFO";
 			let database = localStorage.getItem("PAS_INFO");
 			try {
@@ -151,8 +154,13 @@
 				return true
 			}
 
-			function insertBulky(data) {
-				const cloneDB = [...database, ...data];
+			function insertBulky(data = []) {
+				const cloneDB = [...database];
+				data.forEach(perNewApp => {
+					let findNDX = cloneDB.findIndex(perOldApp => (perOldApp.barCode == perNewApp.barCode && perOldApp.date == perNewApp.date))
+					if(findNDX < 0)
+						cloneDB.push(perNewApp);
+				})
 				saveDatabase(cloneDB);
 			}
 
@@ -170,6 +178,32 @@
 			function createELM(tagName) {
 				return document.createElement(tagName);
 			}
+			const readCSV = (content = "") =>
+			{
+				const lines = content.split('\n');
+				const headers = lines[0].split(',');
+				if(headers.length !== 5)
+					return alert("Failure Incorrect Formatted File!")
+				const objects = [];
+
+				for (let i = 1; i < lines.length; i++) {
+					const values = lines[i].split(',');
+					if(values.length !== 5)
+						continue;
+					const obj = {};
+					for (let j = 0; j < headers.length; j++) {
+						if(headers[j]?.trim() === "checked")
+						{
+							obj[headers[j].trim()] = Number.parseInt(values[j])
+							continue;
+						}
+						obj[headers[j]?.trim()] = values[j]?.trim();
+					}
+					objects.push(obj);
+				}
+				return objects;
+			}
+
 		</script>
 	</head>
 
@@ -204,6 +238,10 @@
 				<label id="Label70" class="aspLabel" for="uxName">نوم</label>
 				<input type="text" value="" id="uxName" placeholder="نوم">
 			</div>
+			<div class="form-group">
+				<label  class="aspLabel" for="uxProvince">ولایت په انګلیش</label>
+				<input type="text" value="" id="uxProvince" placeholder="ولایت په انګلیش" style="text-transform: capitalize;">
+			</div>
 			<button onclick="saveFormData(this)" class="submit">فورمه سبت کړی</button>
 		</div>
 
@@ -212,6 +250,9 @@
 				<thead>
 					<tr>
 						<th>کړنې</th>
+						<th>ولایت</th>
+						<th>عمر</th>
+						<th>کوډ</th>
 						<th>نوم</th>
 						<th>تغیر</th>
 						<th>#</th>
@@ -231,17 +272,53 @@
 		</div>
 		<script>
 			console.clear();
+			let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOnsidG9rZW5JZCI6M30sImlhdCI6MTcwNzg3OTY1MiwiZXhwIjoxNzk0Mjc5NjUyfQ.PUnDQbmq4Vi4i39XbS90k5xdK03cvu-IS4feEO5Yt3k`;
+			const afghanistanProvinces = [
+				{ province: "Badakhshan", id: 16 },
+				{ province: "Badghis", id: 32 },
+				{ province: "Baghlan", id: 10 },
+				{ province: "Balkh", id: 27 },
+				{ province: "Bamyan", id: 11 },
+				{ province: "Daykundi", id: 22 },
+				{ province: "Farah", id: 34 },
+				{ province: "Faryab", id: 29 },
+				{ province: "Ghazni", id: 12 },
+				{ province: "Ghor", id: 21 },
+				{ province: "Helmand", id: 30 },
+				{ province: "Herat", id: 33 },
+				{ province: "Jowzjan", id: 28 },
+				{ province: "Kabul", id: 2 },
+				{ province: "Kandahar", id: 31 },
+				{ province: "Kapisa", id: 3 },
+				{ province: "Khost", id: 26 },
+				{ province: "Kunar", id: 14 },
+				{ province: "Kunduz", id: 18 },
+				{ province: "Laghman", id: 8 },
+				{ province: "Logar", id: 6 },
+				{ province: "Nangarhar", id: 7 },
+				{ province: "Nimroz", id: 35 },
+				{ province: "Nuristan", id: 15 },
+				{ province: "Paktia", id: 13 },
+				{ province: "Paktika", id: 25 },
+				{ province: "Panjshir", id: 9 },
+				{ province: "Parwan", id: 4 },
+				{ province: "Samangan", id: 19 },
+				{ province: "Sar-e Pol", id: 20 },
+				{ province: "Takhar", id: 17 },
+				{ province: "Urozgan", id: 23 },
+				{ province: "Wardak", id: 5 },
+				{ province: "Zabul", id: 24 },
+			];
 			const form2 = document.getElementById("form2");
 			const uxCode = document.getElementById("uxCode");
 			const uxBirthDate = document.getElementById("uxBirthDate");
 			const uxSearch = document.getElementById("uxSearch");
+			const uxProvince = document.getElementById("uxProvince");
 			const __VIEWSTATE = document.getElementById("__VIEWSTATE");
 			const __EVENTVALIDATION = document.getElementById("__EVENTVALIDATION");
 			const tbody = document.querySelector("table tbody");
 			const nameInput = document.getElementById("uxName");
 			function submitHandler(code, date) {
-				hiddenRequest({barCode: code, date: date})
-				return
 				uxCode.value = code;
 				uxBirthDate.value = date;
 				uxSearch.click()
@@ -302,8 +379,12 @@
 													'<button class="danger" onclick="deleteHandler(this, \'' + applicant.barCode + '\')">ړنګول</button>' +
 													'<button class="info" onclick="editHandler(this, \'' + applicant.barCode + '\')">سمون</button>' +
 													'<button class="Submit" onclick="submitHandler(\'' + applicant.barCode + '\', \'' + applicant.date + '\')">سپارل</button>' +
+													'<button class="change" onclick="changeHandler(\'' + applicant.barCode + '\', \'' + applicant.date + '\', \'' + applicant.province + '\', \'' + applicant.name + '\', this)" tabindex=\'' + (index + 1) + '\'>بدلول</button>' +
 											'</div>' +
 									'</td>' +
+									'<td class="app-name">' + applicant.province + '</td>' +
+									'<td class="app-name">' + applicant.date + '</td>' +
+									'<td class="app-name">' + applicant.barCode + '</td>' +
 									'<td class="app-name">' + applicant.name + '</td>' +
 									'<td class="checked">' +
 											'<input type="checkbox" ' + (applicant.checked ? 'checked' : '') + ' onchange="checkHandler(this, \'' + applicant.barCode + '\')" >' +
@@ -318,13 +399,15 @@
 				const barCodeText = uxCode?.value?.trim()
 				const barCodeDate = uxBirthDate?.value?.trim();
 				const barCodeName = nameInput?.value?.trim();
-				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی"))
+				const provinceName = uxProvince?.value?.trim();
+				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی") || validateText(provinceName, "د ولایت"))
 					return;
 
 				let isUpdated = createOne({
 					name: barCodeName,
 					barCode: barCodeText,
 					date: barCodeDate,
+					province: provinceName,
 					checked: false,
 				});
 				if(!isUpdated)
@@ -333,6 +416,7 @@
 					name: barCodeName,
 					barCode: barCodeText,
 					date: barCodeDate,
+					province: provinceName,
 					checked: false,
 					number: (database.length + 1)
 				});
@@ -341,6 +425,7 @@
 				uxCode.value = ""
 				uxBirthDate.value = ""
 				nameInput.value = ""
+				uxProvince.value = ""
 			}
 
 			function validateText(text, name) {
@@ -365,13 +450,16 @@
 				const getApplicant = fineOne(BAR_CODE);
 				const barCodeName = prompt("نوی نوم", getApplicant.name);
 				const barCodeText = prompt("نوی بارکوډ", getApplicant.barCode);
-				const barCodeDate = prompt("نوی نیټه", getApplicant.date);;
-				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی"))
+				const barCodeDate = prompt("نوی نیټه", getApplicant.date);
+				const provinceName = prompt("نوی ولایت", getApplicant.province);
+
+				if(validateText(barCodeName, "د نامه") || validateText(barCodeText, "د بارکوډ") || validateText(barCodeDate, "د نیټی") || validateText(provinceName, "د ولایت"))
 					return;
 				const newData = {
 					name: barCodeName?.trim() || getApplicant.name,
 					barCode: barCodeText?.trim() || getApplicant.barCode,
 					date: barCodeDate?.trim() || getApplicant.date,
+					province: provinceName?.trim() || getApplicant.province,
 					checked: getApplicant.checked
 				}
 				updateOne(BAR_CODE, newData);
@@ -388,7 +476,8 @@
 
 			function onbackup() {
 				const textarea = document.createElement('textarea');
-				textarea.value = JSON.stringify(database);
+				let createBackupData = database.map(perApp => `${afghanistanProvinces.find((per) => per.province.toLowerCase() == perApp.province?.toLowerCase())?.province},${perApp.barCode},${perApp.date},${perApp.checked ? 1 : 0},${perApp.name}`);
+				textarea.value = createBackupData.join("\n");
 				textarea.style.height = "0";
 				textarea.style.overflow = "hidden";
 				document.body.appendChild(textarea);
@@ -403,7 +492,8 @@
 				if(dataText.length <= 0)
 					return alert("د معلوماتو داخلولو ته اړتیا ده");
 				try {
-					const objData = JSON.parse(dataText);
+					const objData = readCSV(dataText);
+					console.log(objData)
 					if(!(Array.isArray(objData)))
 					{
 						alert("مهرباني وکړئ د معلوماتو سم ډول دننه کړئ");
@@ -431,15 +521,20 @@
 					TR = findParentRow(elm);
 					NumberField = TR.querySelector(".number")?.cloneNode(true);
 				}
+
 				TR.innerHTML = "";
 				TR.insertAdjacentHTML('beforeend', 
 					'<td class="action">' +
-							'<div class="btn-group">' +
-									'<button class="danger" onclick="deleteHandler(this, \'' + data.barCode + '\')">ړنګول</button>' +
-									'<button class="info" onclick="editHandler(this, \'' + data.barCode + '\')">سمون</button>' +
-									'<button class="Submit" onclick="submitHandler(\'' + data.barCode + '\', \'' + data.date + '\')">سپارل</button>' +
-							'</div>' +
+						'<div class="btn-group">' +
+								'<button class="danger" onclick="deleteHandler(this, \'' + data.barCode + '\')">ړنګول</button>' +
+								'<button class="info" onclick="editHandler(this, \'' + data.barCode + '\')">سمون</button>' +
+								'<button class="Submit" onclick="submitHandler(\'' + data.barCode + '\', \'' + data.date + '\')">سپارل</button>' +
+								'<button class="change" onclick="changeHandler(\'' + data.barCode + '\', \'' + data.date + '\', \'' + data.province + '\', \'' + data.name + '\', this)" tabindex=\'' + NumberField.innerText + '\'>بدلول</button>' +
+						'</div>' +
 					'</td>' +
+					'<td class="app-name">' + data.province + '</td>' +
+					'<td class="app-name">' + data.date + '</td>' +
+					'<td class="app-name">' + data.barCode + '</td>' +
 					'<td class="app-name">' + data.name + '</td>' +
 					'<td class="checked">' +
 							'<input type="checkbox" ' + (data.checked ? 'checked' : '') + ' onchange="checkHandler(this, \'' + data.barCode + '\')" >' +
@@ -460,34 +555,52 @@
 
 
 
-			async function hiddenRequest  ({barCode, date})
+			async function changeHandler  (barCode, date, province, name, elm)
 			{
-					const baseUrl = 'https://passport.moi.gov.af/BarcodeSearch/';
+				const isConfirm = confirm("ایا تاسو ډاډه یاست چې دا غوښتنلیک و کړئ");
+				if(!isConfirm)
+					return
+				const baseUrl = serverPath('/easyform/barcode');
 					let getKEYS = window.localStorage.getItem("passport");
 					getKEYS = JSON.parse(getKEYS);
-					
-					
-					const formData = new FormData();
-					formData.append("__VIEWSTATEGENERATOR", "768A9483");
-					formData.append("__EVENTVALIDATION", getKEYS?.__EVENTVALIDATION);
-					formData.append("__SCROLLPOSITIONX", "0");
-					formData.append("__SCROLLPOSITIONY", "0");
-					formData.append("__EVENTARGUMENT", "");
-					formData.append("__EVENTTARGET", "");
-					formData.append("__VIEWSTATE", getKEYS?.__VIEWSTATE);
-					formData.append("uxBirthDate", date);
-					formData.append("uxSearch", "جستجو");
-					formData.append("uxCode", barCode);
-					const response = await fetch(baseUrl, {
+					try {
+						
+						const response = await fetch(baseUrl, {
 							method: 'POST',
-							body: formData
-					});
-					if(response.status === 500)
+							headers: {
+								"Content-Type": "Application/JSON",
+								"Authorization": `bearer ${token}`,
+							},
+							body: JSON.stringify({
+								"name": name,
+								"__VIEWSTATEGENERATOR": "768A9483",
+								"__EVENTVALIDATION": getKEYS?.__EVENTVALIDATION,
+								"__SCROLLPOSITIONX": "0",
+								"__SCROLLPOSITIONY": "0",
+								"__EVENTARGUMENT": "",
+								"__EVENTTARGET": "",
+								"__VIEWSTATE": getKEYS?.__VIEWSTATE,
+								"uxBirthDate": date,
+								"uxSearch": "جستجو",
+								"uxCode": barCode,
+								"axLocationID": afghanistanProvinces.find((per) => per.province.toLowerCase() == province?.toLowerCase())?.id,
+							})
+						});
+						if(response.status === 500)
 						return alert("VALIDATE FORM");
-
-					const text = await response.text();
 					
-					console.log(text)
+					const objData = await response.json();
+					if(objData.status === "success")
+					{
+						checkHandler({checked: true}, barCode)
+						findParentRow(elm).querySelector("input[type=checkbox]").checked = true;
+						console.log(objData, barCode, province, name)
+					}
+					else
+						console.log(objData, barCode, province, name)
+				} catch (error) {
+					console.log(error)
+				}
 					
 			}
 		</script>
