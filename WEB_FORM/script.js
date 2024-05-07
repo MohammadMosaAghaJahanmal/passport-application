@@ -207,7 +207,7 @@ async function changeProvince(name, fatherName, grandFather, date, uxSerial) {
 
 let allData = [];
 
-submit.addEventListener('click', (e) => {
+const submitListener = async(e) => {
 
   const passport = JSON.parse(localStorage.getItem("passport"));
   if(!passport || !passport?.__VIEWSTATE )
@@ -232,10 +232,12 @@ submit.addEventListener('click', (e) => {
 
   console.log(allData)
   submitData(allData, passport)
-})
+}
+submit.addEventListener('click', submitListener)
 
 validate.addEventListener("click", loadKeys)
 async function loadKeys(e) {
+  let isConfirmed = confirm("Do you want submit apps too!");
   try {
     const response = await fetch('https://passport.moi.gov.af/search/default.aspx');
     const text = await response.text();
@@ -256,6 +258,8 @@ async function loadKeys(e) {
       __EVENTVALIDATION: newEventValidation.value
     };
     window.localStorage.setItem("passport", JSON.stringify(passport));
+    if(isConfirmed)
+      await submitListener()
   } catch (error) {
     alert("تېروتنه بیاکوښښ وکی " + error.message);
   }
@@ -293,8 +297,8 @@ function loadDataToTable(data, tbody) {
   tbody.innerHTML = "";
   data.forEach((applicant, index) => {
     let Province = afghanistanProvinces.find(per => per.id == applicant.axLocationID)?.province;
-    // backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi},0,${applicant.uxGivenNamesLocal}`)
-    backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi}`)
+    backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi},0,${applicant.uxGivenNamesLocal}`)
+    // backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi}`)
     tbody.insertAdjacentHTML("beforeend", 
         '<tr>' +
           '<td class="number">' + 
