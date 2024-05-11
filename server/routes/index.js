@@ -119,11 +119,14 @@ router.post('/barcode', async (req, res) => {
             if (!error) {
                 if (response.statusCode === 200) {
                     const $ = cheerio.load(body);
-
                     let __VIEWSTATE = $("#__VIEWSTATE").val();
                     let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
                     let axPrimaryMobile = $("#axPrimaryMobile").val();
                     let axFullAddress = $("#axFullAddress").val();
+                    let apo = $("#apo").val();
+                    if(apo || apo?.length > 0)
+                        return res.json({ status: "failure", message: "Please check the barcode from your browser" })
+
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/',
                         form: {

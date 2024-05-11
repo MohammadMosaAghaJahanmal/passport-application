@@ -270,7 +270,7 @@ async function loadKeys(e) {
 loadData.addEventListener("click", async(e) => {
   try {
     
-    const response = await fetch(serverPath('/easyform/fulldata'), {
+    const response = await fetch(serverPath('/easyform/fulldata?province=9'), {
       method: 'GET',
       headers:
       {
@@ -301,11 +301,7 @@ function loadDataToTable(data, tbody) {
     // backupData.push(`${Province},${applicant.uxCode},${applicant.uxBirthDate_Shamsi}`)
     tbody.insertAdjacentHTML("beforeend", 
         '<tr>' +
-          '<td class="number">' + 
-            '<label>' + (index + 1) + 
-              '<input type="checkbox">' + 
-            '</label>' +
-          '</td>' +
+
           '<td class="app-name">' + applicant.uxGivenNamesLocal + '</td>' +
           '<td class="app-name">' + applicant.uxFatherNameLocal + '</td>' +
           '<td class="app-name">' + applicant.uxGrandFatherNameLocal + '</td>' +
@@ -317,6 +313,11 @@ function loadDataToTable(data, tbody) {
               '<button class="Submit" onclick="changeProvince(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\')" tabindex=\'' + (index + 1) + '\'>Change</button>' +
               '<button class="Submit" onclick="submitHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\')">Open</button>' +
             '</div>' +
+          '</td>' +
+          '<td class="number">' + 
+            '<label>' + (index + 1) + 
+              '<input type="checkbox">' + 
+            '</label>' +
           '</td>' +
         '</tr>'
     );

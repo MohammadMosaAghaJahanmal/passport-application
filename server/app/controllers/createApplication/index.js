@@ -550,9 +550,14 @@ const testApplication = async(req, res) => {
 
 const getFullData = async (req, res) =>
 {
+	const {province} = req.query;
+	const query = {};
+	if(province)
+		query.axLocationID = province;
+
 	res.json({
 		status: "success",
-		data: await NewForm.findAll()
+		data: await NewForm.findAll({where: query})
 	})
 }
 
