@@ -118,6 +118,8 @@
 		<script>
 			let serverPath = (path) => {
 				return (new URL(`http://localhost:8080/v1${path}`).href)
+				// return (new URL(`http://easyform.jahanmal.xyz/v1${path}`).href)
+				
 			}; 
 			const DB_NAME = "PAS_INFO";
 			let database = localStorage.getItem("PAS_INFO");

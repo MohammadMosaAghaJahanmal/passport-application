@@ -40,7 +40,6 @@ NewForm.init(
     uxCode: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
     },
     tokenId: { 
         type: DataTypes.INTEGER, 

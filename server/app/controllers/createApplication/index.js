@@ -124,24 +124,19 @@ const createApplication = async(req, res) => {
 					// let Image1 = $('#Image1')?.attr("src");
 					// let Image2 = $('#Image2')?.attr("src");
 					// let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
-					
 					console.log(uxCode)
+					
 					if((uxCode?.length > 10) && savedApp==null)
 					{
 						try {
-							savedApp = await NewForm.findOrCreate({
-								where: {
-									uxSerial: reqData.uxSerial
-								},
-								defaults: {
-									...reqData, 
-									uxCode,
-									tokenId,
-								}
+							savedApp = await NewForm.create({
+								...reqData, 
+								uxCode,
+								tokenId,
 							});
 							console.log("TRYING TO SAVE")
-							console.log("TRYING TO Province")
-							// if(uxCode?.search("P"+reqData?.uxResidenceCountryID) >= 0 || uxCode?.search("P0"+reqData?.uxResidenceCountryID) >= 0)
+							console.log("TRYING TO Province", uxCode)
+							// if((uxCode?.search("P"+reqData?.uxResidenceCountryID) >= 0 || uxCode?.search("P0"+reqData?.uxResidenceCountryID) >= 0) && uxCode.search(reqData.uxBirthDate.replace(/[\/-]\d+/ig, '') >= 0))
 							// {
 							// 	console.log("CORRECT BARCODE")
 							// 	return handleRequest({
@@ -181,15 +176,10 @@ const createApplication = async(req, res) => {
 							// return res.json({status: "success", data: savedApp})
 						} catch (dbErr) {
 							console.log(dbErr.message, "ERR DATABASE DUPLICATE")
-							savedApp = await NewForm.findOrCreate({
-								where: {
-									uxSerial: reqData.uxSerial
-								},
-								defaults: {
-									...reqData, 
-									uxCode: (uxCode + "_" + random),
-									tokenId,
-								}
+							savedApp = await NewForm.create({
+								...reqData, 
+								uxCode: (uxCode + "_" + random),
+								tokenId,
 							});
 							console.log("TRYING TO SAVE")
 							console.log("TRYING TO Province")
@@ -222,16 +212,12 @@ const createApplication = async(req, res) => {
 						return res.json({status: "failure", message: "Something went Wrong 11"})
 					}else if(options?.form?.txtCaptchaCode?.length > 3 && errCode !== 503 && !uxCode && try2Time > 2)
 					{
-						savedApp = await NewForm.findOrCreate({
-							where: {
-								uxSerial: reqData.uxSerial
-							},
-							defaults: {
-								...reqData, 
-								tokenId,
-								uxCode: random2,
-							}
+						savedApp = await NewForm.create({
+							...reqData, 
+							tokenId,
+							uxCode: random2,
 						});
+						console.log(random2, "RANDOM FROM TEST")
 						return passportFormSetProvince(req, res, {
 							__VIEWSTATEGENERATOR: "59A49A67",
               __SCROLLPOSITIONX: "0",
@@ -425,7 +411,7 @@ const createApplication = async(req, res) => {
 					res.json({
 							status: "failure", message: "No Applicaiton is allowed to submit"
 					})
-				} else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
+				} else if (response.statusCode === 503 && retryCount < 4) { // Retry only a certain number of times
 					// Resubmit the form
 					console.log({...options, headers: {} },"REQ AGAIN")
 
@@ -480,7 +466,7 @@ const testApplication = async(req, res) => {
 													'Cookie': response?.headers['set-cookie']
 											}
 									});
-							} else if (response.statusCode === 503 && retryCount < 3) { // Retry only a certain number of times
+							} else if (response.statusCode === 503 && retryCount < 4) { // Retry only a certain number of times
 									// Resubmit the form
 									console.log(options, "REQUESTING")
 									handleRequest(options, retryCount + 1);
@@ -529,7 +515,7 @@ const testApplication = async(req, res) => {
 								'Cookie': saveCookie
 						}
 					});
-				} else if (response.statusCode === 503 && retryCount < 3) { 
+				} else if (response.statusCode === 503 && retryCount < 4) { 
 					
 					console.log(options, "REDIRECTING")
 					handleRedirect(options, retryCount + 1);
@@ -550,10 +536,12 @@ const testApplication = async(req, res) => {
 
 const getFullData = async (req, res) =>
 {
-	const {province} = req.query;
+	const {province,uxResidenceCountryID} = req.query;
 	const query = {};
 	if(province)
 		query.axLocationID = province;
+	if(uxResidenceCountryID)
+		query.uxResidenceCountryID = uxResidenceCountryID;
 
 	res.json({
 		status: "success",
