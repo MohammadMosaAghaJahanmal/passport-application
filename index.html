@@ -381,6 +381,7 @@
 													'<button class="danger" onclick="deleteHandler(this, \'' + applicant.barCode + '\')">ړنګول</button>' +
 													'<button class="info" onclick="editHandler(this, \'' + applicant.barCode + '\')">سمون</button>' +
 													'<button class="Submit" onclick="submitHandler(\'' + applicant.barCode + '\', \'' + applicant.date + '\')">سپارل</button>' +
+													'<button class="change" onclick="changeHandler(\'' + applicant.barCode + '\', \'' + applicant.date + '\', \'' + applicant.province + '\', \'' + applicant.name + '\', this, \'' + "openbarcode" + '\')" >ښکاره کول</button>' +
 													'<button class="change" onclick="changeHandler(\'' + applicant.barCode + '\', \'' + applicant.date + '\', \'' + applicant.province + '\', \'' + applicant.name + '\', this)" tabindex=\'' + (index + 1) + '\'>بدلول</button>' +
 											'</div>' +
 									'</td>' +
@@ -476,16 +477,29 @@
 				});
 			}
 
-			function onbackup() {
-				const textarea = document.createElement('textarea');
-				let createBackupData = database.map(perApp => `${afghanistanProvinces.find((per) => per.province.toLowerCase() == perApp.province?.toLowerCase())?.province},${perApp.barCode},${perApp.date},${perApp.checked ? 1 : 0},${perApp.name}`);
-				textarea.value = createBackupData.join("\n");
-				textarea.style.height = "0";
-				textarea.style.overflow = "hidden";
-				document.body.appendChild(textarea);
-				textarea.select();
-				document.execCommand('copy');
-				document.body.removeChild(textarea);
+			async function onbackup(data) {
+					let newData = data;
+					if (!data) newData = database;
+					const textarea = document.createElement('textarea');
+					let createBackupData = newData.map(perApp => data ?
+							`${perApp.barCode},${perApp.date},${perApp.name}`
+							:
+							`${afghanistanProvinces.find(per => per.province.toLowerCase() === perApp.province?.toLowerCase())?.province},${perApp.barCode},${perApp.date},${perApp?.checked ? 1 : 0},${perApp.name}`
+					);
+					textarea.value = createBackupData.join("\n");
+					textarea.style.height = "0";
+					textarea.style.overflow = "hidden";
+					document.body.focus();
+					document.body.appendChild(textarea);
+					textarea.select();
+					try {
+						// alert('Backup data copied to clipboard successfully!');
+							await navigator.clipboard.writeText(textarea.value);
+					} catch (err) {
+							alert('Failed to copy backup data: ' + err);
+					} finally {
+							document.body.removeChild(textarea);
+					}
 			}
 
 			function importBackup() {
@@ -531,6 +545,7 @@
 								'<button class="danger" onclick="deleteHandler(this, \'' + data.barCode + '\')">ړنګول</button>' +
 								'<button class="info" onclick="editHandler(this, \'' + data.barCode + '\')">سمون</button>' +
 								'<button class="Submit" onclick="submitHandler(\'' + data.barCode + '\', \'' + data.date + '\')">سپارل</button>' +
+								'<button class="change" onclick="changeHandler(\'' + data.barCode + '\', \'' + data.date + '\', \'' + data.province + '\', \'' + data.name + '\', this, \'' + "openbarcode" + '\')" >ښکاره کول</button>' +
 								'<button class="change" onclick="changeHandler(\'' + data.barCode + '\', \'' + data.date + '\', \'' + data.province + '\', \'' + data.name + '\', this)" tabindex=\'' + NumberField.innerText + '\'>بدلول</button>' +
 						'</div>' +
 					'</td>' +
@@ -555,14 +570,15 @@
 
 
 
+			let backupData = [];
 
 
-			async function changeHandler  (barCode, date, province, name, elm)
+			async function changeHandler  (barCode, date, province, name, elm, type = 'barcode')
 			{
 				const isConfirm = confirm("ایا تاسو ډاډه یاست چې دا غوښتنلیک و کړئ");
 				if(!isConfirm)
 					return
-				const baseUrl = serverPath('/easyform/barcode');
+				const baseUrl = serverPath(`/easyform/${type}`);
 					let getKEYS = window.localStorage.getItem("passport");
 					getKEYS = JSON.parse(getKEYS);
 					try {
@@ -592,11 +608,20 @@
 						return alert("VALIDATE FORM");
 					
 					const objData = await response.json();
-					if(objData.status === "success")
+					if(objData.status === "success" && type == 'barcode')
 					{
 						checkHandler({checked: true}, barCode)
 						findParentRow(elm).querySelector("input[type=checkbox]").checked = true;
 						console.log(objData, barCode, province, name)
+					}
+					else if(objData.status === "success" && type != 'barcode')
+					{
+								let findExist = backupData.findIndex(perAp => perAp?.barCode == objData?.data?.barCode)
+								if(findExist >= 0)
+									return
+								backupData.push(objData.data)
+								console.log(backupData.length)
+								await onbackup(backupData)
 					}
 					else
 						console.log(objData, barCode, province, name)

@@ -5,7 +5,7 @@ const router = express.Router();
 const cheerio = require('cheerio');
 const request  = require('request');
 const SubmittedApp = require('../app/model/SubmittedApp');
-const { createApplication, getFullData, testApplication } = require('../app/controllers/createApplication');
+const { createApplication, getFullData, testApplication, openBarCode } = require('../app/controllers/createApplication');
 const NewForm = require('../app/model/NewForm');
 
 
@@ -540,6 +540,7 @@ router.post('/submitform', async(req, res) => {
 
 router.post('/application', createApplication);
 router.get('/fulldata', getFullData);
+router.post('/openbarcode', openBarCode);
 // router.post('/testApplication', testApplication);
 
 

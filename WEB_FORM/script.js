@@ -1,5 +1,6 @@
 let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOnsidG9rZW5JZCI6M30sImlhdCI6MTcwNzg3OTY1MiwiZXhwIjoxNzk0Mjc5NjUyfQ.PUnDQbmq4Vi4i39XbS90k5xdK03cvu-IS4feEO5Yt3k`;
 let backupData = [];
+let newBackup = [];
 const afghanistanProvinces = [
   { province: "Badakhshan", id: 16 },
   { province: "Badghis", id: 32 },
@@ -162,11 +163,11 @@ function submitHandler(name, fatherName, grandFather, date) {
   uxBirthDate.value = date;
   uxSearch.click()
 }
-async function changeProvince(name, fatherName, grandFather, date, uxSerial) {
+async function changeHandler(name, fatherName, grandFather, date, uxSerial, type = 'search') {
   try {
     if(!confirm("Are U Sure To Change The province"))
       return
-    const response = await fetch(serverPath('/easyform/search'),
+    const response = await fetch(serverPath(`/easyform/${type}`),
     {
       method: "POST",
       headers:
@@ -195,12 +196,21 @@ async function changeProvince(name, fatherName, grandFather, date, uxSerial) {
     if(response.status === 500)
       alert("Info! " + "The changes is taking too long to submit. server will manage this.");
     const objData = await response.json()
+    console.log(objData)
     if(objData.status === "failure")
       alert((objData.message || "Please Try Again !"));
-    if(objData.status === "success")
+    if(objData.status === "success" && type == 'search')
     {
       alert((objData.message || "Successfully Changed !"));
     }
+    if(objData.status === "success" && type != 'search')
+      {
+        let findExist = newBackup.findIndex(perAp => perAp?.barCode == objData?.data?.barCode)
+        if(findExist < 0)
+          newBackup.push(objData.data);
+        console.log(newBackup.length);
+        await onbackup(newBackup)
+      }
   } catch (error) {
     alert(error.message);
   }
@@ -271,7 +281,8 @@ async function loadKeys(e) {
 loadData.addEventListener("click", async(e) => {
   try {
     
-    const response = await fetch(serverPath('/easyform/fulldata?uxResidenceCountryID=31'), {
+    // const response = await fetch(serverPath(`/easyform/fulldata?uxResidenceCountryID=${axLocationID.value.trim()}`), {
+    const response = await fetch(serverPath(`/easyform/fulldata?province=${axLocationID.value.trim()}`), {
       method: 'GET',
       headers:
       {
@@ -311,7 +322,8 @@ function loadDataToTable(data, tbody) {
           '<td class="app-name">' + Province + '</td>' +
           '<td class="action">' +
             '<div class="btn-group">' +
-              '<button class="Submit" onclick="changeProvince(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\')" tabindex=\'' + (index + 1) + '\'>Change</button>' +
+            '<button class="Submit" onclick="changeHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\', \'' + 'openbarcode' + '\')" tabindex=\'' + (index + 30000) + '\'>Get Data</button>' +
+              '<button class="Submit" onclick="changeHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\')" tabindex=\'' + (index + 1) + '\'>Change</button>' +
               '<button class="Submit" onclick="submitHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\')">Open</button>' +
             '</div>' +
           '</td>' +
@@ -325,15 +337,28 @@ function loadDataToTable(data, tbody) {
 });
 }
 
-function onbackup() {
+
+async function onbackup(data) {
+  let newData = data
+  if (!data) newData = backupData;
   const textarea = document.createElement('textarea');
-  textarea.value = backupData.join('\n');
+  let createBackupData = data ? newData.map(perApp =>
+      `${perApp.barCode},${perApp.date},${perApp.name}`
+  ) : backupData ;
+  textarea.value = createBackupData.join("\n");
   textarea.style.height = "0";
   textarea.style.overflow = "hidden";
+  document.body.focus();
   document.body.appendChild(textarea);
   textarea.select();
-  document.execCommand('copy');
-  document.body.removeChild(textarea);
+  try {
+    // alert('Backup data copied to clipboard successfully!');
+      await navigator.clipboard.writeText(textarea.value);
+  } catch (err) {
+      alert('Failed to copy backup data: ' + err);
+  } finally {
+      document.body.removeChild(textarea);
+  }
 }
 
 
