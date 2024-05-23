@@ -50,7 +50,7 @@ router.post('/barcode', async (req, res) => {
         }
     });
     if(isExist)
-        return res.json({status: "success"});
+        return res.json({status: "success", data: isExist});
 
     const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
@@ -81,6 +81,7 @@ router.post('/barcode', async (req, res) => {
                     })
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     saveCookie = response?.headers['set-cookie'];
+                    console.log("BARCODE REDIRECTING TO")
                     handleRedirect({
                         url: "https://passport.moi.gov.af" + response.headers.location,
                         strictSSL: false,
@@ -126,6 +127,7 @@ router.post('/barcode', async (req, res) => {
                     let apo = $("#apo").val();
                     if(apo || apo?.length > 0)
                         return res.json({ status: "failure", message: "Please check the barcode from your browser" })
+                    console.log("BARCODE IS SUBMITTING");
 
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/',

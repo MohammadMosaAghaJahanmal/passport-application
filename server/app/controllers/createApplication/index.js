@@ -218,7 +218,6 @@ const createApplication = async(req, res) => {
 							tokenId,
 							uxCode: random2,
 						});
-						console.log(random2, "RANDOM FROM TEST")
 						return passportFormSetProvince(req, res, {
 							__VIEWSTATEGENERATOR: "59A49A67",
               __SCROLLPOSITIONX: "0",

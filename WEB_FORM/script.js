@@ -1,5 +1,6 @@
 let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOnsidG9rZW5JZCI6M30sImlhdCI6MTcwNzg3OTY1MiwiZXhwIjoxNzk0Mjc5NjUyfQ.PUnDQbmq4Vi4i39XbS90k5xdK03cvu-IS4feEO5Yt3k`;
 let backupData = [];
+let allDataForInfo = [];
 let newBackup = [];
 const afghanistanProvinces = [
   { province: "Badakhshan", id: 16 },
@@ -143,6 +144,7 @@ const uxBirthLocationID = document.getElementById("uxBirthLocationID")
 const uxResidenceCountryID = document.getElementById("uxResidenceCountryID")
 const axLocationID = document.getElementById("axLocationID")
 const submit = document.getElementById("submit")
+const clipboardBtn = document.getElementById("clipboard")
 const validate = document.getElementById("validate")
 const form2 = document.getElementById("form2");
 const uxName = document.getElementById("uxName");
@@ -163,10 +165,11 @@ function submitHandler(name, fatherName, grandFather, date) {
   uxBirthDate.value = date;
   uxSearch.click()
 }
-async function changeHandler(name, fatherName, grandFather, date, uxSerial, type = 'search') {
+async function changeHandler(name, fatherName, grandFather, date, uxSerial, type = 'search', directReq = false) {
   try {
-    if(!confirm("Are U Sure To Change The province"))
-      return
+    if(!directReq)
+      if(!confirm("Are U Sure To Change The province"))
+        return
     const response = await fetch(serverPath(`/easyform/${type}`),
     {
       method: "POST",
@@ -244,7 +247,20 @@ const submitListener = async(e) => {
   console.log(allData)
   submitData(allData, passport)
 }
+
+const onclipboard = async(e) => {
+  allDataForInfo.forEach((per) => {
+    changeHandler(per.uxGivenNamesLocal, per.uxFatherNameLocal, per.uxGrandFatherNameLocal, per.uxBirthDate_Shamsi, per.uxSerial, 'openbarcode', true)
+    .then(res => console.log(res))
+    .catch(err => console.log(err))
+  })
+
+  
+
+}
+
 submit.addEventListener('click', submitListener)
+clipboardBtn.addEventListener('click', onclipboard)
 
 validate.addEventListener("click", loadKeys)
 async function loadKeys(e) {
@@ -281,8 +297,9 @@ async function loadKeys(e) {
 loadData.addEventListener("click", async(e) => {
   try {
     
+    const response = await fetch(serverPath(`/easyform/fulldata`), {
     // const response = await fetch(serverPath(`/easyform/fulldata?uxResidenceCountryID=${axLocationID.value.trim()}`), {
-    const response = await fetch(serverPath(`/easyform/fulldata?province=${axLocationID.value.trim()}`), {
+    // const response = await fetch(serverPath(`/easyform/fulldata?province=${axLocationID.value.trim()}`), {
       method: 'GET',
       headers:
       {
@@ -294,6 +311,7 @@ loadData.addEventListener("click", async(e) => {
     if(objData.status === 'success')
     {
       loadDataToTable(objData.data, tbody)
+      allDataForInfo = objData.data ? objData.data : [];
       alert("Successfully Loaded")
     }
   } catch (error) {

@@ -3,7 +3,8 @@ const cheerio = require('cheerio');
 
 const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) => {
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
-    console.log("TRING TO SAVE FROM SEARCH FORM", saveCookie, reqData)
+    // console.log("TRING TO SAVE FROM SEARCH FORM", saveCookie, reqData)
+    
     // return res.json({status: "success", data: []});
   let axLocationID = reqData.axLocationID || '31';
   const bypassHeaders = { 

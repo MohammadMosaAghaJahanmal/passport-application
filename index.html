@@ -114,6 +114,10 @@
 				max-width: 400px;
 				row-gap: 20px;
 			}
+			.checked
+			{
+				display: flex;
+			}
 		</style>
 		<script>
 			let serverPath = (path) => {
@@ -252,12 +256,11 @@
 				<thead>
 					<tr>
 						<th>کړنې</th>
+						<th>تغیر</th>
 						<th>ولایت</th>
 						<th>عمر</th>
 						<th>کوډ</th>
 						<th>نوم</th>
-						<th>تغیر</th>
-						<th>#</th>
 					</tr>
 				</thead>
 				<tbody></tbody>
@@ -385,14 +388,14 @@
 													'<button class="change" onclick="changeHandler(\'' + applicant.barCode + '\', \'' + applicant.date + '\', \'' + applicant.province + '\', \'' + applicant.name + '\', this)" tabindex=\'' + (index + 1) + '\'>بدلول</button>' +
 											'</div>' +
 									'</td>' +
+									'<td class="checked">' +
+											'<input type="checkbox" id="'+ applicant.barCode +'" ' + (applicant.checked ? 'checked' : '') + ' onchange="checkHandler(this, \'' + applicant.barCode + '\')" >' +
+											'<label class="number" for="'+ applicant.barCode +'">' + (index + 1) + '</label>' +
+									'</td>' +
 									'<td class="app-name">' + applicant.province + '</td>' +
 									'<td class="app-name">' + applicant.date + '</td>' +
 									'<td class="app-name">' + applicant.barCode + '</td>' +
 									'<td class="app-name">' + applicant.name + '</td>' +
-									'<td class="checked">' +
-											'<input type="checkbox" ' + (applicant.checked ? 'checked' : '') + ' onchange="checkHandler(this, \'' + applicant.barCode + '\')" >' +
-									'</td>' +
-									'<td class="number">' + (index + 1) + '</td>' +
 							'</tr>'
 					);
 			});
@@ -529,15 +532,16 @@
 
 			function changeRowData(elm, data) {
 				let TR = document.createElement("tr");
-				let NumberField = document.createElement("td");
+				let NumberField = document.createElement("label");
 				NumberField.innerHTML = data?.number;
 				NumberField.setAttribute("class", 'number');
+				NumberField.setAttribute("for", data.barCode);
 				if(elm)
 				{
 					TR = findParentRow(elm);
 					NumberField = TR.querySelector(".number")?.cloneNode(true);
 				}
-
+				// '<label class="number" for="'+ applicant.barCode +'">' + (index + 1) + '</label>' +
 				TR.innerHTML = "";
 				TR.insertAdjacentHTML('beforeend', 
 					'<td class="action">' +
@@ -549,15 +553,15 @@
 								'<button class="change" onclick="changeHandler(\'' + data.barCode + '\', \'' + data.date + '\', \'' + data.province + '\', \'' + data.name + '\', this)" tabindex=\'' + NumberField.innerText + '\'>بدلول</button>' +
 						'</div>' +
 					'</td>' +
+					'<td class="checked">' +
+							'<input type="checkbox" id="'+ data.barCode +'" ' + (data.checked ? 'checked' : '') + ' onchange="checkHandler(this, \'' + data.barCode + '\')" >' +
+					'</td>' +
 					'<td class="app-name">' + data.province + '</td>' +
 					'<td class="app-name">' + data.date + '</td>' +
 					'<td class="app-name">' + data.barCode + '</td>' +
-					'<td class="app-name">' + data.name + '</td>' +
-					'<td class="checked">' +
-							'<input type="checkbox" ' + (data.checked ? 'checked' : '') + ' onchange="checkHandler(this, \'' + data.barCode + '\')" >' +
-					'</td>'
+					'<td class="app-name">' + data.name + '</td>' 
 				);
-				TR.insertAdjacentElement("beforeend", NumberField);
+				TR.querySelector(".checked").insertAdjacentElement("beforeend", NumberField);
 				return TR
 }
 
