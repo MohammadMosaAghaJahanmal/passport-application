@@ -11,28 +11,31 @@ const NewForm = require('../app/model/NewForm');
 
 
 router.post('/barcode', async (req, res) => {
+
     let reqData = req.body;
     console.log(reqData)
+	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
     let { userId } = req.auth;
     let name = reqData.name;
     delete reqData.name;
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const bypassHeaders = { 
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-        'Accept-Language': 'en-US,en;q=0.9', 
-        'Cache-Control': 'no-cache', 
-        'Pragma': 'no-cache', 
-        'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
-        'Sec-Ch-Ua-Mobile': '?0', 
-        'Sec-Ch-Ua-Platform': '"Windows"', 
-        'Sec-Fetch-Dest': 'document', 
-        'Sec-Fetch-Mode': 'navigate', 
-        'Sec-Fetch-Site': 'same-origin', 
-        'Sec-Fetch-User': '?1', 
-        'Upgrade-Insecure-Requests': '1', 
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+		// 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+		// 'Accept-Language': 'en-US,en;q=0.9', 
+		// 'Cache-Control': 'no-cache', 
+		// 'Pragma': 'no-cache', 
+		// 'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		// 'Sec-Ch-Ua-Mobile': '?1', 
+		// 'Sec-Ch-Ua-Platform': '"Android"', 
+		// 'Sec-Fetch-Dest': 'document', 
+		// 'Sec-Fetch-Mode': 'navigate', 
+		// 'Sec-Fetch-Site': 'none', 
+		// 'Sec-Fetch-User': '?1', 
+		// 'Upgrade-Insecure-Requests': '1', 
+		// 'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
     }
+    
     const requestOptions = {
         url: 'https://passport.moi.gov.af/BarcodeSearch/',
         form: reqData,
@@ -136,8 +139,8 @@ router.post('/barcode', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: (axPrimaryMobile+"0") || "071234567",
-                            axFullAddress: (axFullAddress+"0") || "address"
+                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `07${random}4567`,
+                            axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+"0") : "ادرس"
                         },
                         strictSSL: false,
                         headers: {
@@ -166,6 +169,7 @@ router.post('/barcode', async (req, res) => {
 
 router.post('/search', async (req, res) => {
     let reqData = req.body;
+	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
     console.log(reqData)
     let uxCode = null;
     let uxSerial = reqData.uxSerial;
@@ -176,7 +180,7 @@ router.post('/search', async (req, res) => {
         'Accept-Language': 'en-US,en;q=0.9', 
         'Cache-Control': 'no-cache', 
         'Pragma': 'no-cache', 
-        'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
+        'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
         'Sec-Ch-Ua-Mobile': '?0', 
         'Sec-Ch-Ua-Platform': '"Windows"', 
         'Sec-Fetch-Dest': 'document', 
@@ -184,7 +188,7 @@ router.post('/search', async (req, res) => {
         'Sec-Fetch-Site': 'same-origin', 
         'Sec-Fetch-User': '?1', 
         'Upgrade-Insecure-Requests': '1', 
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Safari/${random}`,
     }
     const requestOptions = {
         url: 'https://passport.moi.gov.af/search/default.aspx',
@@ -292,8 +296,8 @@ router.post('/search', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: (axPrimaryMobile+"0") || "0712345678",
-                            axFullAddress: (axFullAddress+"0") || "address"
+                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `07${random}4567`,
+                            axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+"0") : "ادرس"
                         },
                         strictSSL: false,
                         headers: {
@@ -322,12 +326,14 @@ router.post('/search', async (req, res) => {
 
 router.post('/provinces', (req, res) => {
     console.log("PROVINCES")
+	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
+
     let bypassHeader = { 
 		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
 		'Accept-Language': 'en-US,en;q=0.9', 
 		'Cache-Control': 'no-cache', 
 		'Pragma': 'no-cache', 
-		'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
+		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
 		'Sec-Ch-Ua-Mobile': '?1', 
 		'Sec-Ch-Ua-Platform': '"Android"', 
 		'Sec-Fetch-Dest': 'document', 
@@ -335,7 +341,7 @@ router.post('/provinces', (req, res) => {
 		'Sec-Fetch-Site': 'none', 
 		'Sec-Fetch-User': '?1', 
 		'Upgrade-Insecure-Requests': '1', 
-		'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36',
+		'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 
 	}
     const requestOptions = {
