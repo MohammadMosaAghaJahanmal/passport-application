@@ -8,19 +8,19 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
     // return res.json({status: "success", data: []});
   let axLocationID = reqData.axLocationID || '31';
   const bypassHeaders = { 
-    //   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-    //   'Accept-Language': 'en-US,en;q=0.9', 
-    //   'Cache-Control': 'no-cache', 
-    //   'Pragma': 'no-cache', 
-    //   'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
-    //   'Sec-Ch-Ua-Mobile': '?0', 
-    //   'Sec-Ch-Ua-Platform': '"Windows"', 
-    //   'Sec-Fetch-Dest': 'document', 
-    //   'Sec-Fetch-Mode': 'navigate', 
-    //   'Sec-Fetch-Site': 'same-origin', 
-    //   'Sec-Fetch-User': '?1', 
-    //   'Upgrade-Insecure-Requests': '1', 
-    //   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+      'Accept-Language': 'en-US,en;q=0.9', 
+      'Cache-Control': 'no-cache', 
+      'Pragma': 'no-cache', 
+      'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
+      'Sec-Ch-Ua-Mobile': '?0', 
+      'Sec-Ch-Ua-Platform': '"Windows"', 
+      'Sec-Fetch-Dest': 'document', 
+      'Sec-Fetch-Mode': 'navigate', 
+      'Sec-Fetch-Site': 'same-origin', 
+      'Sec-Fetch-User': '?1', 
+      'Upgrade-Insecure-Requests': '1', 
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
       'Cookie': saveCookie
   }
   const requestOptions = {
@@ -112,6 +112,16 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                   let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
                   let axPrimaryMobile = $("#axPrimaryMobile").val();
                   let axFullAddress = $("#axFullAddress").val();
+                  const option = $("#axLocationID option")
+                  let newProvinces = false;
+                  option.each((index, element) => {
+
+                      const value = $(element).attr('value');
+                      if( value == axLocationID )
+                          newProvinces = true;
+                  });
+                  if(!newProvinces)
+                      return res.json({status: "failure", message: "This Province is not active for change"})
                   handleRequest({
                       url: 'https://passport.moi.gov.af/proceedApplication/',
                       form: {
@@ -119,7 +129,7 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                           __EVENTVALIDATION,
                           Button2: "ثبت",
                           axLocationID: axLocationID,
-                          axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `07${random}4567`,
+                          axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `070${random}4567`,
                           axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+"0") : "ادرس"
                       },
                       strictSSL: false,

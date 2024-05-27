@@ -122,6 +122,15 @@ const createApplication = async(req, res) => {
 					let __EVENTTARGET = $('#__EVENTTARGET')?.attr("value");
 					let __EVENTARGUMENT = $('#__EVENTARGUMENT')?.attr("value");
 					let __LASTFOCUS = $('#__LASTFOCUS')?.attr("value");
+					const option = $("#axLocationID option")
+					let newProvinces = false;
+					option.each((index, element) => {
+
+							const value = $(element).attr('value');
+							if( value == axLocationID )
+									newProvinces = true;
+					});
+
 					// let Image1 = $('#Image1')?.attr("src");
 					// let Image2 = $('#Image2')?.attr("src");
 					// let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
@@ -158,6 +167,8 @@ const createApplication = async(req, res) => {
 							// 		}
 							// 	});
 							// }
+							if(!newProvinces)
+								return res.json({status: "failure", message: "This Province is not active for change"})
 							return passportFormSetProvince(req, res, {
 								__VIEWSTATEGENERATOR: "59A49A67",
 								__SCROLLPOSITIONX: "0",
@@ -184,7 +195,8 @@ const createApplication = async(req, res) => {
 							});
 							console.log("TRYING TO SAVE")
 							console.log("TRYING TO Province")
-
+							if(!newProvinces)
+								return res.json({status: "failure", message: "This Province is not active for change"})
 							return passportFormSetProvince(req, res, {
 								__VIEWSTATEGENERATOR: "59A49A67",
 								__SCROLLPOSITIONX: "0",
@@ -218,6 +230,8 @@ const createApplication = async(req, res) => {
 							tokenId,
 							uxCode: random2,
 						});
+						if(!newProvinces)
+							return res.json({status: "failure", message: "This Province is not active for change"})
 						return passportFormSetProvince(req, res, {
 							__VIEWSTATEGENERATOR: "59A49A67",
               __SCROLLPOSITIONX: "0",
@@ -553,20 +567,21 @@ const getFullData = async (req, res) =>
 const openBarCode =  async (req, res) => {
 	let reqData = req.body;
 	delete reqData.name;
+	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
 	const bypassHeaders = { 
 			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
 			'Accept-Language': 'en-US,en;q=0.9', 
 			'Cache-Control': 'no-cache', 
 			'Pragma': 'no-cache', 
-			'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
-			'Sec-Ch-Ua-Mobile': '?0', 
-			'Sec-Ch-Ua-Platform': '"Windows"', 
+			'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+			'Sec-Ch-Ua-Mobile': '?1', 
+			'Sec-Ch-Ua-Platform': '"Android"', 
 			'Sec-Fetch-Dest': 'document', 
 			'Sec-Fetch-Mode': 'navigate', 
-			'Sec-Fetch-Site': 'same-origin', 
+			'Sec-Fetch-Site': 'none', 
 			'Sec-Fetch-User': '?1', 
 			'Upgrade-Insecure-Requests': '1', 
-			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+			'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 	}
 	const requestOptions = {
 			url: 'https://passport.moi.gov.af/BarcodeSearch/',

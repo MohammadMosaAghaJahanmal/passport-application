@@ -21,19 +21,19 @@ router.post('/barcode', async (req, res) => {
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const bypassHeaders = { 
-		// 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-		// 'Accept-Language': 'en-US,en;q=0.9', 
-		// 'Cache-Control': 'no-cache', 
-		// 'Pragma': 'no-cache', 
-		// 'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
-		// 'Sec-Ch-Ua-Mobile': '?1', 
-		// 'Sec-Ch-Ua-Platform': '"Android"', 
-		// 'Sec-Fetch-Dest': 'document', 
-		// 'Sec-Fetch-Mode': 'navigate', 
-		// 'Sec-Fetch-Site': 'none', 
-		// 'Sec-Fetch-User': '?1', 
-		// 'Upgrade-Insecure-Requests': '1', 
-		// 'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+		'Accept-Language': 'en-US,en;q=0.9', 
+		'Cache-Control': 'no-cache', 
+		'Pragma': 'no-cache', 
+		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		'Sec-Ch-Ua-Mobile': '?1', 
+		'Sec-Ch-Ua-Platform': '"Android"', 
+		'Sec-Fetch-Dest': 'document', 
+		'Sec-Fetch-Mode': 'navigate', 
+		'Sec-Fetch-Site': 'none', 
+		'Sec-Fetch-User': '?1', 
+		'Upgrade-Insecure-Requests': '1', 
+		'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
     }
     
     const requestOptions = {
@@ -84,7 +84,13 @@ router.post('/barcode', async (req, res) => {
                     })
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     saveCookie = response?.headers['set-cookie'];
-                    console.log("BARCODE REDIRECTING TO")
+                    console.log("BARCODE REDIRECTING TO", response.headers.location)
+
+                    if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
+                        return res.json({status: "failure", message: "Please Validate Your Application!"});
+
+                    if(response.headers?.location?.search('Maintenance') >= 0 || response.headers?.location?.search(/^\/{1}$/) == 0)
+                        return res.json({status: "failure", message: "Maybe the province is not active or other problem beside validate your application"})
                     handleRedirect({
                         url: "https://passport.moi.gov.af" + response.headers.location,
                         strictSSL: false,
@@ -119,7 +125,7 @@ router.post('/barcode', async (req, res) => {
 
     // Function to handle the redirection request
     const handleRedirect = (options, retryCount = 0) => {
-        request.get(options, function(error, response, body) {
+        request.get(options, async function(error, response, body) {
             if (!error) {
                 if (response.statusCode === 200) {
                     const $ = cheerio.load(body);
@@ -127,11 +133,44 @@ router.post('/barcode', async (req, res) => {
                     let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
                     let axPrimaryMobile = $("#axPrimaryMobile").val();
                     let axFullAddress = $("#axFullAddress").val();
+                    let axHouseNo = $("#axHouseNo").val();
                     let apo = $("#apo").val();
                     if(apo || apo?.length > 0)
                         return res.json({ status: "failure", message: "Please check the barcode from your browser" })
                     console.log("BARCODE IS SUBMITTING");
+                    const option = $("#axLocationID option")
+                    let newProvinces = false;
+                    let isSelected = false;
+                    option.each((index, element) => {
 
+                        const value = $(element).attr('value');
+                        const selected = $(element).attr("selected")
+                        if( selected == 'selected' && value == axLocationID  )
+                                isSelected = true;
+                        if( value == axLocationID )
+                                newProvinces = true;
+                    });
+                    if(isSelected)
+                        {
+                            console.log("ALREADY CHANGED")
+                            let DBSavedForm = await SubmittedApp.findOrCreate({
+                                where:{
+                                    uxBirthDate: reqData.uxBirthDate,
+                                    uxCode: reqData.uxCode,
+                                    axLocationID: axLocationID,
+                                },
+                                defaults: {
+                                    uxBirthDate: reqData.uxBirthDate,
+                                    uxCode: reqData.uxCode,
+                                    axLocationID: axLocationID,
+                                    name: name,
+                                    tokenId: userId?.tokenId || null,
+                                }
+                            })
+                            return res.json({status: "success", data: Array.isArray(DBSavedForm) ? DBSavedForm[0] : DBSavedForm})
+                        }
+                    if(!newProvinces)
+                        return res.json({status: "failure", message: "This Province is not active for change"})
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/',
                         form: {
@@ -139,8 +178,9 @@ router.post('/barcode', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `07${random}4567`,
-                            axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+"0") : "ادرس"
+                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `070${random}4567`,
+                            axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
+                            axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
                         },
                         strictSSL: false,
                         headers: {
@@ -176,19 +216,19 @@ router.post('/search', async (req, res) => {
     delete reqData.uxSerial;
     let axLocationID = reqData.axLocationID || '31';
     const bypassHeaders = { 
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-        'Accept-Language': 'en-US,en;q=0.9', 
-        'Cache-Control': 'no-cache', 
-        'Pragma': 'no-cache', 
-        'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
-        'Sec-Ch-Ua-Mobile': '?0', 
-        'Sec-Ch-Ua-Platform': '"Windows"', 
-        'Sec-Fetch-Dest': 'document', 
-        'Sec-Fetch-Mode': 'navigate', 
-        'Sec-Fetch-Site': 'same-origin', 
-        'Sec-Fetch-User': '?1', 
-        'Upgrade-Insecure-Requests': '1', 
-        'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Safari/${random}`,
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+		'Accept-Language': 'en-US,en;q=0.9', 
+		'Cache-Control': 'no-cache', 
+		'Pragma': 'no-cache', 
+		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		'Sec-Ch-Ua-Mobile': '?1', 
+		'Sec-Ch-Ua-Platform': '"Android"', 
+		'Sec-Fetch-Dest': 'document', 
+		'Sec-Fetch-Mode': 'navigate', 
+		'Sec-Fetch-Site': 'none', 
+		'Sec-Fetch-User': '?1', 
+		'Upgrade-Insecure-Requests': '1', 
+		'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
     }
     const requestOptions = {
         url: 'https://passport.moi.gov.af/search/default.aspx',
@@ -242,8 +282,12 @@ router.post('/search', async (req, res) => {
                         // res.json({ status: "success" });
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     console.log("REQUEST_HANDLER", response.statusCode, "https://passport.moi.gov.af" + response.headers.location)
+
                     if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
                         return res.json({status: "failure", message: "Please Validate Your Application!"})
+                    if(response.headers?.location?.search('Maintenance') >= 0 || response.headers?.location?.search(/^\/{1}$/) == 0)
+                        return res.json({status: "failure", message: "Maybe the province is not active or other problem beside validate your application"})
+
                     handleRedirect({
                         url: "https://passport.moi.gov.af" + response.headers.location,
                         strictSSL: false,
@@ -278,7 +322,7 @@ router.post('/search', async (req, res) => {
 
     // Function to handle the redirection request
     const handleRedirect = (options, retryCount = 0) => {
-        request.get(options, function(error, response, body) {
+        request.get(options, async function(error, response, body) {
             completeRequest++;
             if (!error) {
                 if (response.statusCode === 200) {
@@ -289,6 +333,29 @@ router.post('/search', async (req, res) => {
                     let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
                     let axPrimaryMobile = $("#axPrimaryMobile").val();
                     let axFullAddress = $("#axFullAddress").val();
+                    let axHouseNo = $("#axHouseNo").val();
+                    const option = $("#axLocationID option")
+                    let newProvinces = false;
+                    let isSelected = false;
+                    option.each((index, element) => {
+
+                        const value = $(element).attr('value');
+                        const selected = $(element).attr("selected")
+                        if( selected == 'selected' && value == axLocationID  )
+                                isSelected = true;
+                        if( value == axLocationID )
+                                newProvinces = true;
+                    });
+                    if(isSelected)
+                        {
+                            console.log("ALREADY CHANGED")
+                            isExist.isChanged = true;
+                            isExist.axLocationID = axLocationID;
+                            await isExist.save()
+                            return res.json({status: "success"})
+                        }
+                    if(!newProvinces)
+                        return res.json({status: "failure", message: "This Province is not active for change"})
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/',
                         form: {
@@ -296,8 +363,9 @@ router.post('/search', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `07${random}4567`,
-                            axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+"0") : "ادرس"
+                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `070${random}4567`,
+                            axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
+                            axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
                         },
                         strictSSL: false,
                         headers: {
