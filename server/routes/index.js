@@ -22,26 +22,41 @@ router.post('/barcode', async (req, res) => {
     let axLocationID = reqData.axLocationID || '31';
     const bypassHeaders = { 
 		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-		'Accept-Language': 'en-US,en;q=0.9', 
-		'Cache-Control': 'no-cache', 
-		'Pragma': 'no-cache', 
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+        'Cache-Control': 'max-age=0',
+        'Origin': 'https://passport.moi.gov.af',
+        'Priority': 'u=0, i',
+        'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
 		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
-		'Sec-Ch-Ua-Mobile': '?1', 
-		'Sec-Ch-Ua-Platform': '"Android"', 
-		'Sec-Fetch-Dest': 'document', 
-		'Sec-Fetch-Mode': 'navigate', 
-		'Sec-Fetch-Site': 'none', 
-		'Sec-Fetch-User': '?1', 
-		'Upgrade-Insecure-Requests': '1', 
-		'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
     }
     
     const requestOptions = {
         url: 'https://passport.moi.gov.af/BarcodeSearch/',
-        form: reqData,
+        form: {
+            "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR,
+            "__EVENTVALIDATION": reqData.__EVENTVALIDATION,
+            "__SCROLLPOSITIONX": reqData.__SCROLLPOSITIONX,
+            "__SCROLLPOSITIONY": reqData.__SCROLLPOSITIONY,
+            "__EVENTARGUMENT":"",
+            "__EVENTTARGET":"",
+            "__VIEWSTATE": reqData.__VIEWSTATE,
+            "uxBirthDate": reqData.uxBirthDate,
+            "uxSearch": 'جستجو',
+            "uxCode": reqData.uxCode,
+        },
         strictSSL: false,
         followRedirect: false,
-        headers: bypassHeaders
+        headers: bypassHeaders,
+        gzip: true
     };
     let saveCookie = "";
 
@@ -64,6 +79,7 @@ router.post('/barcode', async (req, res) => {
                     if (isBarCodeCorrect.length)
                         return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
                     SubmittedApp.findOrCreate({
+                    // SubmittedApp.findOne({
                         where:{
                             uxBirthDate: reqData.uxBirthDate,
                             uxCode: reqData.uxCode,
@@ -83,21 +99,41 @@ router.post('/barcode', async (req, res) => {
                         res.json({ status: "success" });
                     })
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
-                    saveCookie = response?.headers['set-cookie'];
-                    console.log("BARCODE REDIRECTING TO", response.headers.location)
+
+                    saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
+                    if(("https://passport.moi.gov.af" + response.headers.location).search("/print") >= 0)
+                        return res.json({status: "success", message: "The Process Is Already Completed!"});
 
                     if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
                         return res.json({status: "failure", message: "Please Validate Your Application!"});
 
                     if(response.headers?.location?.search('Maintenance') >= 0 || response.headers?.location?.search(/^\/{1}$/) == 0)
                         return res.json({status: "failure", message: "Maybe the province is not active or other problem beside validate your application"})
+                    
+                    console.log("BARCODE REDIRECTING TO", response.headers.location)
                     handleRedirect({
                         url: "https://passport.moi.gov.af" + response.headers.location,
                         strictSSL: false,
                         headers: {
-                            'Cookie': response?.headers['set-cookie'],
-                            ...bypassHeaders,
-                        }
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                            'Accept-Encoding': 'gzip, deflate, br, zstd',
+                            'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+                            'Cache-Control': 'max-age=0',
+                            'Origin': 'https://passport.moi.gov.af',
+                            'Priority': 'u=0, i',
+                            'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
+                            'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+                            'Sec-Ch-Ua-Mobile': '?0',
+                            'Sec-Ch-Ua-Platform': '"Windows"',
+                            'Sec-Fetch-Dest': 'document',
+                            'Sec-Fetch-Mode': 'navigate',
+                            'Sec-Fetch-Site': 'same-origin',
+                            'Sec-Fetch-User': '?1',
+                            'Upgrade-Insecure-Requests': '1',
+                            'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+                            'Cookie': saveCookie,
+                        },
+                        gzip: true
                     });
                 } else if (response.statusCode === 503 && retryCount < 5) { // Retry only a certain number of times
                     // Resubmit the form
@@ -137,7 +173,7 @@ router.post('/barcode', async (req, res) => {
                     let apo = $("#apo").val();
                     if(apo || apo?.length > 0)
                         return res.json({ status: "failure", message: "Please check the barcode from your browser" })
-                    console.log("BARCODE IS SUBMITTING");
+                    console.log("BARCODE IS SUBMITTING", response.method);
                     const option = $("#axLocationID option")
                     let newProvinces = false;
                     let isSelected = false;
@@ -171,22 +207,44 @@ router.post('/barcode', async (req, res) => {
                         }
                     if(!newProvinces)
                         return res.json({status: "failure", message: "This Province is not active for change"})
+
+                    console.log("UPDATES IS IN PROGRESS")
                     handleRequest({
-                        url: 'https://passport.moi.gov.af/proceedApplication/',
+                        url: 'https://passport.moi.gov.af/proceedApplication/', 
                         form: {
                             __VIEWSTATE,
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `070${random}4567`,
+                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
                             axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
+                            uxCurrentTab: 'dvAddress',
+                            // ucaName: '',
+                            // DocumentsStep: true,
+                            // AddressStep: true,
+                            // CompanyStep: true,
+                            // EducationStep: true,
+                            // JobStep: true,
+                            // PreviousPassportStep: true,
+                            // CriminalRecordStep: true,
+                            // ApplicationStep: true,
+                            // _AppTypeID: 2,
+                            // appSave: "ثبت",
+                            // ucaTypeID: "1",
+                            // ucaFineTypeID: "1",
+                            // ucaApplicationTypeID: "1",
+                            // ucaDurationTypeID: "1",
+                            // ucaPaymentTypeID: "1",
+                            // ucaReferenceNo: 'w'
                         },
                         strictSSL: false,
                         headers: {
                             ...bypassHeaders,
+                            'Referer': 'https://passport.moi.gov.af/proceedApplication/',
                             'Cookie': saveCookie
-                        }
+                        },
+                        gzip: true
                     });
                 } else if (response.statusCode === 503 && retryCount < 5) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
@@ -217,25 +275,33 @@ router.post('/search', async (req, res) => {
     let axLocationID = reqData.axLocationID || '31';
     const bypassHeaders = { 
 		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-		'Accept-Language': 'en-US,en;q=0.9', 
-		'Cache-Control': 'no-cache', 
-		'Pragma': 'no-cache', 
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+        'Cache-Control': 'max-age=0',
+        'Origin': 'https://passport.moi.gov.af',
+        'Priority': 'u=0, i',
+        'Referer': 'https://passport.moi.gov.af/search/default.aspx',
 		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
-		'Sec-Ch-Ua-Mobile': '?1', 
-		'Sec-Ch-Ua-Platform': '"Android"', 
-		'Sec-Fetch-Dest': 'document', 
-		'Sec-Fetch-Mode': 'navigate', 
-		'Sec-Fetch-Site': 'none', 
-		'Sec-Fetch-User': '?1', 
-		'Upgrade-Insecure-Requests': '1', 
-		'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
     }
+
     const requestOptions = {
         url: 'https://passport.moi.gov.af/search/default.aspx',
-        form: reqData,
+        form: {
+            ...reqData,
+            "uxSearch": 'جستجو',
+        },
         strictSSL: false,
         followRedirect: false,
-        headers: bypassHeaders
+        headers: bypassHeaders,
+        gzip: true,
     };
     let saveCookie = "";
 
@@ -253,7 +319,7 @@ router.post('/search', async (req, res) => {
         request.post(options, function(error, response, body) {
             if (!error) {
                 if (response.statusCode === 200) {
-                    saveCookie = response?.headers['set-cookie'];
+                    saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
 
                     const $ = cheerio.load(body);
                     let isBarCodeCorrect = $('#uxMessage[style]')
@@ -283,8 +349,12 @@ router.post('/search', async (req, res) => {
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     console.log("REQUEST_HANDLER", response.statusCode, "https://passport.moi.gov.af" + response.headers.location)
 
+                    if(("https://passport.moi.gov.af" + response.headers.location).search("/print") >= 0)
+                        return res.json({status: "success", message: "The Process Is Already Completed!"});
+
                     if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
                         return res.json({status: "failure", message: "Please Validate Your Application!"})
+
                     if(response.headers?.location?.search('Maintenance') >= 0 || response.headers?.location?.search(/^\/{1}$/) == 0)
                         return res.json({status: "failure", message: "Maybe the province is not active or other problem beside validate your application"})
 
@@ -294,10 +364,10 @@ router.post('/search', async (req, res) => {
                         headers: {
                             'Cookie': saveCookie,
                             ...bypassHeaders,
-                        }
+                        },
+                        gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 5) { // Retry only a certain number of times
-                    // Resubmit the form
+                } else if (response.statusCode === 503 && retryCount < 5) { 
                     console.log(options, "REQUESTING")
                     handleRequest(options, retryCount + 1);
                 } else {
@@ -363,15 +433,19 @@ router.post('/search', async (req, res) => {
                             __EVENTVALIDATION,
                             Button2: "ثبت",
                             axLocationID: axLocationID,
-                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `070${random}4567`,
+                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
                             axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
+                            uxCurrentTab: 'dvAddress',
+
                         },
                         strictSSL: false,
                         headers: {
                             ...bypassHeaders,
-                            'Cookie': saveCookie
-                        }
+                            'Referer': 'https://passport.moi.gov.af/proceedApplication/',
+                            'Cookie': saveCookie,
+                        },
+                        gzip: true
                     });
                 } else if (response.statusCode === 503 && retryCount < 5) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
@@ -409,7 +483,7 @@ router.post('/provinces', (req, res) => {
 		'Sec-Fetch-Site': 'none', 
 		'Sec-Fetch-User': '?1', 
 		'Upgrade-Insecure-Requests': '1', 
-		'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 
 	}
     const requestOptions = {

@@ -8,27 +8,31 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
     // return res.json({status: "success", data: []});
   let axLocationID = reqData.axLocationID || '31';
   const bypassHeaders = { 
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-      'Accept-Language': 'en-US,en;q=0.9', 
-      'Cache-Control': 'no-cache', 
-      'Pragma': 'no-cache', 
-      'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
-      'Sec-Ch-Ua-Mobile': '?0', 
-      'Sec-Ch-Ua-Platform': '"Windows"', 
-      'Sec-Fetch-Dest': 'document', 
-      'Sec-Fetch-Mode': 'navigate', 
-      'Sec-Fetch-Site': 'same-origin', 
-      'Sec-Fetch-User': '?1', 
-      'Upgrade-Insecure-Requests': '1', 
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-      'Cookie': saveCookie
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+    'Accept-Encoding': 'gzip, deflate, br, zstd',
+    'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+    'Cache-Control': 'max-age=0',
+    'Origin': 'https://passport.moi.gov.af',
+    'Priority': 'u=0, i',
+    'Referer': 'https://passport.moi.gov.af/search/default.aspx',
+    'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+    'Sec-Ch-Ua-Mobile': '?0',
+    'Sec-Ch-Ua-Platform': '"Windows"',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+    'Cookie': saveCookie
   }
   const requestOptions = {
       url: 'https://passport.moi.gov.af/search/default.aspx',
       form: reqData,
       strictSSL: false,
       followRedirect: false,
-      headers: bypassHeaders
+      headers: bypassHeaders,
+      gzip: true
   };
 
   let uxCode = null;
@@ -48,7 +52,23 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                     
                   let isBarCodeCorrect = $('#uxMessage[style]')
                   if (isBarCodeCorrect.length)
-                  return res.json({ status: "failure", message: "Your Credintials or date is incorrect" });
+                    return res.json({ status: "failure", message: "Your Credintials or date is incorrect" });
+
+                  delete options.form.Button2
+                  let ucaTypeID = $('#ucaTypeID')
+                  let value = ucaTypeID?.val()
+                  if(value == 0){
+                      let newOptions = {...options, form: {...options.form, 
+                        appSave: "ثبت",
+                        ucaTypeID: "1",
+                        ucaFineTypeID: "1",
+                        ucaApplicationTypeID: "1",
+                        ucaDurationTypeID: "1",
+                        ucaPaymentTypeID: "1",
+                      }};
+                      console.log("___SAVING PASSPORT INFO__")
+                      return handleRequest(newOptions);
+                  }
 
                   isExist.isChanged = true;
                   if(uxCode != null && uxCode?.length > 3)
@@ -72,9 +92,10 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                   if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
                       return res.json({status: "failure", message: "Please Validate Your Application!"})
                   handleRedirect({
-                      url: "https://passport.moi.gov.af" + response.headers.location,
-                      strictSSL: false,
-                      headers: bypassHeaders
+                    url: "https://passport.moi.gov.af" + response.headers.location,
+                    strictSSL: false,
+                    headers: bypassHeaders,
+                    gzip: true
                   });
               } else if (response.statusCode === 503 && retryCount < 5) { // Retry only a certain number of times
                   // Resubmit the form
@@ -123,17 +144,21 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                   if(!newProvinces)
                       return res.json({status: "failure", message: "This Province is not active for change"})
                   handleRequest({
-                      url: 'https://passport.moi.gov.af/proceedApplication/',
-                      form: {
-                          __VIEWSTATE,
-                          __EVENTVALIDATION,
-                          Button2: "ثبت",
-                          axLocationID: axLocationID,
-                          axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `070${random}4567`,
-                          axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+"0") : "ادرس"
-                      },
-                      strictSSL: false,
-                      headers: bypassHeaders
+                    url: 'https://passport.moi.gov.af/proceedApplication/',
+                    form: {
+                        __VIEWSTATE,
+                        __EVENTVALIDATION,
+                        Button2: "ثبت",
+                        axLocationID: axLocationID,
+                        axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+"0") : `0000000000`,
+                        axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+"0") : "ادرس"
+                    },
+                    strictSSL: false,
+                    headers: {
+                        'Referer': 'https://passport.moi.gov.af/proceedApplication/',
+                        ...bypassHeaders,
+                    },
+                    gzip: true
                   });
               } else if (response.statusCode === 503 && retryCount < 5) { // If 503 Service Unavailable error occurs during redirection
                   // Resubmit the redirection request

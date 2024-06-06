@@ -45,20 +45,20 @@ const createApplication = async(req, res) => {
 	let random2 = ((Math.random() * 1500) + "").replace(".", '')
 	let saveCookie = "";
 	let bypassHeader = { 
-		// 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-		// 'Accept-Language': 'en-US,en;q=0.9', 
-		// 'Cache-Control': 'no-cache', 
-		// 'Pragma': 'no-cache', 
-		// 'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"', 
-		// 'Sec-Ch-Ua-Mobile': '?1', 
-		// 'Sec-Ch-Ua-Platform': '"Android"', 
-		// 'Sec-Fetch-Dest': 'document', 
-		// 'Sec-Fetch-Mode': 'navigate', 
-		// 'Sec-Fetch-Site': 'none', 
-		// 'Sec-Fetch-User': '?1', 
-		// 'Upgrade-Insecure-Requests': '1', 
-		// 'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36',
-
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+    'Accept-Encoding': 'gzip, deflate, br, zstd',
+    'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+		'Cache-Control': 'max-age=0',
+		'Priority': 'u=0, i',
+		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		'Sec-Ch-Ua-Mobile': '?0', 
+		'Sec-Ch-Ua-Platform': '"Windows"', 
+		'Sec-Fetch-Dest': 'document', 
+		'Sec-Fetch-Mode': 'navigate', 
+		'Sec-Fetch-Site': 'none', 
+		'Sec-Fetch-User': '?1', 
+		'Upgrade-Insecure-Requests': '1', 
+		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 	}
 	const tokenId = userId?.tokenId;
 	const requestOptions = {
@@ -67,6 +67,7 @@ const createApplication = async(req, res) => {
 			followRedirect: false,
 			headers: {...bypassHeader},
 			method: 'GET',
+			gzip: true
 	};
 	const isExist = await NewForm.findOne({
 		where: {
@@ -97,21 +98,22 @@ const createApplication = async(req, res) => {
 
 					const $ = cheerio.load(body);
 					const byPassHeaders = {
-						'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-						'Accept-Language': 'en-US,en;q=0.9',
-						'Cache-Control': 'no-cache',
+						'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+						'Accept-Encoding': 'gzip, deflate, br, zstd',
+						'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+						'Cache-Control': 'max-age=0',
 						'Origin': 'https://passport.moi.gov.af',
-						'Pragma': 'no-cache',
+						'Priority': 'u=0, i',
 						'Referer': 'https://passport.moi.gov.af/application/default.aspx',
-						'Sec-Ch-Ua': `"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"`,
-						'Sec-Ch-Ua-Mobile': '?1',
-						'Sec-Ch-Ua-Platform': '"Android"',
+						'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+						'Sec-Ch-Ua-Mobile': '?0',
+						'Sec-Ch-Ua-Platform': '"Windows"',
 						'Sec-Fetch-Dest': 'document',
 						'Sec-Fetch-Mode': 'navigate',
 						'Sec-Fetch-Site': 'same-origin',
 						'Sec-Fetch-User': '?1',
 						'Upgrade-Insecure-Requests': '1',
-						'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36',
+						'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 						'Cookie': saveCookie
 					}
 					let uxCode = $('#uxCode')?.attr("value");
@@ -252,7 +254,6 @@ const createApplication = async(req, res) => {
 					{
 						let getCaptcha = $('#c_application_default_bdcaptcha_CaptchaImage')?.attr("src");
 						const captchaImageURL = "https://passport.moi.gov.af" + getCaptcha;
-
 						if(getCaptcha)
 						{
 							let imageOptions = {
@@ -261,21 +262,28 @@ const createApplication = async(req, res) => {
 								strictSSL: false,
 								headers: {
 									'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-									'Accept-Language': 'en-US,en;q=0.9',
-									'Cache-Control': 'no-cache',
-									'Host': 'passport.moi.gov.af',
-									'Connection': 'keep-alive',
-									'Pragma':'no-cache',
-									'Upgrade-Insecure-Requests': 1,
+									'Accept-Encoding': 'gzip, deflate, br, zstd',
+									'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+									'Cache-Control': 'max-age=0',
+									'Priority': 'u=0, i',
+									'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+									'Sec-Ch-Ua-Mobile': '?0',
+									'Sec-Ch-Ua-Platform': '"Windows"',
+									'Sec-Fetch-Dest': 'document',
+									'Sec-Fetch-Mode': 'navigate',
+									'Sec-Fetch-Site': 'none',
+									'Sec-Fetch-User': '?1',
+									'Upgrade-Insecure-Requests': '1',
+									'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 									'Cookie': saveCookie
-								}
+								},
+								gzip: true
 							};
 							const fetchCaptchaImage = (imgOptions, retry = 0) => {
 								request.get(imgOptions, async function(err, resp, imageText) {
 									if (!err && resp?.statusCode === 200) {
 										
 										const captchaImageData = Buffer.from(imageText).toString('base64');
-										
 										try {
 												let txtCaptchaCode = await ac.solveImage(captchaImageData, true)
 												let secret1 = $('#BDC_VCID_c_application_default_bdcaptcha')?.attr("value");
@@ -336,7 +344,8 @@ const createApplication = async(req, res) => {
 														url: requestOptions.url,
 														form: submitMainFormOptions,
 														strictSSL: false,
-														headers: byPassHeaders
+														headers: byPassHeaders,
+														gzip: true
 													}
 														
 													console.log({...reqOptions, form :{...reqOptions.form, __VIEWSTATE: "", __EVENTVALIDATION: ""}, headers: {} })
@@ -569,29 +578,36 @@ const openBarCode =  async (req, res) => {
 	delete reqData.name;
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
 	const bypassHeaders = { 
-			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-			'Accept-Language': 'en-US,en;q=0.9', 
-			'Cache-Control': 'no-cache', 
-			'Pragma': 'no-cache', 
-			'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
-			'Sec-Ch-Ua-Mobile': '?1', 
-			'Sec-Ch-Ua-Platform': '"Android"', 
-			'Sec-Fetch-Dest': 'document', 
-			'Sec-Fetch-Mode': 'navigate', 
-			'Sec-Fetch-Site': 'none', 
-			'Sec-Fetch-User': '?1', 
-			'Upgrade-Insecure-Requests': '1', 
-			'User-Agent': `Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
+		'Accept-Encoding': 'gzip, deflate, br, zstd',
+		'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+		'Cache-Control': 'max-age=0',
+		'Origin': 'https://passport.moi.gov.af',
+		'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
+		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		'Sec-Ch-Ua-Mobile': '?0',
+		'Sec-Ch-Ua-Platform': '"Windows"',
+		'Sec-Fetch-Dest': 'document',
+		'Sec-Fetch-Mode': 'navigate',
+		'Sec-Fetch-Site': 'same-origin',
+		'Sec-Fetch-User': '?1',
+		'Upgrade-Insecure-Requests': '1',
+		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 	}
 	const requestOptions = {
 			url: 'https://passport.moi.gov.af/BarcodeSearch/',
 			form: reqData,
 			strictSSL: false,
 			followRedirect: false,
-			headers: bypassHeaders
+			headers: bypassHeaders,
+			gzip: true
 	};
 	if(reqData?.uxGrandFatherName?.length >= 1)
-		requestOptions.url = 'https://passport.moi.gov.af/search/default.aspx';
+		{
+			requestOptions.url = 'https://passport.moi.gov.af/search/default.aspx';
+			bypassHeaders.Referer = 'https://passport.moi.gov.af/search/default.aspx';
+			requestOptions.headers.Referer = 'https://passport.moi.gov.af/search/default.aspx'
+		}
 	console.log(requestOptions)
 	let saveCookie = "";
 
@@ -622,7 +638,8 @@ const openBarCode =  async (req, res) => {
 											headers: {
 													'Cookie': saveCookie,
 													...bypassHeaders,
-											}
+												},
+											gzip: true
 									});
 							} else if (response.statusCode === 503 && retryCount < 5) { // Retry only a certain number of times
 									// Resubmit the form
