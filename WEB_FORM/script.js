@@ -254,7 +254,6 @@ const onclipboard = async(e) => {
     .then(res => console.log(res))
     .catch(err => console.log(err))
   })
-
 }
 
 submit.addEventListener('click', submitListener)

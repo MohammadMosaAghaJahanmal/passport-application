@@ -273,6 +273,15 @@
 				<button onclick="importBackup()" class="info">
 					Import Backup
 				</button>
+				<button onclick="getProvinces(this)" class="info">
+					Get Provinces
+				</button>
+				<button onclick="onclipboard(this)" class="info">
+					Copy to clipboard
+				</button>
+				<button onclick="changeAll()" class="info">
+					Change All Barcode Provinces
+				</button>
 			</div>
 		</div>
 		<script>
@@ -577,11 +586,15 @@
 			let backupData = [];
 
 
-			async function changeHandler  (barCode, date, province, name, elm, type = 'barcode')
+
+			async function changeHandler  (barCode, date, province, name, elm, type = 'barcode', isDirect = false)
 			{
-				const isConfirm = confirm("ایا تاسو ډاډه یاست چې دا غوښتنلیک و کړئ");
-				if(!isConfirm)
+				if(!isDirect)
+				{
+					const isConfirm = confirm("ایا تاسو ډاډه یاست چې دا غوښتنلیک و کړئ");
+					if(!isConfirm)
 					return
+				}
 				const baseUrl = serverPath(`/easyform/${type}`);
 					let getKEYS = window.localStorage.getItem("passport");
 					getKEYS = JSON.parse(getKEYS);
@@ -634,6 +647,54 @@
 				}
 					
 			}
+			async function changeAll()
+			{
+				const isConfirm = confirm("Are u Sure To Proceed!");
+				if(!isConfirm)
+					return
+				database.forEach((per, index) => {
+					changeHandler(
+						per.barCode, 
+						per.date, 
+						per.province, 
+						per.name, 
+						document.getElementById(per.barCode),
+						'barcode',
+						true
+					)
+					.then(res => res)
+					.catch(err => console.log(err))
+					.finally(() => console.log(index + 1))
+				})
+			}
+				
+			async function onclipboard(elm) {
+				database.forEach((per) => {
+					changeHandler(per.barCode, per.date, per.province, per.name, elm, 'openbarcode', true)
+					.then(res => console.log(res))
+					.catch(err => console.log(err))
+				})
+			}
+
+			async function getProvinces(elm) {
+				try {
+					let response = await fetch(await serverPath("/easyform/provinces"), {
+						method: "POST",
+						headers: {
+							"Authorization": `bearer ${token}`
+						},
+					});
+					const objData = await response.json();
+					if(objData.status === 'success')
+						alert((objData.data.map(per => (per.name)).join("\n")));
+					if(objData.status === 'failure')
+						alert("Info " +  objData.message)
+				} catch (error) {
+						console.log(error)
+						alert("Error Please try again!" + error.message)
+				}
+		}
+
 		</script>
 	</body>
 </html>

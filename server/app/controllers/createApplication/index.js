@@ -583,8 +583,9 @@ const openBarCode =  async (req, res) => {
 		'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
 		'Cache-Control': 'max-age=0',
 		'Origin': 'https://passport.moi.gov.af',
-		'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
-		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		'Priority': 'u=0, i',
+// 'Sec-Ch-Ua': `"Google Chrome";v="125", "Not:A-Brand";v="8", "Chromium";v="125"`, 
+		'Sec-Ch-Ua': '"Not:A-Brand";v="99"',
 		'Sec-Ch-Ua-Mobile': '?0',
 		'Sec-Ch-Ua-Platform': '"Windows"',
 		'Sec-Fetch-Dest': 'document',
@@ -592,7 +593,8 @@ const openBarCode =  async (req, res) => {
 		'Sec-Fetch-Site': 'same-origin',
 		'Sec-Fetch-User': '?1',
 		'Upgrade-Insecure-Requests': '1',
-		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+// 'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36`,
+		'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
 	}
 	const requestOptions = {
 			url: 'https://passport.moi.gov.af/BarcodeSearch/',
@@ -620,6 +622,8 @@ const openBarCode =  async (req, res) => {
 									let isBarCodeCorrect = $('#uxMessage[style]')
 									if (isBarCodeCorrect.length)
 											return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
+									if( response.headers?.location?.search(/^\/{1}$/) == 0)
+										return res.json({status: "failure", message: "The Site Has Problem "})
 									if(completeRequest <= 1 && retryCount < 5 && reqData?.uxGrandFatherName?.length >= 1)
                     {
 												saveCookie = response?.headers['set-cookie'];
@@ -636,8 +640,9 @@ const openBarCode =  async (req, res) => {
 											url: "https://passport.moi.gov.af" + response.headers.location,
 											strictSSL: false,
 											headers: {
-													'Cookie': saveCookie,
 													...bypassHeaders,
+													'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
+													'Cookie': saveCookie,
 												},
 											gzip: true
 									});

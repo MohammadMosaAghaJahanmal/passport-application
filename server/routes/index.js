@@ -7,6 +7,7 @@ const request  = require('request');
 const SubmittedApp = require('../app/model/SubmittedApp');
 const { createApplication, getFullData, testApplication, openBarCode } = require('../app/controllers/createApplication');
 const NewForm = require('../app/model/NewForm');
+const queryString = require("querystring");
 
 
 
@@ -20,6 +21,18 @@ router.post('/barcode', async (req, res) => {
     delete reqData.name;
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
+    const encodedForm = queryString.stringify({
+        "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR,
+        "__EVENTVALIDATION": reqData.__EVENTVALIDATION,
+        "__SCROLLPOSITIONX": reqData.__SCROLLPOSITIONX,
+        "__SCROLLPOSITIONY": reqData.__SCROLLPOSITIONY,
+        "__EVENTARGUMENT":"",
+        "__EVENTTARGET":"",
+        "__VIEWSTATE": reqData.__VIEWSTATE,
+        "uxBirthDate": reqData.uxBirthDate,
+        "uxSearch": 'جستجو',
+        "uxCode": reqData.uxCode,
+    })
     const bypassHeaders = { 
 		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
         'Accept-Encoding': 'gzip, deflate, br, zstd',
@@ -27,8 +40,8 @@ router.post('/barcode', async (req, res) => {
         'Cache-Control': 'max-age=0',
         'Origin': 'https://passport.moi.gov.af',
         'Priority': 'u=0, i',
-        'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
-		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		// 'Sec-Ch-Ua': `"Google Chrome";v="125", "Not:A-Brand";v="8", "Chromium";v="125"`, 
+        'Sec-Ch-Ua': '"Not:A-Brand";v="99"',
         'Sec-Ch-Ua-Mobile': '?0',
         'Sec-Ch-Ua-Platform': '"Windows"',
         'Sec-Fetch-Dest': 'document',
@@ -36,25 +49,15 @@ router.post('/barcode', async (req, res) => {
         'Sec-Fetch-Site': 'same-origin',
         'Sec-Fetch-User': '?1',
         'Upgrade-Insecure-Requests': '1',
-		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+		// 'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36`,
+        'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
     }
-    
+
     const requestOptions = {
         url: 'https://passport.moi.gov.af/BarcodeSearch/',
-        form: {
-            "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR,
-            "__EVENTVALIDATION": reqData.__EVENTVALIDATION,
-            "__SCROLLPOSITIONX": reqData.__SCROLLPOSITIONX,
-            "__SCROLLPOSITIONY": reqData.__SCROLLPOSITIONY,
-            "__EVENTARGUMENT":"",
-            "__EVENTTARGET":"",
-            "__VIEWSTATE": reqData.__VIEWSTATE,
-            "uxBirthDate": reqData.uxBirthDate,
-            "uxSearch": 'جستجو',
-            "uxCode": reqData.uxCode,
-        },
+        form: encodedForm,
         strictSSL: false,
-        followRedirect: false,
+        followRedirect: true,
         headers: bypassHeaders,
         gzip: true
     };
@@ -78,6 +81,8 @@ router.post('/barcode', async (req, res) => {
                     let isBarCodeCorrect = $('#uxMessage[style]')
                     if (isBarCodeCorrect.length)
                         return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
+                    if( response.headers?.location?.search(/^\/{1}$/) == 0)
+                        return res.json({status: "failure", message: "The Site Has Problem "})
                     SubmittedApp.findOrCreate({
                     // SubmittedApp.findOne({
                         where:{
@@ -105,32 +110,21 @@ router.post('/barcode', async (req, res) => {
                         return res.json({status: "success", message: "The Process Is Already Completed!"});
 
                     if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
-                        return res.json({status: "failure", message: "Please Validate Your Application!"});
+                        {
+                            console.log(body)
+                            return res.json({status: "failure", message: "Please Validate Your Application!"});
+                        }
 
                     if(response.headers?.location?.search('Maintenance') >= 0 || response.headers?.location?.search(/^\/{1}$/) == 0)
                         return res.json({status: "failure", message: "Maybe the province is not active or other problem beside validate your application"})
                     
-                    console.log("BARCODE REDIRECTING TO", response.headers.location)
+                    console.log("BARCODE REDIRECTING TO", response.headers.location);
                     handleRedirect({
                         url: "https://passport.moi.gov.af" + response.headers.location,
                         strictSSL: false,
                         headers: {
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                            'Accept-Encoding': 'gzip, deflate, br, zstd',
-                            'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
-                            'Cache-Control': 'max-age=0',
-                            'Origin': 'https://passport.moi.gov.af',
-                            'Priority': 'u=0, i',
+                            ...bypassHeaders,
                             'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
-                            'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
-                            'Sec-Ch-Ua-Mobile': '?0',
-                            'Sec-Ch-Ua-Platform': '"Windows"',
-                            'Sec-Fetch-Dest': 'document',
-                            'Sec-Fetch-Mode': 'navigate',
-                            'Sec-Fetch-Site': 'same-origin',
-                            'Sec-Fetch-User': '?1',
-                            'Upgrade-Insecure-Requests': '1',
-                            'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
                             'Cookie': saveCookie,
                         },
                         gzip: true
@@ -173,7 +167,8 @@ router.post('/barcode', async (req, res) => {
                     let apo = $("#apo").val();
                     if(apo || apo?.length > 0)
                         return res.json({ status: "failure", message: "Please check the barcode from your browser" })
-                    console.log("BARCODE IS SUBMITTING", response.method);
+
+                    console.log("BARCODE IS SUBMITTING");
                     const option = $("#axLocationID option")
                     let newProvinces = false;
                     let isSelected = false;
@@ -207,7 +202,109 @@ router.post('/barcode', async (req, res) => {
                         }
                     if(!newProvinces)
                         return res.json({status: "failure", message: "This Province is not active for change"})
-
+                    let __EVENTTARGET = $("#__EVENTTARGET").val();
+                    let __EVENTARGUMENT = $("#__EVENTARGUMENT").val();
+                    let __LASTFOCUS = $("#__LASTFOCUS").val();
+                    let __VIEWSTATEGENERATOR = $("#__VIEWSTATEGENERATOR").val();
+                    let __SCROLLPOSITIONX = $("#__SCROLLPOSITIONX").val();
+                    let __SCROLLPOSITIONY = $("#__SCROLLPOSITIONY").val();
+                    let AddressStep = $("#AddressStep").val();
+                    let CompanyStep = $("#CompanyStep").val();
+                    let EducationStep = $("#EducationStep").val();
+                    let JobStep = $("#JobStep").val();
+                    let PreviousPassportStep = $("#PreviousPassportStep").val();
+                    let CriminalRecordStep = $("#CriminalRecordStep").val();
+                    let ApplicationStep = $("#ApplicationStep").val();
+                    let uxTitleID = $("#uxTitleID").val();
+                    let uxCriminalRecord = $("#uxCriminalRecord").val();
+                    let _AppTypeID = $("#_AppTypeID").val();
+                    let uxFamilyNameLocal = $("#uxFamilyNameLocal").val();
+                    let uxFamilyName = $("#uxFamilyName").val();
+                    let uxGivenNamesLocal = $("#uxGivenNamesLocal").val();
+                    let uxGivenNames = $("#uxGivenNames").val();
+                    let uxFatherNameLocal = $("#uxFatherNameLocal").val();
+                    let uxFatherName = $("#uxFatherName").val();
+                    let uxGrandFatherNameLocal = $("#uxGrandFatherNameLocal").val();
+                    let uxGrandFatherName = $("#uxGrandFatherName").val();
+                    let uxBirthDate_Shamsi = $("#uxBirthDate_Shamsi").val();
+                    let uxBirthDate = $("#uxBirthDate").val();
+                    let uxProfessionID = $("#uxProfessionID").val();
+                    let _Profession = $("#_Profession").val();
+                    let uxBirthLocationID = $("#uxBirthLocationID").val();
+                    let uxResidenceCountryID = $("#uxResidenceCountryID").val();
+                    let uxMaritalStatusID = $("#uxMaritalStatusID").val();
+                    let uxNIDTypeID = $("#uxNIDTypeID").val();
+                    let uxSerial = $("#uxSerial").val();
+                    let uxJuld = $("#uxJuld").val();
+                    let uxPage = $("#uxPage").val();
+                    let uxNo = $("#uxNo").val();
+                    let uxNID = $("#uxNID").val();
+                    let uxGenderID = $("#uxGenderID").val();
+                    let uxHairColorID = $("#uxHairColorID").val();
+                    let uxEyeColorID = $("#uxEyeColorID").val();
+                    let uxBodyHeightCM = $("#uxBodyHeightCM").val();
+                    let uxCreatedBy = $("#uxCreatedBy").val();
+                    let uxWorkItemID = $("#uxWorkItemID").val();
+                    let BDC_VCID_c_proceedapplication_default_bdcaptcha = $("#BDC_VCID_c_proceedapplication_default_bdcaptcha").val();
+                    let BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha = $("#BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha").val();
+                    let BDC_Hs_c_proceedapplication_default_bdcaptcha = $("#BDC_Hs_c_proceedapplication_default_bdcaptcha").val();
+                    let BDC_SP_c_proceedapplication_default_bdcaptcha = $("#BDC_SP_c_proceedapplication_default_bdcaptcha").val();
+                    let txtCaptchaCode = $("#txtCaptchaCode").val();
+                    let uxPhotoData = $("#uxPhotoData").val();
+                    let uxPhotoFileName = $("#uxPhotoFileName").val();
+                    let uxSignatureData = $("#uxSignatureData").val();
+                    let uxSignatureFileName = $("#uxSignatureFileName").val();
+                    let axPostOfficeID = $("#axPostOfficeID").val();
+                    let axStreetNo = $("#axStreetNo").val();
+                    let axTypeOfAddressID = $("#axTypeOfAddressID").val();
+                    let ucmBusinessName = $("#ucmBusinessName").val();
+                    let ucmStatusID = $("#ucmStatusID").val();
+                    let ucmLocationID = $("#ucmLocationID").val();
+                    let ucmBusinessLicenseNo = $("#ucmBusinessLicenseNo").val();
+                    let ucmTINNumber = $("#ucmTINNumber").val();
+                    let ucmTypeOfBusinessID = $("#ucmTypeOfBusinessID").val();
+                    let ucmFullAddress = $("#ucmFullAddress").val();
+                    let ucmIssueDate = $("#ucmIssueDate").val();
+                    let ucmExpairDate = $("#ucmExpairDate").val();
+                    let uedEducationLevelID = $("#uedEducationLevelID").val();
+                    let uedInstituteTypeID = $("#uedInstituteTypeID").val();
+                    let uedLocationID = $("#uedLocationID").val();
+                    let uedDari = $("#uedDari").val();
+                    let uedName = $("#uedName").val();
+                    let uedStartYear = $("#uedStartYear").val();
+                    let uedEndYear = $("#uedEndYear").val();
+                    let ujbTypeOfExperienceID = $("#ujbTypeOfExperienceID").val();
+                    let ujbLocationID = $("#ujbLocationID").val();
+                    let ujbPositionLocal = $("#ujbPositionLocal").val();
+                    let ujbPosition = $("#ujbPosition").val();
+                    let ujbOrganizationNameLocal = $("#ujbOrganizationNameLocal").val();
+                    let ujbOrganizationName = $("#ujbOrganizationName").val();
+                    let ujbStartDate = $("#ujbStartDate").val();
+                    let ujbEndDate = $("#ujbEndDate").val();
+                    let uppPassportTypeID = $("#uppPassportTypeID").val();
+                    let uppPassportNumber = $("#uppPassportNumber").val();
+                    let uppIssueDate = $("#uppIssueDate").val();
+                    let uppExpiryDate = $("#uppExpiryDate").val();
+                    let ucrTypeOfCrimeID = $("#ucrTypeOfCrimeID").val();
+                    let ucrDate = $("#ucrDate").val();
+                    let ucrLocationID = $("#ucrLocationID").val();
+                    let ucrArrested = $("#ucrArrested").val();
+                    let ucrStatusID = $("#ucrStatusID").val();
+                    let ucrReferenceNo = $("#ucrReferenceNo").val();
+                    let ucrAdderss = $("#ucrAdderss").val();
+                    let ucrDetails = $("#ucrDetails").val();
+                    let ucaTypeID = $("#ucaTypeID").val();
+                    let uxOptions = $("#uxOptions").val();
+                    let ucaFineTypeID = $("#ucaFineTypeID").val();
+                    let ucaDurationTypeID = $("#ucaDurationTypeID").val();
+                    let ucaApplicationTypeID = $("#ucaApplicationTypeID").val();
+                    let ucaPaymentTypeID = $("#ucaPaymentTypeID").val();
+                    let PayablePrice = $("#PayablePrice").val();
+                    let ucaServiceID = $("#ucaServiceID").val();
+                    let ucaStatusID = $("#ucaStatusID").val();
+                    let ucaCreatedBy = $("#ucaCreatedBy").val();
+                    let ucaName = $("#ucaName").val();
+                    let ucaReferenceNo = $("#ucaReferenceNo").val();
                     console.log("UPDATES IS IN PROGRESS")
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/', 
@@ -220,6 +317,113 @@ router.post('/barcode', async (req, res) => {
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
                             axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
                             uxCurrentTab: 'dvAddress',
+                            DocumentsStep: true,
+                            __EVENTTARGET: __EVENTTARGET,
+                            __EVENTARGUMENT: __EVENTARGUMENT,
+                            __LASTFOCUS: __LASTFOCUS,
+                            __VIEWSTATEGENERATOR: __VIEWSTATEGENERATOR,
+                            __SCROLLPOSITIONX: __SCROLLPOSITIONX,
+                            __SCROLLPOSITIONY: __SCROLLPOSITIONY,
+                            AddressStep: AddressStep,
+                            CompanyStep: CompanyStep,
+                            EducationStep: EducationStep,
+                            JobStep: JobStep,
+                            PreviousPassportStep: PreviousPassportStep,
+                            CriminalRecordStep: CriminalRecordStep,
+                            ApplicationStep: ApplicationStep,
+                            uxTitleID: uxTitleID,
+                            uxCriminalRecord: uxCriminalRecord,
+                            _AppTypeID: _AppTypeID,
+                            uxFamilyNameLocal: uxFamilyNameLocal,
+                            uxFamilyName: uxFamilyName,
+                            uxGivenNamesLocal: uxGivenNamesLocal,
+                            uxGivenNames: uxGivenNames,
+                            uxFatherNameLocal: uxFatherNameLocal,
+                            uxFatherName: uxFatherName,
+                            uxGrandFatherNameLocal: uxGrandFatherNameLocal,
+                            uxGrandFatherName: uxGrandFatherName,
+                            uxBirthDate_Shamsi: uxBirthDate_Shamsi,
+                            uxBirthDate: uxBirthDate,
+                            uxProfessionID: uxProfessionID,
+                            _Profession: _Profession,
+                            uxBirthLocationID: uxBirthLocationID,
+                            uxResidenceCountryID: uxResidenceCountryID,
+                            uxMaritalStatusID: uxMaritalStatusID,
+                            uxNIDTypeID: uxNIDTypeID,
+                            uxSerial: uxSerial,
+                            uxJuld: uxJuld,
+                            uxPage: uxPage,
+                            uxNo: uxNo,
+                            uxNID: uxNID,
+                            uxGenderID: uxGenderID,
+                            uxHairColorID: uxHairColorID,
+                            uxEyeColorID: uxEyeColorID,
+                            uxBodyHeightCM: uxBodyHeightCM,
+                            uxCreatedBy: uxCreatedBy,
+                            uxWorkItemID: uxWorkItemID,
+                            BDC_VCID_c_proceedapplication_default_bdcaptcha: BDC_VCID_c_proceedapplication_default_bdcaptcha,
+                            BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha: BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha,
+                            BDC_Hs_c_proceedapplication_default_bdcaptcha: BDC_Hs_c_proceedapplication_default_bdcaptcha,
+                            BDC_SP_c_proceedapplication_default_bdcaptcha: BDC_SP_c_proceedapplication_default_bdcaptcha,
+                            txtCaptchaCode: txtCaptchaCode,
+                            uxPhotoData: uxPhotoData,
+                            uxPhotoFileName: uxPhotoFileName,
+                            uxSignatureData: uxSignatureData,
+                            uxSignatureFileName: uxSignatureFileName,
+                            axPostOfficeID: axPostOfficeID,
+                            axStreetNo: axStreetNo,
+                            axTypeOfAddressID: axTypeOfAddressID,
+                            ucmBusinessName: ucmBusinessName,
+                            ucmStatusID: ucmStatusID,
+                            ucmLocationID: ucmLocationID,
+                            ucmBusinessLicenseNo: ucmBusinessLicenseNo,
+                            ucmTINNumber: ucmTINNumber,
+                            ucmTypeOfBusinessID: ucmTypeOfBusinessID,
+                            ucmFullAddress: ucmFullAddress,
+                            ucmIssueDate: ucmIssueDate,
+                            ucmExpairDate: ucmExpairDate,
+                            uedEducationLevelID: uedEducationLevelID,
+                            uedInstituteTypeID: uedInstituteTypeID,
+                            uedLocationID: uedLocationID,
+                            uedDari: uedDari,
+                            uedName: uedName,
+                            uedStartYear: uedStartYear,
+                            uedEndYear: uedEndYear,
+                            ujbTypeOfExperienceID: ujbTypeOfExperienceID,
+                            ujbLocationID: ujbLocationID,
+                            ujbPositionLocal: ujbPositionLocal,
+                            ujbPosition: ujbPosition,
+                            ujbOrganizationNameLocal: ujbOrganizationNameLocal,
+                            ujbOrganizationName: ujbOrganizationName,
+                            ujbStartDate: ujbStartDate,
+                            ujbEndDate: ujbEndDate,
+                            uppPassportTypeID: uppPassportTypeID,
+                            uppPassportNumber: uppPassportNumber,
+                            uppIssueDate: uppIssueDate,
+                            uppExpiryDate: uppExpiryDate,
+                            ucrTypeOfCrimeID: ucrTypeOfCrimeID,
+                            ucrDate: ucrDate,
+                            ucrLocationID: ucrLocationID,
+                            ucrArrested: ucrArrested,
+                            ucrStatusID: ucrStatusID,
+                            ucrReferenceNo: ucrReferenceNo,
+                            ucrAdderss: ucrAdderss,
+                            ucrDetails: ucrDetails,
+                            ucaTypeID: ucaTypeID,
+                            uxOptions: uxOptions,
+                            ucaFineTypeID: ucaFineTypeID,
+                            ucaDurationTypeID: ucaDurationTypeID,
+                            ucaApplicationTypeID: ucaApplicationTypeID,
+                            ucaPaymentTypeID: ucaPaymentTypeID,
+                            PayablePrice: PayablePrice,
+                            ucaServiceID: ucaServiceID,
+                            ucaStatusID: ucaStatusID,
+                            ucaCreatedBy: ucaCreatedBy,
+                            ucaName: ucaName,
+                            ucaReferenceNo: ucaReferenceNo,
+
+
+                            
                             // ucaName: '',
                             // DocumentsStep: true,
                             // AddressStep: true,
@@ -281,7 +485,8 @@ router.post('/search', async (req, res) => {
         'Origin': 'https://passport.moi.gov.af',
         'Priority': 'u=0, i',
         'Referer': 'https://passport.moi.gov.af/search/default.aspx',
-		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		// 'Sec-Ch-Ua': `"Google Chrome";v="125", "Not:A-Brand";v="8", "Chromium";v="125"`, 
+        'Sec-Ch-Ua': '"Not:A-Brand";v="99"',
         'Sec-Ch-Ua-Mobile': '?0',
         'Sec-Ch-Ua-Platform': '"Windows"',
         'Sec-Fetch-Dest': 'document',
@@ -289,7 +494,8 @@ router.post('/search', async (req, res) => {
         'Sec-Fetch-Site': 'same-origin',
         'Sec-Fetch-User': '?1',
         'Upgrade-Insecure-Requests': '1',
-		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+		// 'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36`,
+        'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
     }
 
     const requestOptions = {
@@ -472,18 +678,19 @@ router.post('/provinces', (req, res) => {
 
     let bypassHeader = { 
 		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
-		'Accept-Language': 'en-US,en;q=0.9', 
-		'Cache-Control': 'no-cache', 
-		'Pragma': 'no-cache', 
-		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
-		'Sec-Ch-Ua-Mobile': '?1', 
-		'Sec-Ch-Ua-Platform': '"Android"', 
-		'Sec-Fetch-Dest': 'document', 
-		'Sec-Fetch-Mode': 'navigate', 
-		'Sec-Fetch-Site': 'none', 
-		'Sec-Fetch-User': '?1', 
-		'Upgrade-Insecure-Requests': '1', 
-		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+        'Cache-Control': 'max-age=0',
+        'Priority': 'u=0, i',
+        'Sec-Ch-Ua': '"Not:A-Brand";v="99"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+        'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
 
 	}
     const requestOptions = {
@@ -491,6 +698,7 @@ router.post('/provinces', (req, res) => {
         strictSSL: false,
         followRedirect: false,
         headers: {...bypassHeader},
+        gzip: true
     };
 
     // Function to handle the request and follow redirects manually
