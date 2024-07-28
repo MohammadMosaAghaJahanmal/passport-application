@@ -40,6 +40,10 @@ const createApplication = async(req, res) => {
 	delete reqData.__VIEWSTATE
 	reqData.uxBirthDate_Shamsi = essaiToShamsi(reqData.uxBirthDate);
 
+	const steps = {
+		mobileStep: false,
+		passportTypeStep: false
+	}
 	
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
 	let random2 = ((Math.random() * 1500) + "").replace(".", '')
@@ -135,8 +139,11 @@ const createApplication = async(req, res) => {
 
 					// let Image1 = $('#Image1')?.attr("src");
 					// let Image2 = $('#Image2')?.attr("src");
-					// let axPrimaryMobileElm = $('#axPrimaryMobile')?.attr("value");
+					let axPrimaryMobileElm = $('#axPrimaryMobile')?.val();
+					let ucaTypeID = $('#ucaTypeID')
+					let ucaTypeIDValue = ucaTypeID?.val()
 					console.log(uxCode)
+					console.log(steps, "NUMBER")
 					
 					if((uxCode?.length > 10) && savedApp==null)
 					{
@@ -148,44 +155,43 @@ const createApplication = async(req, res) => {
 							});
 							console.log("TRYING TO SAVE")
 							console.log("TRYING TO Province", uxCode)
-							// if((uxCode?.search("P"+reqData?.uxResidenceCountryID) >= 0 || uxCode?.search("P0"+reqData?.uxResidenceCountryID) >= 0) && uxCode.search(reqData.uxBirthDate.replace(/[\/-]\d+/ig, '') >= 0))
-							// {
-							// 	console.log("CORRECT BARCODE")
-							// 	return handleRequest({
-							// 		url: requestOptions.url,
-							// 		form: {
-							// 				__VIEWSTATE,
-							// 				__EVENTVALIDATION,
-							// 				uxCode,
-							// 				Button2: "ثبت",
-							// 				axLocationID: axLocationID || 31,
-							// 				axPrimaryMobile: axPrimaryMobile || "0712345678",
-							// 				axFullAddress: axFullAddress || "شیستابنایستب",
-							// 		},
-							// 		strictSSL: false,
-							// 		headers: {
-							// 				...bypassHeader,
-							// 				'Cookie': saveCookie
-							// 		}
-							// 	});
-							// }
 							if(!newProvinces)
 								return res.json({status: "failure", message: "This Province is not active for change"})
-							return passportFormSetProvince(req, res, {
-								__VIEWSTATEGENERATOR: "59A49A67",
-								__SCROLLPOSITIONX: "0",
-								__SCROLLPOSITIONY: "500",
-								__EVENTARGUMENT: "",
-								__EVENTTARGET: "",
-								__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
-								__VIEWSTATE: PROVINCE__VIEWSTATE,
-								uxName: reqData.uxGivenNamesLocal,
-								uxFatherName: reqData.uxFatherNameLocal,
-								uxGrandFatherName: reqData.uxGrandFatherNameLocal,
-								uxBirthDate: reqData.uxBirthDate_Shamsi,
-								uxSearch: "جستجو",
-								axLocationID: axLocationID,
-							}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
+							console.log("CORRECT BARCODE")
+							steps.mobileStep = true
+							return handleRequest({
+								url: requestOptions.url,
+								form: {
+										__VIEWSTATE,
+										__EVENTVALIDATION,
+										uxCode,
+										Button2: "ثبت",
+										axLocationID: axLocationID || 31,
+										axPrimaryMobile: axPrimaryMobile || "0712345678",
+										axFullAddress: axFullAddress || "شیستابنایستب",
+								},
+								strictSSL: false,
+								headers: {
+										...bypassHeader,
+										'Cookie': saveCookie
+								}
+							});
+
+							// return passportFormSetProvince(req, res, {
+							// 	__VIEWSTATEGENERATOR: "59A49A67",
+							// 	__SCROLLPOSITIONX: "0",
+							// 	__SCROLLPOSITIONY: "500",
+							// 	__EVENTARGUMENT: "",
+							// 	__EVENTTARGET: "",
+							// 	__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+							// 	__VIEWSTATE: PROVINCE__VIEWSTATE,
+							// 	uxName: reqData.uxGivenNamesLocal,
+							// 	uxFatherName: reqData.uxFatherNameLocal,
+							// 	uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+							// 	uxBirthDate: reqData.uxBirthDate_Shamsi,
+							// 	uxSearch: "جستجو",
+							// 	axLocationID: axLocationID,
+							// }, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 
 							// return res.json({status: "success", data: savedApp})
 						} catch (dbErr) {
@@ -199,22 +205,63 @@ const createApplication = async(req, res) => {
 							console.log("TRYING TO Province")
 							if(!newProvinces)
 								return res.json({status: "failure", message: "This Province is not active for change"})
-							return passportFormSetProvince(req, res, {
-								__VIEWSTATEGENERATOR: "59A49A67",
-								__SCROLLPOSITIONX: "0",
-								__SCROLLPOSITIONY: "500",
-								__EVENTARGUMENT: "",
-								__EVENTTARGET: "",
-								__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
-								__VIEWSTATE: PROVINCE__VIEWSTATE,
-								uxName: reqData.uxGivenNamesLocal,
-								uxFatherName: reqData.uxFatherNameLocal,
-								uxGrandFatherName: reqData.uxGrandFatherNameLocal,
-								uxBirthDate: reqData.uxBirthDate_Shamsi,
-								uxSearch: "جستجو",
-								axLocationID: axLocationID,
-							}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
+							return handleRequest({
+								url: requestOptions.url,
+								form: {
+										__VIEWSTATE,
+										__EVENTVALIDATION,
+										uxCode,
+										Button2: "ثبت",
+										axLocationID: axLocationID || 31,
+										axPrimaryMobile: axPrimaryMobile || "0712345678",
+										axFullAddress: axFullAddress || "شیستابنایستب",
+								},
+								strictSSL: false,
+								headers: {
+										...bypassHeader,
+										'Cookie': saveCookie
+								}
+							});
+							// return passportFormSetProvince(req, res, {
+							// 	__VIEWSTATEGENERATOR: "59A49A67",
+							// 	__SCROLLPOSITIONX: "0",
+							// 	__SCROLLPOSITIONY: "500",
+							// 	__EVENTARGUMENT: "",
+							// 	__EVENTTARGET: "",
+							// 	__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+							// 	__VIEWSTATE: PROVINCE__VIEWSTATE,
+							// 	uxName: reqData.uxGivenNamesLocal,
+							// 	uxFatherName: reqData.uxFatherNameLocal,
+							// 	uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+							// 	uxBirthDate: reqData.uxBirthDate_Shamsi,
+							// 	uxSearch: "جستجو",
+							// 	axLocationID: axLocationID,
+							// }, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 						}
+					}
+
+					if(!steps.passportTypeStep && steps.mobileStep){
+						console.log("___SAVING PASSPORT INFO__ AT FIRST SIDE")
+						steps.passportTypeStep = true
+						return handleRequest({
+							url: requestOptions.url,
+							form: {
+									__VIEWSTATE,
+									__EVENTVALIDATION,
+									uxCode,
+									appSave: "ثبت",
+									ucaTypeID: "1",
+									ucaFineTypeID: "1",
+									ucaApplicationTypeID: "1",
+									ucaDurationTypeID: "1",
+									ucaPaymentTypeID: "1",
+							},
+							strictSSL: false,
+							headers: {
+									...bypassHeader,
+									'Cookie': saveCookie
+							}
+						});
 					}
 					if(options?.form?.txtCaptchaCode?.length > 3 && errCode === 503)
 					{
@@ -447,7 +494,9 @@ const createApplication = async(req, res) => {
 					res.json({status: "failure", message: "Please Try Again 2"})
 				}
 			} else {
-					console.error('Error:', error);
+					console.log('Error:', error);
+					if(error.errno == '-4039')
+						return handleRequest(options, retryCount, errCode, METHOD);
 					res.json({status: "failure", message: "Please Try Again 1"})
 			}
 		});
