@@ -684,7 +684,7 @@ const openBarCode =  async (req, res) => {
 									let uxCode = $('#uxCode')?.val();
 									let uxBirthDate_Shamsi = $('#uxBirthDate_Shamsi')?.val();
 									let detailsAPPlace = $('#detailsAPPlace')?.text();
-									console.log(detailsAPPlace);
+									console.log(detailsAPPlace, ":" , uxCode );
 									return res.json({
 										status: "success",
 										data: {

@@ -57,18 +57,18 @@ const passportFormSetProvince = async (req, res, reqData, saveCookie, isExist) =
                   delete options.form.Button2
                   let ucaTypeID = $('#ucaTypeID')
                   let value = ucaTypeID?.val()
-                //   if(value == 0){
-                //       let newOptions = {...options, form: {...options.form, 
-                //         appSave: "ثبت",
-                //         ucaTypeID: "1",
-                //         ucaFineTypeID: "1",
-                //         ucaApplicationTypeID: "1",
-                //         ucaDurationTypeID: "1",
-                //         ucaPaymentTypeID: "1",
-                //       }};
-                //       console.log("___SAVING PASSPORT INFO__")
-                //       return handleRequest(newOptions);
-                //   }
+                  if(value == 0){
+                      let newOptions = {...options, form: {...options.form, 
+                        appSave: "ثبت",
+                        ucaTypeID: "1",
+                        ucaFineTypeID: "1",
+                        ucaApplicationTypeID: "1",
+                        ucaDurationTypeID: "1",
+                        ucaPaymentTypeID: "1",
+                      }};
+                      console.log("___SAVING PASSPORT INFO__")
+                      return handleRequest(newOptions);
+                  }
 
                   isExist.isChanged = true;
                   if(uxCode != null && uxCode?.length > 3)

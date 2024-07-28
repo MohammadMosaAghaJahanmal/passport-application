@@ -297,9 +297,9 @@ async function loadKeys(e) {
 loadData.addEventListener("click", async(e) => {
   try {
     
-    const response = await fetch(`http://localhost:8080/v1/easyform/fulldata?uxResidenceCountryID=${axLocationID.value.trim()}`, {
+    // const response = await fetch(`http://localhost:8080/v1/easyform/fulldata?uxResidenceCountryID=${axLocationID.value.trim()}`, {
     // const response = await fetch(serverPath(`/easyform/fulldata?uxResidenceCountryID=${axLocationID.value.trim()}`), {
-    // const response = await fetch(serverPath(`/easyform/fulldata?province=${axLocationID.value.trim()}`), {
+    const response = await fetch(serverPath(`/easyform/fulldata?province=${axLocationID.value.trim()}`), {
       method: 'GET',
       headers:
       {

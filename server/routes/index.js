@@ -101,7 +101,20 @@ router.post('/barcode', async (req, res) => {
                     .then(res => res)
                     .catch(err => console.log(err))
                     .finally(() => {
-                        res.json({ status: "success" });
+                        const option = $("#axLocationID option")
+                        let activeProvinces = []
+                        option.each((index, element) => {
+    
+                            const value = $(element).attr('value');
+                            if(value == 0)
+                                return
+                            const innerHTML = $(element).html();
+                            activeProvinces.push({
+                                value,
+                                name: innerHTML
+                            })
+                        });
+                        res.json({ status: "success", activeProvinces});
                     })
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
 
@@ -143,11 +156,10 @@ router.post('/barcode', async (req, res) => {
                     if (isFormValid.length)
                         return res.json({ status: "failure", message: "Please Validate Your Form!" });
 
-
                     res.json({ status: "failure", message: "Please Try Again 1" })
                 }
             } else {
-                console.error('Error:', error);
+                console.error('Error:2', error);
                 res.json({ status: "failure", message: "Please Try Again 2" })
             }
         });
@@ -172,6 +184,18 @@ router.post('/barcode', async (req, res) => {
                     const option = $("#axLocationID option")
                     let newProvinces = false;
                     let isSelected = false;
+                    let activeProvinces = []
+                    option.each((index, element) => {
+
+                        const value = $(element).attr('value');
+                        if(value == 0)
+                            return
+                        const innerHTML = $(element).html();
+                        activeProvinces.push({
+                            value,
+                            name: innerHTML
+                        })
+                    });
                     option.each((index, element) => {
 
                         const value = $(element).attr('value');
@@ -198,10 +222,10 @@ router.post('/barcode', async (req, res) => {
                                     tokenId: userId?.tokenId || null,
                                 }
                             })
-                            return res.json({status: "success", data: Array.isArray(DBSavedForm) ? DBSavedForm[0] : DBSavedForm})
+                            return res.json({status: "success", data: Array.isArray(DBSavedForm) ? DBSavedForm[0] : DBSavedForm, activeProvinces})
                         }
                     if(!newProvinces)
-                        return res.json({status: "failure", message: "This Province is not active for change"})
+                        return res.json({status: "failure", message: "This Province is not active for change", activeProvinces})
                     let __EVENTTARGET = $("#__EVENTTARGET").val();
                     let __EVENTARGUMENT = $("#__EVENTARGUMENT").val();
                     let __LASTFOCUS = $("#__LASTFOCUS").val();
@@ -305,7 +329,7 @@ router.post('/barcode', async (req, res) => {
                     let ucaCreatedBy = $("#ucaCreatedBy").val();
                     let ucaName = $("#ucaName").val();
                     let ucaReferenceNo = $("#ucaReferenceNo").val();
-                    console.log("UPDATES IS IN PROGRESS")
+                    console.log("UPDATES IS IN PROGRESS ", reqData.uxCode)
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/', 
                         form: {
@@ -459,7 +483,7 @@ router.post('/barcode', async (req, res) => {
                     res.json({ status: "failure", message: "Please Try Again 3" })
                 }
             } else {
-                console.error('Error:', error || response.statusCode);
+                console.error('4Error:', error || response.statusCode);
                 res.json({ status: "failure", message: "Please Try Again 4" })
             }
         });
