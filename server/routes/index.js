@@ -22,7 +22,7 @@ router.post('/barcode', async (req, res) => {
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const encodedForm = queryString.stringify({
-        "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR,
+        "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR || "768A9483",
         "__EVENTVALIDATION": reqData.__EVENTVALIDATION,
         "__SCROLLPOSITIONX": reqData.__SCROLLPOSITIONX,
         "__SCROLLPOSITIONY": reqData.__SCROLLPOSITIONY,
@@ -72,17 +72,45 @@ router.post('/barcode', async (req, res) => {
     });
     if(isExist)
         return res.json({status: "success", data: isExist});
+    let submittingObject = {
+        Button2: "ثبت",
+    }
+    let fullInfo = {
+        ucaFineTypeID: "1",
+        ucaApplicationTypeID: "1",
+        ucaDurationTypeID: "1",
+        ucaPaymentTypeID: "1",
+        ucaCreatedBy: "1",
+        ucaStatusID: "2",
+        ucaServiceID: "14",
+        PayablePrice: "5500",
+        uxCurrentTab: "dvApplication",
+        ucaTypeID: "1",
+        _AppTypeID: '2',
+    }
+
+    let submitFullinfo = true;
 
     const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
             if (!error) {
                 if (response.statusCode === 200) {
                     const $ = cheerio.load(body);
+                    let ucaTypeID = $("#ucaTypeID").val();
                     let isBarCodeCorrect = $('#uxMessage[style]')
                     if (isBarCodeCorrect.length)
                         return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
                     if( response.headers?.location?.search(/^\/{1}$/) == 0)
                         return res.json({status: "failure", message: "The Site Has Problem "})
+                    console.log(ucaTypeID, "UCA HAS2")
+                    if(ucaTypeID == 0 && submitFullinfo)
+                        {
+                            console.log(ucaTypeID, "CHANGING UCA")
+                            delete submittingObject.Button2
+                            submittingObject = {...submittingObject,...fullInfo}
+                            submittingObject.appSave = "ثبت"
+                            return handleRequest({...options, form: {...options.form, ...submittingObject}}, 0)
+                        }
                     SubmittedApp.findOrCreate({
                     // SubmittedApp.findOne({
                         where:{
@@ -119,7 +147,7 @@ router.post('/barcode', async (req, res) => {
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
 
                     saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
-                    if(("https://passport.moi.gov.af" + response.headers.location).search("/print") >= 0)
+                    if(("https://passport.moi.gov.af" + response.headers.location).search("/Print") >= 0)
                         return res.json({status: "success", message: "The Process Is Already Completed!"});
 
                     if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
@@ -160,6 +188,7 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('Error:2', error);
+                return handleRequest(options, 0)
                 res.json({ status: "failure", message: "Please Try Again 2" })
             }
         });
@@ -172,6 +201,7 @@ router.post('/barcode', async (req, res) => {
                 if (response.statusCode === 200) {
                     const $ = cheerio.load(body);
                     let __VIEWSTATE = $("#__VIEWSTATE").val();
+                    let ucaTypeID = $("#ucaTypeID").val();
                     let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
                     let axPrimaryMobile = $("#axPrimaryMobile").val();
                     let axFullAddress = $("#axFullAddress").val();
@@ -205,6 +235,7 @@ router.post('/barcode', async (req, res) => {
                         if( value == axLocationID )
                                 newProvinces = true;
                     });
+
                     if(isSelected)
                         {
                             console.log("ALREADY CHANGED")
@@ -222,7 +253,12 @@ router.post('/barcode', async (req, res) => {
                                     tokenId: userId?.tokenId || null,
                                 }
                             })
-                            return res.json({status: "success", data: Array.isArray(DBSavedForm) ? DBSavedForm[0] : DBSavedForm, activeProvinces})
+                            delete submittingObject.Button2
+                            console.log(ucaTypeID, "UCA HAS1")
+                            if(ucaTypeID != 0 || !submitFullinfo)
+                                return res.json({status: "success", data: Array.isArray(DBSavedForm) ? DBSavedForm[0] : DBSavedForm, activeProvinces})
+                            submittingObject = {...submittingObject,...fullInfo}
+                            submittingObject.appSave = "ثبت"
                         }
                     if(!newProvinces)
                         return res.json({status: "failure", message: "This Province is not active for change", activeProvinces})
@@ -317,7 +353,6 @@ router.post('/barcode', async (req, res) => {
                     let ucrReferenceNo = $("#ucrReferenceNo").val();
                     let ucrAdderss = $("#ucrAdderss").val();
                     let ucrDetails = $("#ucrDetails").val();
-                    let ucaTypeID = $("#ucaTypeID").val();
                     let uxOptions = $("#uxOptions").val();
                     let ucaFineTypeID = $("#ucaFineTypeID").val();
                     let ucaDurationTypeID = $("#ucaDurationTypeID").val();
@@ -330,12 +365,12 @@ router.post('/barcode', async (req, res) => {
                     let ucaName = $("#ucaName").val();
                     let ucaReferenceNo = $("#ucaReferenceNo").val();
                     console.log("UPDATES IS IN PROGRESS ", reqData.uxCode)
+                    
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/', 
                         form: {
                             __VIEWSTATE,
                             __EVENTVALIDATION,
-                            Button2: "ثبت",
                             axLocationID: axLocationID,
                             axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
@@ -445,26 +480,7 @@ router.post('/barcode', async (req, res) => {
                             ucaCreatedBy: ucaCreatedBy,
                             ucaName: ucaName,
                             ucaReferenceNo: ucaReferenceNo,
-
-
-                            
-                            // ucaName: '',
-                            // DocumentsStep: true,
-                            // AddressStep: true,
-                            // CompanyStep: true,
-                            // EducationStep: true,
-                            // JobStep: true,
-                            // PreviousPassportStep: true,
-                            // CriminalRecordStep: true,
-                            // ApplicationStep: true,
-                            // _AppTypeID: 2,
-                            // appSave: "ثبت",
-                            // ucaTypeID: "1",
-                            // ucaFineTypeID: "1",
-                            // ucaApplicationTypeID: "1",
-                            // ucaDurationTypeID: "1",
-                            // ucaPaymentTypeID: "1",
-                            // ucaReferenceNo: 'w'
+                            ...submittingObject
                         },
                         strictSSL: false,
                         headers: {
@@ -484,6 +500,7 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('4Error:', error || response.statusCode);
+                return handleRedirect(options, 0)
                 res.json({ status: "failure", message: "Please Try Again 4" })
             }
         });
@@ -543,7 +560,24 @@ router.post('/search', async (req, res) => {
     let jsonExist = isExist?.toJSON();
     if(jsonExist?.isChanged && jsonExist?.axLocationID == axLocationID)
         return res.json({status: "success", data: isExist});
+    let submittingObject = {
+        Button2: "ثبت",
+    }
+    let fullInfo = {
+        ucaFineTypeID: "1",
+        ucaApplicationTypeID: "1",
+        ucaDurationTypeID: "1",
+        ucaPaymentTypeID: "1",
+        ucaCreatedBy: "1",
+        ucaStatusID: "2",
+        ucaServiceID: "14",
+        PayablePrice: "5500",
+        uxCurrentTab: "dvApplication",
+        ucaTypeID: "1",
+        _AppTypeID: '2',
+    }
 
+    let submitFullinfo = true;
     let completeRequest = 1;
     const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
@@ -552,6 +586,7 @@ router.post('/search', async (req, res) => {
                     saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
 
                     const $ = cheerio.load(body);
+                    let ucaTypeID = $("#ucaTypeID").val();
                     let isBarCodeCorrect = $('#uxMessage[style]')
                     if (isBarCodeCorrect.length)
                     return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
@@ -567,6 +602,17 @@ router.post('/search', async (req, res) => {
                         uxCode = $('#uxCode')?.attr("value");
                     if(uxCode != null && uxCode?.length > 3)
                         isExist.uxCode = uxCode;
+
+                    console.log(ucaTypeID, "UCA HAS2")
+                    if(ucaTypeID == 0 && submitFullinfo)
+                        {
+                            console.log(ucaTypeID, "CHANGING UCA")
+                            delete submittingObject.Button2
+                            submittingObject = {...submittingObject,...fullInfo}
+                            submittingObject.appSave = "ثبت"
+                            return handleRequest({...options, form: {...options.form, ...submittingObject}}, 0)
+                        }
+
                     isExist.isChanged = true;
                     isExist.axLocationID = axLocationID;
                     isExist.save()
@@ -579,7 +625,7 @@ router.post('/search', async (req, res) => {
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     console.log("REQUEST_HANDLER", response.statusCode, "https://passport.moi.gov.af" + response.headers.location)
 
-                    if(("https://passport.moi.gov.af" + response.headers.location).search("/print") >= 0)
+                    if(("https://passport.moi.gov.af" + response.headers.location).search("/Print") >= 0)
                         return res.json({status: "success", message: "The Process Is Already Completed!"});
 
                     if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
@@ -628,7 +674,7 @@ router.post('/search', async (req, res) => {
                 if (response.statusCode === 200) {
                     const $ = cheerio.load(body);
                     console.log("FIRST REDIRECTING")
-
+                    let ucaTypeID = $("#ucaTypeID").val();
                     let __VIEWSTATE = $("#__VIEWSTATE").val();
                     let __EVENTVALIDATION = $("#__EVENTVALIDATION").val();
                     let axPrimaryMobile = $("#axPrimaryMobile").val();
@@ -652,21 +698,237 @@ router.post('/search', async (req, res) => {
                             isExist.isChanged = true;
                             isExist.axLocationID = axLocationID;
                             await isExist.save()
-                            return res.json({status: "success"})
+
+                            delete submittingObject.Button2
+                            console.log(ucaTypeID, "UCA HAS1")
+                            if(ucaTypeID != 0 || !submitFullinfo)
+                                return res.json({status: "success"})
+
+                            submittingObject = {...submittingObject,...fullInfo}
+                            submittingObject.appSave = "ثبت"
                         }
+                        
                     if(!newProvinces)
-                        return res.json({status: "failure", message: "This Province is not active for change"})
+                        return res.json({status: "failure", message: "This Province is not active for change"});
+
+                    let __EVENTTARGET = $("#__EVENTTARGET").val();
+                    let __EVENTARGUMENT = $("#__EVENTARGUMENT").val();
+                    let __LASTFOCUS = $("#__LASTFOCUS").val();
+                    let __VIEWSTATEGENERATOR = $("#__VIEWSTATEGENERATOR").val();
+                    let __SCROLLPOSITIONX = $("#__SCROLLPOSITIONX").val();
+                    let __SCROLLPOSITIONY = $("#__SCROLLPOSITIONY").val();
+                    let AddressStep = $("#AddressStep").val();
+                    let CompanyStep = $("#CompanyStep").val();
+                    let EducationStep = $("#EducationStep").val();
+                    let JobStep = $("#JobStep").val();
+                    let PreviousPassportStep = $("#PreviousPassportStep").val();
+                    let CriminalRecordStep = $("#CriminalRecordStep").val();
+                    let ApplicationStep = $("#ApplicationStep").val();
+                    let uxTitleID = $("#uxTitleID").val();
+                    let uxCriminalRecord = $("#uxCriminalRecord").val();
+                    let _AppTypeID = $("#_AppTypeID").val();
+                    let uxFamilyNameLocal = $("#uxFamilyNameLocal").val();
+                    let uxFamilyName = $("#uxFamilyName").val();
+                    let uxGivenNamesLocal = $("#uxGivenNamesLocal").val();
+                    let uxGivenNames = $("#uxGivenNames").val();
+                    let uxFatherNameLocal = $("#uxFatherNameLocal").val();
+                    let uxFatherName = $("#uxFatherName").val();
+                    let uxGrandFatherNameLocal = $("#uxGrandFatherNameLocal").val();
+                    let uxGrandFatherName = $("#uxGrandFatherName").val();
+                    let uxBirthDate_Shamsi = $("#uxBirthDate_Shamsi").val();
+                    let uxBirthDate = $("#uxBirthDate").val();
+                    let uxProfessionID = $("#uxProfessionID").val();
+                    let _Profession = $("#_Profession").val();
+                    let uxBirthLocationID = $("#uxBirthLocationID").val();
+                    let uxResidenceCountryID = $("#uxResidenceCountryID").val();
+                    let uxMaritalStatusID = $("#uxMaritalStatusID").val();
+                    let uxNIDTypeID = $("#uxNIDTypeID").val();
+                    let uxSerial = $("#uxSerial").val();
+                    let uxJuld = $("#uxJuld").val();
+                    let uxPage = $("#uxPage").val();
+                    let uxNo = $("#uxNo").val();
+                    let uxNID = $("#uxNID").val();
+                    let uxGenderID = $("#uxGenderID").val();
+                    let uxHairColorID = $("#uxHairColorID").val();
+                    let uxEyeColorID = $("#uxEyeColorID").val();
+                    let uxBodyHeightCM = $("#uxBodyHeightCM").val();
+                    let uxCreatedBy = $("#uxCreatedBy").val();
+                    let uxWorkItemID = $("#uxWorkItemID").val();
+                    let BDC_VCID_c_proceedapplication_default_bdcaptcha = $("#BDC_VCID_c_proceedapplication_default_bdcaptcha").val();
+                    let BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha = $("#BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha").val();
+                    let BDC_Hs_c_proceedapplication_default_bdcaptcha = $("#BDC_Hs_c_proceedapplication_default_bdcaptcha").val();
+                    let BDC_SP_c_proceedapplication_default_bdcaptcha = $("#BDC_SP_c_proceedapplication_default_bdcaptcha").val();
+                    let txtCaptchaCode = $("#txtCaptchaCode").val();
+                    let uxPhotoData = $("#uxPhotoData").val();
+                    let uxPhotoFileName = $("#uxPhotoFileName").val();
+                    let uxSignatureData = $("#uxSignatureData").val();
+                    let uxSignatureFileName = $("#uxSignatureFileName").val();
+                    let axPostOfficeID = $("#axPostOfficeID").val();
+                    let axStreetNo = $("#axStreetNo").val();
+                    let axTypeOfAddressID = $("#axTypeOfAddressID").val();
+                    let ucmBusinessName = $("#ucmBusinessName").val();
+                    let ucmStatusID = $("#ucmStatusID").val();
+                    let ucmLocationID = $("#ucmLocationID").val();
+                    let ucmBusinessLicenseNo = $("#ucmBusinessLicenseNo").val();
+                    let ucmTINNumber = $("#ucmTINNumber").val();
+                    let ucmTypeOfBusinessID = $("#ucmTypeOfBusinessID").val();
+                    let ucmFullAddress = $("#ucmFullAddress").val();
+                    let ucmIssueDate = $("#ucmIssueDate").val();
+                    let ucmExpairDate = $("#ucmExpairDate").val();
+                    let uedEducationLevelID = $("#uedEducationLevelID").val();
+                    let uedInstituteTypeID = $("#uedInstituteTypeID").val();
+                    let uedLocationID = $("#uedLocationID").val();
+                    let uedDari = $("#uedDari").val();
+                    let uedName = $("#uedName").val();
+                    let uedStartYear = $("#uedStartYear").val();
+                    let uedEndYear = $("#uedEndYear").val();
+                    let ujbTypeOfExperienceID = $("#ujbTypeOfExperienceID").val();
+                    let ujbLocationID = $("#ujbLocationID").val();
+                    let ujbPositionLocal = $("#ujbPositionLocal").val();
+                    let ujbPosition = $("#ujbPosition").val();
+                    let ujbOrganizationNameLocal = $("#ujbOrganizationNameLocal").val();
+                    let ujbOrganizationName = $("#ujbOrganizationName").val();
+                    let ujbStartDate = $("#ujbStartDate").val();
+                    let ujbEndDate = $("#ujbEndDate").val();
+                    let uppPassportTypeID = $("#uppPassportTypeID").val();
+                    let uppPassportNumber = $("#uppPassportNumber").val();
+                    let uppIssueDate = $("#uppIssueDate").val();
+                    let uppExpiryDate = $("#uppExpiryDate").val();
+                    let ucrTypeOfCrimeID = $("#ucrTypeOfCrimeID").val();
+                    let ucrDate = $("#ucrDate").val();
+                    let ucrLocationID = $("#ucrLocationID").val();
+                    let ucrArrested = $("#ucrArrested").val();
+                    let ucrStatusID = $("#ucrStatusID").val();
+                    let ucrReferenceNo = $("#ucrReferenceNo").val();
+                    let ucrAdderss = $("#ucrAdderss").val();
+                    let ucrDetails = $("#ucrDetails").val();
+                    let uxOptions = $("#uxOptions").val();
+                    let ucaFineTypeID = $("#ucaFineTypeID").val();
+                    let ucaDurationTypeID = $("#ucaDurationTypeID").val();
+                    let ucaApplicationTypeID = $("#ucaApplicationTypeID").val();
+                    let ucaPaymentTypeID = $("#ucaPaymentTypeID").val();
+                    let PayablePrice = $("#PayablePrice").val();
+                    let ucaServiceID = $("#ucaServiceID").val();
+                    let ucaStatusID = $("#ucaStatusID").val();
+                    let ucaCreatedBy = $("#ucaCreatedBy").val();
+                    let ucaName = $("#ucaName").val();
+                    let ucaReferenceNo = $("#ucaReferenceNo").val();
+                    console.log("UPDATES IS IN PROGRESS ", reqData.uxCode)
                     handleRequest({
                         url: 'https://passport.moi.gov.af/proceedApplication/',
                         form: {
                             __VIEWSTATE,
                             __EVENTVALIDATION,
-                            Button2: "ثبت",
                             axLocationID: axLocationID,
                             axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
                             axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
                             uxCurrentTab: 'dvAddress',
+                            DocumentsStep: true,
+                            __EVENTTARGET: __EVENTTARGET,
+                            __EVENTARGUMENT: __EVENTARGUMENT,
+                            __LASTFOCUS: __LASTFOCUS,
+                            __VIEWSTATEGENERATOR: __VIEWSTATEGENERATOR,
+                            __SCROLLPOSITIONX: __SCROLLPOSITIONX,
+                            __SCROLLPOSITIONY: __SCROLLPOSITIONY,
+                            AddressStep: AddressStep,
+                            CompanyStep: CompanyStep,
+                            EducationStep: EducationStep,
+                            JobStep: JobStep,
+                            PreviousPassportStep: PreviousPassportStep,
+                            CriminalRecordStep: CriminalRecordStep,
+                            ApplicationStep: ApplicationStep,
+                            uxTitleID: uxTitleID,
+                            uxCriminalRecord: uxCriminalRecord,
+                            _AppTypeID: _AppTypeID,
+                            uxFamilyNameLocal: uxFamilyNameLocal,
+                            uxFamilyName: uxFamilyName,
+                            uxGivenNamesLocal: uxGivenNamesLocal,
+                            uxGivenNames: uxGivenNames,
+                            uxFatherNameLocal: uxFatherNameLocal,
+                            uxFatherName: uxFatherName,
+                            uxGrandFatherNameLocal: uxGrandFatherNameLocal,
+                            uxGrandFatherName: uxGrandFatherName,
+                            uxBirthDate_Shamsi: uxBirthDate_Shamsi,
+                            uxBirthDate: uxBirthDate,
+                            uxProfessionID: uxProfessionID,
+                            _Profession: _Profession,
+                            uxBirthLocationID: uxBirthLocationID,
+                            uxResidenceCountryID: uxResidenceCountryID,
+                            uxMaritalStatusID: uxMaritalStatusID,
+                            uxNIDTypeID: uxNIDTypeID,
+                            uxSerial: uxSerial,
+                            uxJuld: uxJuld,
+                            uxPage: uxPage,
+                            uxNo: uxNo,
+                            uxNID: uxNID,
+                            uxGenderID: uxGenderID,
+                            uxHairColorID: uxHairColorID,
+                            uxEyeColorID: uxEyeColorID,
+                            uxBodyHeightCM: uxBodyHeightCM,
+                            uxCreatedBy: uxCreatedBy,
+                            uxWorkItemID: uxWorkItemID,
+                            BDC_VCID_c_proceedapplication_default_bdcaptcha: BDC_VCID_c_proceedapplication_default_bdcaptcha,
+                            BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha: BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha,
+                            BDC_Hs_c_proceedapplication_default_bdcaptcha: BDC_Hs_c_proceedapplication_default_bdcaptcha,
+                            BDC_SP_c_proceedapplication_default_bdcaptcha: BDC_SP_c_proceedapplication_default_bdcaptcha,
+                            txtCaptchaCode: txtCaptchaCode,
+                            uxPhotoData: uxPhotoData,
+                            uxPhotoFileName: uxPhotoFileName,
+                            uxSignatureData: uxSignatureData,
+                            uxSignatureFileName: uxSignatureFileName,
+                            axPostOfficeID: axPostOfficeID,
+                            axStreetNo: axStreetNo,
+                            axTypeOfAddressID: axTypeOfAddressID,
+                            ucmBusinessName: ucmBusinessName,
+                            ucmStatusID: ucmStatusID,
+                            ucmLocationID: ucmLocationID,
+                            ucmBusinessLicenseNo: ucmBusinessLicenseNo,
+                            ucmTINNumber: ucmTINNumber,
+                            ucmTypeOfBusinessID: ucmTypeOfBusinessID,
+                            ucmFullAddress: ucmFullAddress,
+                            ucmIssueDate: ucmIssueDate,
+                            ucmExpairDate: ucmExpairDate,
+                            uedEducationLevelID: uedEducationLevelID,
+                            uedInstituteTypeID: uedInstituteTypeID,
+                            uedLocationID: uedLocationID,
+                            uedDari: uedDari,
+                            uedName: uedName,
+                            uedStartYear: uedStartYear,
+                            uedEndYear: uedEndYear,
+                            ujbTypeOfExperienceID: ujbTypeOfExperienceID,
+                            ujbLocationID: ujbLocationID,
+                            ujbPositionLocal: ujbPositionLocal,
+                            ujbPosition: ujbPosition,
+                            ujbOrganizationNameLocal: ujbOrganizationNameLocal,
+                            ujbOrganizationName: ujbOrganizationName,
+                            ujbStartDate: ujbStartDate,
+                            ujbEndDate: ujbEndDate,
+                            uppPassportTypeID: uppPassportTypeID,
+                            uppPassportNumber: uppPassportNumber,
+                            uppIssueDate: uppIssueDate,
+                            uppExpiryDate: uppExpiryDate,
+                            ucrTypeOfCrimeID: ucrTypeOfCrimeID,
+                            ucrDate: ucrDate,
+                            ucrLocationID: ucrLocationID,
+                            ucrArrested: ucrArrested,
+                            ucrStatusID: ucrStatusID,
+                            ucrReferenceNo: ucrReferenceNo,
+                            ucrAdderss: ucrAdderss,
+                            ucrDetails: ucrDetails,
+                            ucaTypeID: ucaTypeID,
+                            uxOptions: uxOptions,
+                            ucaFineTypeID: ucaFineTypeID,
+                            ucaDurationTypeID: ucaDurationTypeID,
+                            ucaApplicationTypeID: ucaApplicationTypeID,
+                            ucaPaymentTypeID: ucaPaymentTypeID,
+                            PayablePrice: PayablePrice,
+                            ucaServiceID: ucaServiceID,
+                            ucaStatusID: ucaStatusID,
+                            ucaCreatedBy: ucaCreatedBy,
+                            ucaName: ucaName,
+                            ucaReferenceNo: ucaReferenceNo,
+                            ...submittingObject
 
                         },
                         strictSSL: false,

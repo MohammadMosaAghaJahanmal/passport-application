@@ -42,7 +42,7 @@ const createApplication = async(req, res) => {
 
 	const steps = {
 		mobileStep: false,
-		passportTypeStep: false,
+		passportTypeStep: false
 	}
 	
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
@@ -83,25 +83,6 @@ const createApplication = async(req, res) => {
 		
 
 	let savedApp = null;
-	let txtCaptchaCode = undefined;
-	let secret1 = undefined;
-	let secret2 = undefined;
-	let secret3 = undefined;
-	let secret4 = undefined;
-	let uxWorkItemID = undefined;
-	let uxCurrentTab = undefined;
-	let axTypeOfAddressID = undefined;
-	let ucaName = undefined;
-
-	let uxCode = undefined;
-	let messageText = undefined;
-	let __VIEWSTATEGENERATOR = undefined;
-	let __EVENTTARGET = undefined;
-	let __EVENTARGUMENT = undefined;
-	let __LASTFOCUS = undefined;
-
-	let __EVENTVALIDATION = undefined;
-	let __VIEWSTATE = undefined;
 
 	let axPrimaryMobile = reqData.axPrimaryMobile
 	let axLocationID = reqData.axLocationID
@@ -139,18 +120,15 @@ const createApplication = async(req, res) => {
 						'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 						'Cookie': saveCookie
 					}
-					uxCode =  $('#uxCode')?.attr("value") ?  $('#uxCode')?.attr("value") : uxCode ;
-					messageText = messageText ? messageText:  $('.message')?.attr()
-					 __EVENTVALIDATION =  $('#__EVENTVALIDATION')?.attr("value") ?  $('#__EVENTVALIDATION')?.attr("value") : __EVENTVALIDATION ;
-					 __VIEWSTATE =  $('#__VIEWSTATE')?.attr("value") ?  $('#__VIEWSTATE')?.attr("value") : __VIEWSTATE ; 
-					__VIEWSTATEGENERATOR =  $('#__VIEWSTATEGENERATOR')?.attr("value") ?  $('#__VIEWSTATEGENERATOR')?.attr("value") : __VIEWSTATEGENERATOR ;
-					__EVENTTARGET =  $('#__EVENTTARGET')?.attr("value") ?  $('#__EVENTTARGET')?.attr("value") : __EVENTTARGET ;
-					__EVENTARGUMENT =  $('#__EVENTARGUMENT')?.attr("value") ?  $('#__EVENTARGUMENT')?.attr("value") : __EVENTARGUMENT ;
-					__LASTFOCUS =  $('#__LASTFOCUS')?.attr("value") ?  $('#__LASTFOCUS')?.attr("value") : __LASTFOCUS ;
-					ucaName =  $('#ucaName')?.attr("value") ?  $('#ucaName')?.attr("value") : ucaName ;
+					let uxCode = $('#uxCode')?.attr("value");
+					let messageText = $('.message')?.attr()
+					let __EVENTVALIDATION = $('#__EVENTVALIDATION')?.attr("value");
+					let __VIEWSTATE = $('#__VIEWSTATE')?.attr("value"); 
+					let __VIEWSTATEGENERATOR = $('#__VIEWSTATEGENERATOR')?.attr("value");
+					let __EVENTTARGET = $('#__EVENTTARGET')?.attr("value");
+					let __EVENTARGUMENT = $('#__EVENTARGUMENT')?.attr("value");
+					let __LASTFOCUS = $('#__LASTFOCUS')?.attr("value");
 					const option = $("#axLocationID option")
-
-
 					let newProvinces = false;
 					option.each((index, element) => {
 
@@ -159,13 +137,15 @@ const createApplication = async(req, res) => {
 									newProvinces = true;
 					});
 
+					// let Image1 = $('#Image1')?.attr("src");
+					// let Image2 = $('#Image2')?.attr("src");
 					let axPrimaryMobileElm = $('#axPrimaryMobile')?.val();
-					let ucaTypeID = $('#ucaTypeID');
-					let ucaTypeIDValue = ucaTypeID?.val();
-					steps.uxCode = uxCode ? uxCode : steps?.uxCode;
+					let ucaTypeID = $('#ucaTypeID')
+					let ucaTypeIDValue = ucaTypeID?.val()
+					console.log(uxCode)
 					console.log(steps, "NUMBER")
 					
-					if((uxCode?.length > 10) && savedApp==null && !steps.mobileStep)
+					if((uxCode?.length > 10) && savedApp==null)
 					{
 						try {
 							savedApp = await NewForm.create({
@@ -187,18 +167,8 @@ const createApplication = async(req, res) => {
 										uxCode,
 										Button2: "ثبت",
 										axLocationID: axLocationID || 31,
-										axPrimaryMobile: axPrimaryMobile || "0",
-										axFullAddress: axFullAddress || "آدرس",
-										ucaName,
-										uxCurrentTab: 'dvAddress',
-										_AppTypeID: 2,
-										BDC_VCID_c_application_default_bdcaptcha: secret1,
-										BDC_BackWorkaround_c_application_default_bdcaptcha: secret2,
-										BDC_Hs_c_application_default_bdcaptcha: secret3,
-										BDC_SP_c_application_default_bdcaptcha: secret4,
-										uxWorkItemID,
-
-
+										axPrimaryMobile: axPrimaryMobile || "0712345678",
+										axFullAddress: axFullAddress || "شیستابنایستب",
 								},
 								strictSSL: false,
 								headers: {
@@ -207,6 +177,23 @@ const createApplication = async(req, res) => {
 								}
 							});
 
+							// return passportFormSetProvince(req, res, {
+							// 	__VIEWSTATEGENERATOR: "59A49A67",
+							// 	__SCROLLPOSITIONX: "0",
+							// 	__SCROLLPOSITIONY: "500",
+							// 	__EVENTARGUMENT: "",
+							// 	__EVENTTARGET: "",
+							// 	__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+							// 	__VIEWSTATE: PROVINCE__VIEWSTATE,
+							// 	uxName: reqData.uxGivenNamesLocal,
+							// 	uxFatherName: reqData.uxFatherNameLocal,
+							// 	uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+							// 	uxBirthDate: reqData.uxBirthDate_Shamsi,
+							// 	uxSearch: "جستجو",
+							// 	axLocationID: axLocationID,
+							// }, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
+
+							// return res.json({status: "success", data: savedApp})
 						} catch (dbErr) {
 							console.log(dbErr.message, "ERR DATABASE DUPLICATE")
 							savedApp = await NewForm.create({
@@ -228,14 +215,6 @@ const createApplication = async(req, res) => {
 										axLocationID: axLocationID || 31,
 										axPrimaryMobile: axPrimaryMobile || "0712345678",
 										axFullAddress: axFullAddress || "شیستابنایستب",
-										ucaName,
-										uxCurrentTab: 'dvAddress',
-										_AppTypeID: '2',
-										BDC_VCID_c_application_default_bdcaptcha: secret1,
-										BDC_BackWorkaround_c_application_default_bdcaptcha: secret2,
-										BDC_Hs_c_application_default_bdcaptcha: secret3,
-										BDC_SP_c_application_default_bdcaptcha: secret4,
-										uxWorkItemID,
 								},
 								strictSSL: false,
 								headers: {
@@ -243,14 +222,26 @@ const createApplication = async(req, res) => {
 										'Cookie': saveCookie
 								}
 							});
-
+							// return passportFormSetProvince(req, res, {
+							// 	__VIEWSTATEGENERATOR: "59A49A67",
+							// 	__SCROLLPOSITIONX: "0",
+							// 	__SCROLLPOSITIONY: "500",
+							// 	__EVENTARGUMENT: "",
+							// 	__EVENTTARGET: "",
+							// 	__EVENTVALIDATION: PROVINCE__EVENTVALIDATION,
+							// 	__VIEWSTATE: PROVINCE__VIEWSTATE,
+							// 	uxName: reqData.uxGivenNamesLocal,
+							// 	uxFatherName: reqData.uxFatherNameLocal,
+							// 	uxGrandFatherName: reqData.uxGrandFatherNameLocal,
+							// 	uxBirthDate: reqData.uxBirthDate_Shamsi,
+							// 	uxSearch: "جستجو",
+							// 	axLocationID: axLocationID,
+							// }, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
 						}
 					}
 
 					if(!steps.passportTypeStep && steps.mobileStep){
 						console.log("___SAVING PASSPORT INFO__ AT FIRST SIDE")
-						savedApp.axLocationID = axLocationID;
-						await savedApp?.save()
 						steps.passportTypeStep = true
 						return handleRequest({
 							url: requestOptions.url,
@@ -264,18 +255,6 @@ const createApplication = async(req, res) => {
 									ucaApplicationTypeID: "1",
 									ucaDurationTypeID: "1",
 									ucaPaymentTypeID: "1",
-									ucaCreatedBy: "1",
-									ucaStatusID: "2",
-									ucaServiceID: "14",
-									PayablePrice: "5500",
-									uxCurrentTab: "dvApplication",
-									_AppTypeID: '2',
-									ucaName,
-									BDC_VCID_c_application_default_bdcaptcha: secret1,
-									BDC_BackWorkaround_c_application_default_bdcaptcha: secret2,
-									BDC_Hs_c_application_default_bdcaptcha: secret3,
-									BDC_SP_c_application_default_bdcaptcha: secret4,
-									uxWorkItemID,
 							},
 							strictSSL: false,
 							headers: {
@@ -353,14 +332,15 @@ const createApplication = async(req, res) => {
 										
 										const captchaImageData = Buffer.from(imageText).toString('base64');
 										try {
-												txtCaptchaCode = txtCaptchaCode ? txtCaptchaCode : await ac.solveImage(captchaImageData, true)
-												secret1 = secret1 ? secret1 : $('#BDC_VCID_c_application_default_bdcaptcha')?.attr("value");
-												secret2 = secret2 ? secret2 : $('#BDC_BackWorkaround_c_application_default_bdcaptcha')?.attr("value");
-												secret3 = secret3 ? secret3 : $('#BDC_Hs_c_application_default_bdcaptcha')?.attr("value");
-												secret4 = secret4 ? secret4 : $('#BDC_SP_c_application_default_bdcaptcha')?.attr("value");
-												uxWorkItemID = uxWorkItemID ? uxWorkItemID : $('#uxWorkItemID')?.attr("value");
-												uxCurrentTab = uxCurrentTab ? uxCurrentTab : $('#uxCurrentTab')?.attr("value");
-												axTypeOfAddressID = axTypeOfAddressID ? axTypeOfAddressID : $('#axTypeOfAddressID')?.attr("value");
+												let txtCaptchaCode = await ac.solveImage(captchaImageData, true)
+												let secret1 = $('#BDC_VCID_c_application_default_bdcaptcha')?.attr("value");
+												let secret2 = $('#BDC_BackWorkaround_c_application_default_bdcaptcha')?.attr("value");
+												let secret3 = $('#BDC_Hs_c_application_default_bdcaptcha')?.attr("value");
+												let secret4 = $('#BDC_SP_c_application_default_bdcaptcha')?.attr("value");
+												let uxWorkItemID = $('#uxWorkItemID')?.attr("value");
+												let ucaName = $('#ucaName')?.attr("value");
+												let uxCurrentTab = $('#uxCurrentTab')?.attr("value");
+												let axTypeOfAddressID = $('#axTypeOfAddressID')?.attr("value");
 
 												let botJS = BOT_JS.replace("XXXXX", secret1)
 												let botHTML = BOT_HTML.replace("XXXXX", secret1)
@@ -378,7 +358,6 @@ const createApplication = async(req, res) => {
 													txtCaptchaCode.click();
 													txtCaptchaCode.dispatchEvent(keyupEvent);
 													`)
-
 														
 													const submitMainFormOptions = {
 														...reqData,
@@ -396,8 +375,8 @@ const createApplication = async(req, res) => {
 														__SCROLLPOSITIONY: 995,
 														txtCaptchaCode: html.window.initBot.GetUserInputElement().value,
 														uxSaveMainForm: "ثبت",
-														_AppTypeID: 0,
-														uxCurrentTab: 0,
+														_AppTypeID: 2,
+														uxCurrentTab,
 														uxWorkItemID,
 														axTypeOfAddressID,
 														ucaName,
@@ -439,7 +418,59 @@ const createApplication = async(req, res) => {
 							return
 						}
 					} 
+					// if((uxCode?.length > 10) && (Image1?.search("userPhoto") < 0) && savedApp != null)
+					// {
+					// 	console.log("SAVING IMAGE")
+					// 	console.log(Image1)
+					// 	console.log(Image2)
+					// 	return handleRequest({
+					// 		url: requestOptions.url,
+					// 		form: {
+					// 				__VIEWSTATE,
+					// 				__EVENTVALIDATION,
+					// 				uxCode,
+					// 				Button4: "ثبت",
+					// 				uxPhotoData: base64Image,
+					// 				uxSignatureData: base64Image,
+					// 				uxPhotoFileName: "C:\\fakepath\\filepath.png",
+					// 				uxSignatureFileName: "C:\\fakepath\\filepath.png",
+									
+					// 		},
+					// 		strictSSL: false,
+					// 		headers: {
+					// 				...bypassHeader,
+					// 				'Cookie': saveCookie
+					// 		}
+					// 	});
+						
+					// }
+					// if((!axPrimaryMobileElm || axPrimaryMobileElm?.length <=0) && savedApp != null)
+					// {
+					// 	console.log("SAVING PROVINCE", axPrimaryMobileElm)
 
+					// 	return handleRequest({
+					// 		url: requestOptions.url,
+					// 		form: {
+					// 				__VIEWSTATE,
+					// 				__EVENTVALIDATION,
+					// 				uxCode,
+					// 				Button2: "ثبت",
+					// 				axLocationID: reqData.axLocationID || 31,
+					// 				// axLocationID: 35,
+					// 				axPrimaryMobile: axPrimaryMobile || "0712345678",
+					// 				axFullAddress: reqData.axFullAddress || "شیستابنایستب",
+					// 				uxPhotoData: base64Image,
+					// 				uxSignatureData: base64Image,
+					// 				uxPhotoFileName: "C:\\fakepath\\filepath.png",
+					// 				uxSignatureFileName: "C:\\fakepath\\filepath.png",
+					// 		},
+					// 		strictSSL: false,
+					// 		headers: {
+					// 				...bypassHeader,
+					// 				'Cookie': saveCookie
+					// 		}
+					// 	});
+					// }
 						let savedForm = Array.isArray(savedApp) ? savedApp[0] : savedApp;
 						savedForm.isChanged = true;
 						await savedForm?.save()
@@ -464,7 +495,6 @@ const createApplication = async(req, res) => {
 				}
 			} else {
 					console.log('Error:', error);
-					handleRequest(options, 0, undefined, METHOD)
 					res.json({status: "failure", message: "Please Try Again 1"})
 			}
 		});
