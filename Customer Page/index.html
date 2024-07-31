@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script>
+
+    const DB_NAME = "PASS_DATA";
+    let database = localStorage.getItem("PASS_DATA");
+    try {
+      if(database)
+        database = JSON.parse(database);
+      if(!database)
+        database = [];
+    } catch (error) {
+      database = [];
+    }
+
+    function fineOne(uxSerial) {
+      return database.find(perApplicant => perApplicant.uxSerial === uxSerial);
+    }
+
+    function deleteOne(uxSerial) {
+      const cloneDB = [...database];
+      const findIndex = cloneDB.findIndex((perApplicant) => perApplicant.uxSerial === uxSerial);
+      cloneDB.splice(findIndex, 1);
+      saveDatabase(cloneDB);
+    }
+
+    function createOne(data) {
+      const cloneDB = [...database];
+      const isExists = cloneDB.find(per => per.uxSerial === data.uxSerial);
+      if(isExists)
+      {
+        alert("دا بارکوډ دمخه لا شتون لري")
+        return false; 
+      }
+      cloneDB.push(data);
+      saveDatabase(cloneDB);
+      return true
+    }
+
+    function insertBulky(data = []) {
+      const cloneDB = [...database];
+      data.forEach(perNewApp => {
+        let findNDX = cloneDB.findIndex(perOldApp => (perOldApp.uxSerial == perNewApp.uxSerial && perOldApp.date == perNewApp.date))
+        if(findNDX < 0)
+          cloneDB.push(perNewApp);
+      })
+      saveDatabase(cloneDB);
+    }
+
+    function updateOne(oldBar, data) {
+      const cloneDB = [...database];
+      cloneDB[cloneDB.findIndex(per => per.uxSerial === oldBar)] = data;
+      saveDatabase(cloneDB);
+    }
+
+    function saveDatabase(newData) {
+      localStorage.setItem(DB_NAME, JSON.stringify(newData));
+      database = newData;
+    }
+
+    function createELM(tagName) {
+      return document.createElement(tagName);
+    }
+
+  </script>
+  <title>SUBMIT BULKY</title>
+</head>
+<body>
+
+  <form action="/" method="get" id="form2">
+  <div class="form">
+
+    <div class="row">
+      <div class="form-group">
+        <label for="uxTitleID">Gender</label>
+        <select id="uxTitleID" name="uxTitleID">
+          <option value="1" selected>Male</option>
+          <option value="2">Female</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="uxCriminalRecord">Passport Type</label>
+        <select id="uxCriminalRecord" name="uxCriminalRecord">
+          <option value="2" selected>New</option>
+          <option value="3">Renewal</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="uxFamilyNameLocal">Pashto Family Name</label>
+        <input type="text" required name="uxFamilyNameLocal" id="uxFamilyNameLocal" value="">
+      </div>
+      
+      <div class="form-group">
+        <label for="uxFamilyName">English Family Name</label>
+        <input type="text" required name="uxFamilyName" id="uxFamilyName" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="uxGivenNamesLocal">Pashto Name</label>
+        <input type="text" required name="uxGivenNamesLocal" id="uxGivenNamesLocal" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="uxGivenNames">English Name</label>
+        <input type="text" required name="uxGivenNames" id="uxGivenNames" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="uxFatherNameLocal">Pashto Father Name</label>
+        <input type="text" required name="uxFatherNameLocal" id="uxFatherNameLocal" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="uxFatherName">English Father Name</label>
+        <input type="text" required name="uxFatherName" id="uxFatherName" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="uxGrandFatherNameLocal">Pashto GrandFather Name</label>
+        <input type="text" required name="uxGrandFatherNameLocal" id="uxGrandFatherNameLocal" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="uxGrandFatherName">English GrandFather Name</label>
+        <input type="text" required name="uxGrandFatherName" id="uxGrandFatherName" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="uxBirthDate">Essai Birth Date</label>
+        <input type="text" required name="uxBirthDate" id="uxBirthDate" value="" placeholder="2000-12-30">
+      </div>
+
+      <div class="form-group">
+        <label for="uxBirthDate_Shamsi">Shamsi BirthDate</label>
+        <input type="text" required name="uxBirthDate_Shamsi" id="uxBirthDate_Shamsi" value="" placeholder="1380/01/01">
+      </div>
+
+      <div class="form-group">
+        <label for="uxMaritalStatusID">Marital Status</label>
+        <select id="uxMaritalStatusID" name="uxMaritalStatusID">
+          <option value="1" selected>Single</option>
+          <option value="2">Married</option>
+          <option value="3">Widow</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="uxNIDTypeID">National Id Type</label>
+        <select id="uxNIDTypeID" name="uxNIDTypeID">
+          <option value="11" selected>Electronic Tazkira</option>
+          <option value="8">Tazkira</option>
+          <option value="9">Birth Card</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="uxSerial">Tazkira Id</label>
+        <input type="text" required name="uxSerial" id="uxSerial" value="" placeholder="">
+      </div>
+      
+      <div class="tazkiraFields">
+        
+        <div class="form-group">
+          <label for="uxJuld">Juld</label>
+          <input type="text" name="uxJuld" id="uxJuld" value="" placeholder="">
+        </div>
+
+        <div class="form-group">
+          <label for="uxPage">Page</label>
+          <input type="text" name="uxPage" id="uxPage" value="" placeholder="">
+        </div>
+
+        <div class="form-group">
+          <label for="uxNo">Number</label>
+          <input type="text" name="uxNo" id="uxNo" value="" placeholder="">
+        </div>
+
+      </div>
+
+
+      <div class="form-group">
+        <label for="uxBodyHeightCM">Body Height CM</label>
+        <input type="text" required name="uxBodyHeightCM" id="uxBodyHeightCM" value="" placeholder="">
+      </div>
+
+
+      <div class="form-group">
+        <label for="ucaDurationTypeID">Passport Duration</label>
+        <select id="ucaDurationTypeID" name="ucaDurationTypeID">
+          <option value="1" selected>5 Years</option>
+          <option value="2">10 Years</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="ucaPaymentTypeID">Applicant Age</label>
+        <select id="ucaPaymentTypeID" name="ucaPaymentTypeID">
+          <option value="1" selected>Older Than 14</option>
+          <option value="3">Less Than 15</option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="uxBirthLocationID">Birth Location</label>
+        <select id="uxBirthLocationID" name="uxBirthLocationID">
+          <option value="16">Badakhshan</option>
+          <option value="32">Badghis</option>
+          <option value="10">Baghlan</option>
+          <option value="27">Balkh</option>
+          <option value="11">Bamyan</option>
+          <option value="22">Daykundi</option>
+          <option value="34">Farah</option>
+          <option value="29">Faryab</option>
+          <option value="12">Ghazni</option>
+          <option value="21">Ghor</option>
+          <option value="30">Helmand</option>
+          <option value="33" selected>Herat</option>
+          <option value="28">Jowzjan</option>
+          <option value="2">Kabul</option>
+          <option value="31">Kandahar</option>
+          <option value="3">Kapisa</option>
+          <option value="26">Khost</option>
+          <option value="14">Kunar</option>
+          <option value="18">Kunduz</option>
+          <option value="8">Laghman</option>
+          <option value="6" >Logar</option>
+          <option value="7">Nangarhar</option>
+          <option value="35">Nimroz</option>
+          <option value="15">Nuristan</option>
+          <option value="13">Paktia</option>
+          <option value="25">Paktika</option>
+          <option value="9">Panjshir</option>
+          <option value="4">Parwan</option>
+          <option value="19">Samangan</option>
+          <option value="20">Sar-e Pol</option>
+          <option value="17">Takhar</option>
+          <option value="23">Urozgan</option>
+          <option value="5">Wardak</option>
+          <option value="24">Zabul</option>
+          <option value="1384">Dar</option>
+          <option value="1385">Tar</option>
+          <option value="1386">Zam</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="uxResidenceCountryID">Current Location</label>
+        <select id="uxResidenceCountryID" name="uxResidenceCountryID">
+          <option value="16">Badakhshan</option>
+          <option value="32">Badghis</option>
+          <option value="10">Baghlan</option>
+          <option value="27">Balkh</option>
+          <option value="11">Bamyan</option>
+          <option value="22">Daykundi</option>
+          <option value="34">Farah</option>
+          <option value="29">Faryab</option>
+          <option value="12">Ghazni</option>
+          <option value="21">Ghor</option>
+          <option value="30">Helmand</option>
+          <option value="33" selected>Herat</option>
+          <option value="28">Jowzjan</option>
+          <option value="2">Kabul</option>
+          <option value="31">Kandahar</option>
+          <option value="3">Kapisa</option>
+          <option value="26">Khost</option>
+          <option value="14">Kunar</option>
+          <option value="18">Kunduz</option>
+          <option value="8">Laghman</option>
+          <option value="6" >Logar</option>
+          <option value="7">Nangarhar</option>
+          <option value="35">Nimroz</option>
+          <option value="15">Nuristan</option>
+          <option value="13">Paktia</option>
+          <option value="25">Paktika</option>
+          <option value="9">Panjshir</option>
+          <option value="4">Parwan</option>
+          <option value="19">Samangan</option>
+          <option value="20">Sar-e Pol</option>
+          <option value="17">Takhar</option>
+          <option value="23">Urozgan</option>
+          <option value="5">Wardak</option>
+          <option value="24">Zabul</option>
+          <option value="1384">Dar</option>
+          <option value="1385">Tar</option>
+          <option value="1386">Zam</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="axLocationID">Selected Province</label>
+        <select id="axLocationID" name="axLocationID">
+          <option value="16">Badakhshan</option>
+          <option value="32">Badghis</option>
+          <option value="10">Baghlan</option>
+          <option value="27">Balkh</option>
+          <option value="11">Bamyan</option>
+          <option value="22">Daykundi</option>
+          <option value="34">Farah</option>
+          <option value="29">Faryab</option>
+          <option value="12">Ghazni</option>
+          <option value="21">Ghor</option>
+          <option value="30">Helmand</option>
+          <option value="33" selected>Herat</option>
+          <option value="28">Jowzjan</option>
+          <option value="2">Kabul</option>
+          <option value="31">Kandahar</option>
+          <option value="3">Kapisa</option>
+          <option value="26">Khost</option>
+          <option value="14">Kunar</option>
+          <option value="18">Kunduz</option>
+          <option value="8">Laghman</option>
+          <option value="6" >Logar</option>
+          <option value="7">Nangarhar</option>
+          <option value="35">Nimroz</option>
+          <option value="15">Nuristan</option>
+          <option value="13">Paktia</option>
+          <option value="25">Paktika</option>
+          <option value="9">Panjshir</option>
+          <option value="4">Parwan</option>
+          <option value="19">Samangan</option>
+          <option value="20">Sar-e Pol</option>
+          <option value="17">Takhar</option>
+          <option value="23">Urozgan</option>
+          <option value="5">Wardak</option>
+          <option value="24">Zabul</option>
+          <option value="1384">Dar</option>
+          <option value="1385">Tar</option>
+          <option value="1386">Zam</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="submit">Save</button>
+  </div>
+</form>
+
+  <div style="max-width: 1366px;margin: 0 auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>FatherName</th>
+          <th>GrandFather</th>
+          <th>Date</th>
+          <th>Tazkira ID</th>
+          <th>Province</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="export-import">
+      <button onclick="onbackup()" class="submit">
+        Export Backup
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -356,6 +356,9 @@ export const afghanistanProvinces = [
   { province: "Urozgan", id: 23 },
   { province: "Wardak", id: 5 },
   { province: "Zabul", id: 24 },
+  { province: "Dar", id: 1384 },
+  { province: "Tar", id: 1385 },
+  { province: "Zam", id: 1386 },
 ];
 
 export const passportDuration = [

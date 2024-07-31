@@ -5,6 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <title>SUBMIT BULKY</title>
+  <script>
+
+    const DB_NAME = "PASS_DATA";
+    let database = localStorage.getItem("PASS_DATA");
+    try {
+      if(database)
+        database = JSON.parse(database);
+      if(!database)
+        database = [];
+    } catch (error) {
+      database = [];
+    }
+
+    function fineOne(uxSerial) {
+      return database.find(perApplicant => perApplicant.uxSerial === uxSerial);
+    }
+
+    function deleteOne(uxSerial) {
+      const cloneDB = [...database];
+      const findIndex = cloneDB.findIndex((perApplicant) => perApplicant.uxSerial === uxSerial);
+      cloneDB.splice(findIndex, 1);
+      saveDatabase(cloneDB);
+    }
+
+    function createOne(data) {
+      const cloneDB = [...database];
+      const isExists = cloneDB.find(per => per.uxSerial === data.uxSerial);
+      if(isExists)
+      {
+        alert("دا بارکوډ دمخه لا شتون لري")
+        return false; 
+      }
+      cloneDB.push(data);
+      saveDatabase(cloneDB);
+      return true
+    }
+
+    function insertBulky(data = []) {
+      const cloneDB = [...database];
+      data.forEach(perNewApp => {
+        let findNDX = cloneDB.findIndex(perOldApp => (perOldApp.uxSerial == perNewApp.uxSerial && perOldApp.date == perNewApp.date))
+        if(findNDX < 0)
+          cloneDB.push(perNewApp);
+      })
+      saveDatabase(cloneDB);
+    }
+
+    function updateOne(oldBar, data) {
+      const cloneDB = [...database];
+      cloneDB[cloneDB.findIndex(per => per.uxSerial === oldBar)] = data;
+      saveDatabase(cloneDB);
+    }
+
+    function saveDatabase(newData) {
+      localStorage.setItem(DB_NAME, JSON.stringify(newData));
+      database = newData;
+    }
+
+    function createELM(tagName) {
+      return document.createElement(tagName);
+    }
+    const readCSV = (content = "") =>
+    {
+      const lines = content.split('\n');
+      const headers = lines[0].split(',');
+      if(headers.length !== 5)
+        return alert("Failure Incorrect Formatted File!")
+      const objects = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        if(values.length !== 5)
+          continue;
+        const obj = {};
+        for (let j = 0; j < headers.length; j++) {
+          if(headers[j]?.trim() === "checked")
+          {
+            obj[headers[j].trim()] = Number.parseInt(values[j])
+            continue;
+          }
+          obj[headers[j]?.trim()] = values[j]?.trim();
+        }
+        objects.push(obj);
+      }
+      return objects;
+    }
+
+  </script>
 </head>
 <body>
   <div class="form">
@@ -176,6 +264,10 @@
       <tbody></tbody>
     </table>
     <div class="export-import">
+      <textarea placeholder="Data" rows="10" style="resize: vertical;"></textarea>
+      <button onclick="importBackup()" class="info">
+        Import Backup
+      </button>
       <button onclick="onbackup()" class="submit">
         Export Backup
       </button>

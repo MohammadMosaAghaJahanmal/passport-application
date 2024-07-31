@@ -40,6 +40,7 @@ const createApplication = async(req, res) => {
 	delete reqData.__VIEWSTATE
 	reqData.uxBirthDate_Shamsi = essaiToShamsi(reqData.uxBirthDate);
 
+
 	const steps = {
 		mobileStep: false,
 		passportTypeStep: false,
@@ -262,12 +263,12 @@ const createApplication = async(req, res) => {
 									ucaTypeID: "1",
 									ucaFineTypeID: "1",
 									ucaApplicationTypeID: "1",
-									ucaDurationTypeID: "1",
-									ucaPaymentTypeID: "1",
+									ucaDurationTypeID: reqData.ucaDurationTypeID || "1",
+									ucaPaymentTypeID: reqData.ucaPaymentTypeID || "1",
 									ucaCreatedBy: "1",
 									ucaStatusID: "2",
 									ucaServiceID: "14",
-									PayablePrice: "5500",
+									// PayablePrice: "5500",
 									uxCurrentTab: "dvApplication",
 									_AppTypeID: '2',
 									ucaName,
@@ -441,6 +442,8 @@ const createApplication = async(req, res) => {
 					} 
 
 						let savedForm = Array.isArray(savedApp) ? savedApp[0] : savedApp;
+						if(!savedForm)
+							return res.json({status: 'failure', message:"DNS PROBLEM"})
 						savedForm.isChanged = true;
 						await savedForm?.save()
 					res.json({status: "success", data: savedForm})
@@ -464,7 +467,6 @@ const createApplication = async(req, res) => {
 				}
 			} else {
 					console.log('Error:', error);
-					handleRequest(options, 0, undefined, METHOD)
 					res.json({status: "failure", message: "Please Try Again 1"})
 			}
 		});

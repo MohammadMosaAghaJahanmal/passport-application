@@ -251,6 +251,7 @@ const submitListener = async(e) => {
   submitData(allData, passport)
 }
 
+
 const onclipboard = async(e) => {
   allDataForInfo.forEach((per) => {
     changeHandler(per.uxGivenNamesLocal, per.uxFatherNameLocal, per.uxGrandFatherNameLocal, per.uxBirthDate_Shamsi, per.uxSerial, 'openbarcode', true)
@@ -343,6 +344,8 @@ function loadDataToTable(data, tbody) {
             '<button class="Submit" onclick="changeHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\', \'' + 'openbarcode' + '\')" tabindex=\'' + (index + 30000) + '\'>Get Data</button>' +
               '<button class="Submit" onclick="changeHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\', \'' + applicant.uxSerial + '\')" tabindex=\'' + (index + 1) + '\'>Change</button>' +
               '<button class="Submit" onclick="submitHandler(\'' + applicant.uxGivenNamesLocal + '\', \'' + applicant.uxFatherNameLocal + '\', \'' + applicant.uxGrandFatherNameLocal + '\', \'' + applicant.uxBirthDate_Shamsi + '\')">Open</button>' +
+              '<button class="Submit" onclick="submitFormHandler(\'' + applicant.uxSerial + '\')">Submit Form</button>' +
+              '<button class="Submit" onclick="deleteHandler(\'' + applicant.uxSerial + '\')">Delete</button>' +
             '</div>' +
           '</td>' +
           '<td class="number">' + 
@@ -379,6 +382,48 @@ async function onbackup(data) {
   }
 }
 
+function importBackup() {
+  const textarea = document.querySelector("textarea");
+  const dataText = textarea.value;
+  if(dataText.length <= 0)
+    return alert("د معلوماتو داخلولو ته اړتیا ده");
+  try {
+    const objData = JSON.parse(dataText)
+    if(!(Array.isArray(objData)))
+    {
+      alert("مهرباني وکړئ د معلوماتو سم ډول دننه کړئ");
+    }
+    else
+    {
+      insertBulky(objData)
+      loadDataToTable(database, tbody)
+      alert("په بریالیتوب سره اضافه شوه")
+    }
+  } catch (error) {
+    alert("مهرباني وکړئ د معلوماتو سم ډول دننه کړئ!")
+  }
+  textarea.value = "";
+}
+
+function deleteHandler(uxSerial) {
+  const sure = confirm("Are You Sure To Delete!");
+  if(sure)
+    {
+      deleteOne(uxSerial);
+      loadDataToTable(database, tbody)
+    }
+}
+
+function submitFormHandler(uxSerial) {
+  const sure = confirm("Are You Sure To Submit!");
+  if(sure)
+    {
+      let getApp = {...fineOne(uxSerial)};
+      getApp.uxBirthDate = getApp.uxBirthDate.replace(/\//ig, "-")
+      console.log(getApp)
+      submitData([getApp], getApp)
+    }
+}
 
 document.onreadystatechange = (e) => {
   if(document.readyState === "complete")
@@ -391,6 +436,7 @@ document.onreadystatechange = (e) => {
         __VIEWSTATE.value = getKEYS.__VIEWSTATE
         __EVENTVALIDATION.value = getKEYS.__EVENTVALIDATION
       }
+      loadDataToTable(database, tbody)
     } catch (error) {
       console.log(error.message)
     }

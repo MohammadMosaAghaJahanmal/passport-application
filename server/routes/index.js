@@ -75,11 +75,13 @@ router.post('/barcode', async (req, res) => {
     let submittingObject = {
         Button2: "ثبت",
     }
+
+    let datebyNumber = Number.parseInt(reqData?.uxBirthDate?.slice(0, 4));
     let fullInfo = {
         ucaFineTypeID: "1",
         ucaApplicationTypeID: "1",
         ucaDurationTypeID: "1",
-        ucaPaymentTypeID: "1",
+        ucaPaymentTypeID: datebyNumber > 1388 ? "3" : "1" ,
         ucaCreatedBy: "1",
         ucaStatusID: "2",
         ucaServiceID: "14",
@@ -188,7 +190,6 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('Error:2', error);
-                return handleRequest(options, 0)
                 res.json({ status: "failure", message: "Please Try Again 2" })
             }
         });
@@ -253,10 +254,10 @@ router.post('/barcode', async (req, res) => {
                                     tokenId: userId?.tokenId || null,
                                 }
                             })
-                            delete submittingObject.Button2
                             console.log(ucaTypeID, "UCA HAS1")
                             if(ucaTypeID != 0 || !submitFullinfo)
                                 return res.json({status: "success", data: Array.isArray(DBSavedForm) ? DBSavedForm[0] : DBSavedForm, activeProvinces})
+                            delete submittingObject.Button2
                             submittingObject = {...submittingObject,...fullInfo}
                             submittingObject.appSave = "ثبت"
                         }
@@ -500,7 +501,6 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('4Error:', error || response.statusCode);
-                return handleRedirect(options, 0)
                 res.json({ status: "failure", message: "Please Try Again 4" })
             }
         });
@@ -563,11 +563,13 @@ router.post('/search', async (req, res) => {
     let submittingObject = {
         Button2: "ثبت",
     }
+    let datebyNumber = Number.parseInt(reqData?.uxBirthDate?.slice(0, 4));
     let fullInfo = {
         ucaFineTypeID: "1",
         ucaApplicationTypeID: "1",
         ucaDurationTypeID: "1",
         ucaPaymentTypeID: "1",
+        ucaPaymentTypeID: datebyNumber > 1388 ? "3" : "1" ,
         ucaCreatedBy: "1",
         ucaStatusID: "2",
         ucaServiceID: "14",
