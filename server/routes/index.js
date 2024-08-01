@@ -572,7 +572,6 @@ router.post('/search', async (req, res) => {
         ucaCreatedBy: "1",
         ucaStatusID: "2",
         ucaServiceID: "14",
-        PayablePrice: "5500",
         uxCurrentTab: "dvApplication",
         ucaTypeID: "1",
         _AppTypeID: '2',
@@ -682,8 +681,11 @@ router.post('/search', async (req, res) => {
                     let axFullAddress = $("#axFullAddress").val();
                     let axHouseNo = $("#axHouseNo").val();
                     const option = $("#axLocationID option")
+                    const uxCode = $("#uxCode").val()
                     let newProvinces = false;
                     let isSelected = false;
+                    if(uxCode)
+                        isExist.uxCode = uxCode;
                     option.each((index, element) => {
 
                         const value = $(element).attr('value');
