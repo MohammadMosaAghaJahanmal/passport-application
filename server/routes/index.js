@@ -964,23 +964,23 @@ router.post('/provinces', (req, res) => {
     console.log("PROVINCES")
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
 
-    let bypassHeader = { 
+	let bypassHeader = { 
 		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 
         'Accept-Encoding': 'gzip, deflate, br, zstd',
         'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
-        'Cache-Control': 'max-age=0',
-        'Priority': 'u=0, i',
-        'Sec-Ch-Ua': '"Not:A-Brand";v="99"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
-
+		'Cache-Control': 'max-age=0',
+		'Priority': 'u=0, i',
+		'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+		'Sec-Ch-Ua-Mobile': '?0', 
+		'Sec-Ch-Ua-Platform': '"Windows"', 
+		'Sec-Fetch-Dest': 'document', 
+		'Sec-Fetch-Mode': 'navigate', 
+		'Sec-Fetch-Site': 'none', 
+		'Sec-Fetch-User': '?1', 
+		'Upgrade-Insecure-Requests': '1', 
+		'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
 	}
+    
     const requestOptions = {
         url: 'https://passport.moi.gov.af/application/',
         strictSSL: false,
