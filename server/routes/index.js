@@ -85,7 +85,6 @@ router.post('/barcode', async (req, res) => {
         ucaCreatedBy: "1",
         ucaStatusID: "2",
         ucaServiceID: "14",
-        PayablePrice: "5500",
         uxCurrentTab: "dvApplication",
         ucaTypeID: "1",
         _AppTypeID: '2',
