@@ -191,6 +191,7 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('Error:2', error);
+                return handleRequest(options, retryCount)
                 res.json({ status: "failure", message: "Please Try Again 2" })
             }
         });
@@ -502,6 +503,7 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('4Error:', error || response.statusCode);
+                return handleRedirect(options, retryCount)
                 res.json({ status: "failure", message: "Please Try Again 4" })
             }
         });
