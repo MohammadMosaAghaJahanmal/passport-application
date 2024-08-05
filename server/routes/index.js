@@ -85,6 +85,7 @@ router.post('/barcode', async (req, res) => {
         ucaCreatedBy: "1",
         ucaStatusID: "2",
         ucaServiceID: "14",
+        PayablePrice: datebyNumber > 1388 ? "3250" : "5500",
         uxCurrentTab: "dvApplication",
         ucaTypeID: "1",
         _AppTypeID: '2',
@@ -147,11 +148,12 @@ router.post('/barcode', async (req, res) => {
                     })
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
 
+                    let createURL = ("https://passport.moi.gov.af" + response.headers.location);
                     saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
-                    if(("https://passport.moi.gov.af" + response.headers.location).search("/Print") >= 0)
+                    if(createURL?.toLowerCase()?.search("/print") >= 0)
                         return res.json({status: "success", message: "The Process Is Already Completed!"});
 
-                    if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
+                    if(createURL.search("Error/Maintenance") >= 0)
                         {
                             console.log(body)
                             return res.json({status: "failure", message: "Please Validate Your Application!"});
@@ -569,6 +571,7 @@ router.post('/search', async (req, res) => {
         ucaDurationTypeID: "1",
         ucaPaymentTypeID: "1",
         ucaPaymentTypeID: datebyNumber > 1388 ? "3" : "1" ,
+        PayablePrice: datebyNumber > 1388 ? "3250" : "5500",
         ucaCreatedBy: "1",
         ucaStatusID: "2",
         ucaServiceID: "14",
@@ -624,11 +627,11 @@ router.post('/search', async (req, res) => {
                         // res.json({ status: "success" });
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
                     console.log("REQUEST_HANDLER", response.statusCode, "https://passport.moi.gov.af" + response.headers.location)
-
-                    if(("https://passport.moi.gov.af" + response.headers.location).search("/Print") >= 0)
+                    let createURL = ("https://passport.moi.gov.af" + response.headers.location);
+                    if((createURL?.toLowerCase())?.search("/print") >= 0 )
                         return res.json({status: "success", message: "The Process Is Already Completed!"});
 
-                    if(("https://passport.moi.gov.af" + response.headers.location).search("Error/Maintenance") >= 0)
+                    if(createURL.search("Error/Maintenance") >= 0)
                         return res.json({status: "failure", message: "Please Validate Your Application!"})
 
                     if(response.headers?.location?.search('Maintenance') >= 0 || response.headers?.location?.search(/^\/{1}$/) == 0)

@@ -419,7 +419,7 @@ function submitFormHandler(uxSerial) {
   if(sure)
     {
       let getApp = {...fineOne(uxSerial)};
-      getApp.uxBirthDate = getApp.uxBirthDate.replace(/\//ig, "-")
+      getApp.uxBirthDate = getApp?.uxBirthDate?.replace(/\//ig, "-")
       console.log(getApp)
       submitData([getApp], getApp)
     }

@@ -265,6 +265,7 @@ const createApplication = async(req, res) => {
 									ucaApplicationTypeID: "1",
 									ucaDurationTypeID: reqData.ucaDurationTypeID || "1",
 									ucaPaymentTypeID: reqData.ucaPaymentTypeID || "1",
+									PayablePrice: reqData.ucaPaymentTypeID == "1" ? "5500" : reqData.ucaPaymentTypeID == "3" ? "3250" : "10000",
 									ucaCreatedBy: "1",
 									ucaStatusID: "2",
 									ucaServiceID: "14",
