@@ -191,7 +191,6 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('Error:2', error);
-                return handleRequest(options, retryCount)
                 res.json({ status: "failure", message: "Please Try Again 2" })
             }
         });
@@ -317,7 +316,7 @@ router.post('/barcode', async (req, res) => {
                     let uxPhotoFileName = $("#uxPhotoFileName").val();
                     let uxSignatureData = $("#uxSignatureData").val();
                     let uxSignatureFileName = $("#uxSignatureFileName").val();
-                    let axPostOfficeID = $("#axPostOfficeID").val();
+                    let axPostOfficeID = "1";
                     let axStreetNo = $("#axStreetNo").val();
                     let axTypeOfAddressID = $("#axTypeOfAddressID").val();
                     let ucmBusinessName = $("#ucmBusinessName").val();
@@ -503,7 +502,6 @@ router.post('/barcode', async (req, res) => {
                 }
             } else {
                 console.error('4Error:', error || response.statusCode);
-                return handleRedirect(options, retryCount)
                 res.json({ status: "failure", message: "Please Try Again 4" })
             }
         });
@@ -771,7 +769,7 @@ router.post('/search', async (req, res) => {
                     let uxPhotoFileName = $("#uxPhotoFileName").val();
                     let uxSignatureData = $("#uxSignatureData").val();
                     let uxSignatureFileName = $("#uxSignatureFileName").val();
-                    let axPostOfficeID = $("#axPostOfficeID").val();
+                    let axPostOfficeID = "1";
                     let axStreetNo = $("#axStreetNo").val();
                     let axTypeOfAddressID = $("#axTypeOfAddressID").val();
                     let ucmBusinessName = $("#ucmBusinessName").val();
@@ -828,6 +826,7 @@ router.post('/search', async (req, res) => {
                             __VIEWSTATE,
                             __EVENTVALIDATION,
                             axLocationID: axLocationID,
+                            axPostOfficeID: "",
                             axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
                             axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",

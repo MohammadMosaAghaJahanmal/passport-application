@@ -175,7 +175,7 @@ const createApplication = async(req, res) => {
 								tokenId,
 							});
 							console.log("TRYING TO SAVE")
-							console.log("TRYING TO Province", uxCode)
+							console.log("TRYING TO Province", uxCode);
 							if(!newProvinces)
 								return res.json({status: "failure", message: "This Province is not active for change"})
 							console.log("CORRECT BARCODE")
@@ -316,6 +316,7 @@ const createApplication = async(req, res) => {
               uxFatherName: reqData.uxFatherNameLocal,
               uxGrandFatherName: reqData.uxGrandFatherNameLocal,
               uxBirthDate: reqData.uxBirthDate_Shamsi,
+							axPostOfficeID: "1",
               uxSearch: "جستجو",
               axLocationID: axLocationID,
 						}, saveCookie, (Array.isArray(savedApp) ? savedApp[0] : savedApp))
