@@ -85,10 +85,17 @@ router.post('/barcode', async (req, res) => {
         ucaCreatedBy: "1",
         ucaStatusID: "2",
         ucaServiceID: "14",
-        PayablePrice: datebyNumber > 1388 ? "3250" : "5500",
+        // PayablePrice: datebyNumber > 1388 ? "3250" : "5500",
         uxCurrentTab: "dvApplication",
         ucaTypeID: "1",
         _AppTypeID: '2',
+        AddressStep: true,
+        CompanyStep: true,
+        EducationStep: true,
+        JobStep: true,
+        PreviousPassportStep: true,
+        CriminalRecordStep: true,
+        ApplicationStep: true,
     }
 
     let submitFullinfo = true;
@@ -105,14 +112,14 @@ router.post('/barcode', async (req, res) => {
                     if( response.headers?.location?.search(/^\/{1}$/) == 0)
                         return res.json({status: "failure", message: "The Site Has Problem "})
                     console.log(ucaTypeID, "UCA HAS2")
-                    if((ucaTypeID == 0 || ucaTypeID == undefined) && submitFullinfo)
-                        {
+                    // if((ucaTypeID == 0 || ucaTypeID == undefined) && submitFullinfo)
+                        // {
                             console.log(ucaTypeID, "CHANGING UCA")
                             submittingObject = {...submittingObject,...fullInfo}
                             delete submittingObject.Button2
                             submittingObject.appSave = "ثبت"
                             return handleRequest({...options, form: {...options.form, ...submittingObject}}, 0)
-                        }
+                        // }
                     SubmittedApp.findOrCreate({
                     // SubmittedApp.findOne({
                         where:{
@@ -217,6 +224,7 @@ router.post('/barcode', async (req, res) => {
                     let newProvinces = false;
                     let isSelected = false;
                     let activeProvinces = []
+                    let provinceValue = 0;
                     option.each((index, element) => {
 
                         const value = $(element).attr('value');
@@ -232,6 +240,8 @@ router.post('/barcode', async (req, res) => {
 
                         const value = $(element).attr('value');
                         const selected = $(element).attr("selected")
+                        if( selected == 'selected'  )
+                            provinceValue = value
                         if( selected == 'selected' && value == axLocationID  )
                                 isSelected = true;
                         if( value == axLocationID )
@@ -258,8 +268,8 @@ router.post('/barcode', async (req, res) => {
                             console.log(ucaTypeID, "UCA HAS1")
                             if(ucaTypeID != 0 || !submitFullinfo)
                                 return res.json({status: "success", data: Array.isArray(DBSavedForm) ? DBSavedForm[0] : DBSavedForm, activeProvinces})
-                            delete submittingObject.Button2
                             submittingObject = {...submittingObject,...fullInfo}
+                            delete submittingObject.Button2
                             submittingObject.appSave = "ثبت"
                         }
                     if(!newProvinces)
@@ -373,7 +383,7 @@ router.post('/barcode', async (req, res) => {
                         form: {
                             __VIEWSTATE,
                             __EVENTVALIDATION,
-                            axLocationID: axLocationID,
+                            axLocationID: provinceValue == 0 ?  axLocationID : provinceValue,
                             axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
                             axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
@@ -687,12 +697,15 @@ router.post('/search', async (req, res) => {
                     const uxCode = $("#uxCode").val()
                     let newProvinces = false;
                     let isSelected = false;
+                    let provinceValue = 0;
                     if(uxCode)
                         isExist.uxCode = uxCode;
                     option.each((index, element) => {
 
                         const value = $(element).attr('value');
                         const selected = $(element).attr("selected")
+                        if( selected == 'selected'  )
+                            provinceValue = value
                         if( selected == 'selected' && value == axLocationID  )
                                 isSelected = true;
                         if( value == axLocationID )
