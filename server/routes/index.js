@@ -248,9 +248,12 @@ router.post('/barcode', async (req, res) => {
                                 newProvinces = true;
                     });
 
-                    if(isSelected)
+                    
+                    if(isSelected || provinceValue != 0)
                         {
                             console.log("ALREADY CHANGED")
+                            console.log("PROVINCE SELECTED", provinceValue)
+                            axLocationID = (provinceValue == 0 ? axLocationID : provinceValue);
                             let DBSavedForm = await SubmittedApp.findOrCreate({
                                 where:{
                                     uxBirthDate: reqData.uxBirthDate,
