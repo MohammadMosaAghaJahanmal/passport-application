@@ -105,11 +105,11 @@ router.post('/barcode', async (req, res) => {
                     if( response.headers?.location?.search(/^\/{1}$/) == 0)
                         return res.json({status: "failure", message: "The Site Has Problem "})
                     console.log(ucaTypeID, "UCA HAS2")
-                    if(ucaTypeID == 0 && submitFullinfo)
+                    if((ucaTypeID == 0 || ucaTypeID == undefined) && submitFullinfo)
                         {
                             console.log(ucaTypeID, "CHANGING UCA")
-                            delete submittingObject.Button2
                             submittingObject = {...submittingObject,...fullInfo}
+                            delete submittingObject.Button2
                             submittingObject.appSave = "ثبت"
                             return handleRequest({...options, form: {...options.form, ...submittingObject}}, 0)
                         }
@@ -607,11 +607,11 @@ router.post('/search', async (req, res) => {
                         isExist.uxCode = uxCode;
 
                     console.log(ucaTypeID, "UCA HAS2")
-                    if(ucaTypeID == 0 && submitFullinfo)
+                    if((ucaTypeID == 0 || ucaTypeID == undefined) && submitFullinfo)
                         {
                             console.log(ucaTypeID, "CHANGING UCA")
-                            delete submittingObject.Button2
                             submittingObject = {...submittingObject,...fullInfo}
+                            delete submittingObject.Button2
                             submittingObject.appSave = "ثبت"
                             return handleRequest({...options, form: {...options.form, ...submittingObject}}, 0)
                         }
