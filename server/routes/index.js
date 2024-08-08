@@ -78,17 +78,18 @@ router.post('/barcode', async (req, res) => {
 
     let datebyNumber = Number.parseInt(reqData?.uxBirthDate?.slice(0, 4));
     let fullInfo = {
-        ucaFineTypeID: "1",
-        ucaApplicationTypeID: "1",
-        ucaDurationTypeID: "1",
-        ucaPaymentTypeID: datebyNumber > 1388 ? "3" : "1" ,
-        ucaCreatedBy: "1",
-        ucaStatusID: "2",
-        ucaServiceID: "14",
-        // PayablePrice: datebyNumber > 1388 ? "3250" : "5500",
+        ucaFineTypeID: 1,
+        ucaApplicationTypeID: 1,
+        ucaDurationTypeID: 1,
+        ucaPaymentTypeID: datebyNumber > 1388 ? 3 : 1 ,
+        // ucaPaymentTypeID: 1 ,
+        ucaCreatedBy: 1,
+        ucaStatusID: 2,
+        ucaServiceID: 14,
+        PayablePrice: datebyNumber > 1388 ? 3250 : 5500,
         uxCurrentTab: "dvApplication",
-        ucaTypeID: "1",
-        _AppTypeID: '2',
+        ucaTypeID: 1,
+        _AppTypeID: 2,
         AddressStep: true,
         CompanyStep: true,
         EducationStep: true,
@@ -180,7 +181,7 @@ router.post('/barcode', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 5) { // Retry only a certain number of times
+                } else if (response.statusCode === 503 && retryCount < 10) { // Retry only a certain number of times
                     // Resubmit the form
                     console.log(options, "REQUESTING")
                     handleRequest(options, retryCount + 1);
@@ -396,8 +397,8 @@ router.post('/barcode', async (req, res) => {
                             __EVENTARGUMENT: __EVENTARGUMENT,
                             __LASTFOCUS: __LASTFOCUS,
                             __VIEWSTATEGENERATOR: __VIEWSTATEGENERATOR,
-                            __SCROLLPOSITIONX: __SCROLLPOSITIONX,
-                            __SCROLLPOSITIONY: __SCROLLPOSITIONY,
+                            __SCROLLPOSITIONX: 0,
+                            __SCROLLPOSITIONY: 507.20001220703125,
                             AddressStep: AddressStep,
                             CompanyStep: CompanyStep,
                             EducationStep: EducationStep,
@@ -505,7 +506,7 @@ router.post('/barcode', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 5) { // If 503 Service Unavailable error occurs during redirection
+                } else if (response.statusCode === 503 && retryCount < 10) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
                     console.log(options, "REDIRECTING")
                     handleRedirect(options, retryCount + 1);
@@ -579,18 +580,18 @@ router.post('/search', async (req, res) => {
     }
     let datebyNumber = Number.parseInt(reqData?.uxBirthDate?.slice(0, 4));
     let fullInfo = {
-        ucaFineTypeID: "1",
-        ucaApplicationTypeID: "1",
-        ucaDurationTypeID: "1",
-        ucaPaymentTypeID: "1",
-        ucaPaymentTypeID: datebyNumber > 1388 ? "3" : "1" ,
-        PayablePrice: datebyNumber > 1388 ? "3250" : "5500",
-        ucaCreatedBy: "1",
-        ucaStatusID: "2",
-        ucaServiceID: "14",
+        ucaFineTypeID: 1,
+        ucaApplicationTypeID: 1,
+        ucaDurationTypeID: 1,
+        ucaPaymentTypeID: 1,
+        ucaPaymentTypeID: datebyNumber > 1388 ? 3 : 1 ,
+        PayablePrice: datebyNumber > 1388 ? 3250 : 5500,
+        ucaCreatedBy: 1,
+        ucaStatusID: 2,
+        ucaServiceID: 14,
         uxCurrentTab: "dvApplication",
-        ucaTypeID: "1",
-        _AppTypeID: '2',
+        ucaTypeID: 1,
+        _AppTypeID: 2,
     }
 
     let submitFullinfo = true;
@@ -606,7 +607,7 @@ router.post('/search', async (req, res) => {
                     let isBarCodeCorrect = $('#uxMessage[style]')
                     if (isBarCodeCorrect.length)
                     return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
-                    if(completeRequest <= 1 && retryCount < 5)
+                    if(completeRequest <= 1 && retryCount < 10)
                     {
                         const reqHeaders = {...requestOptions, headers: {...requestOptions.headers, 'Cookie': saveCookie}};
                         console.log(reqHeaders)
@@ -659,7 +660,7 @@ router.post('/search', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 5) { 
+                } else if (response.statusCode === 503 && retryCount < 10) { 
                     console.log(options, "REQUESTING")
                     handleRequest(options, retryCount + 1);
                 } else {
@@ -962,7 +963,7 @@ router.post('/search', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 5) { // If 503 Service Unavailable error occurs during redirection
+                } else if (response.statusCode === 503 && retryCount < 10) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
                     console.log(options, "REQ REDIRECTING")
                     handleRedirect(options, retryCount + 1);
