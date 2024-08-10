@@ -117,9 +117,10 @@ router.post('/barcode', async (req, res) => {
                         // {
                             console.log(ucaTypeID, "CHANGING UCA")
                             submittingObject = {...submittingObject,...fullInfo}
-                            delete submittingObject.Button2
+                            let newForm = {...options.form, ...submittingObject};
+                            delete newForm.Button2
                             submittingObject.appSave = "ثبت"
-                            return handleRequest({...options, form: {...options.form, ...submittingObject}}, 0)
+                            return handleRequest({...options, form: newForm}, 0)
                         // }
                     SubmittedApp.findOrCreate({
                     // SubmittedApp.findOne({
@@ -181,7 +182,7 @@ router.post('/barcode', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 10) { // Retry only a certain number of times
+                } else if (response.statusCode === 503 && retryCount < 50) { // Retry only a certain number of times
                     // Resubmit the form
                     console.log(options, "REQUESTING")
                     handleRequest(options, retryCount + 1);
@@ -506,7 +507,7 @@ router.post('/barcode', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 10) { // If 503 Service Unavailable error occurs during redirection
+                } else if (response.statusCode === 503 && retryCount < 50) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
                     console.log(options, "REDIRECTING")
                     handleRedirect(options, retryCount + 1);
@@ -607,7 +608,7 @@ router.post('/search', async (req, res) => {
                     let isBarCodeCorrect = $('#uxMessage[style]')
                     if (isBarCodeCorrect.length)
                     return res.json({ status: "failure", message: "Your Barcode or date is incorrect" });
-                    if(completeRequest <= 1 && retryCount < 10)
+                    if(completeRequest <= 1 && retryCount < 50)
                     {
                         const reqHeaders = {...requestOptions, headers: {...requestOptions.headers, 'Cookie': saveCookie}};
                         console.log(reqHeaders)
@@ -621,14 +622,14 @@ router.post('/search', async (req, res) => {
                         isExist.uxCode = uxCode;
 
                     console.log(ucaTypeID, "UCA HAS2")
-                    if((ucaTypeID == 0 || ucaTypeID == undefined) && submitFullinfo)
-                        {
+                    // if((ucaTypeID == 0 || ucaTypeID == undefined) && submitFullinfo)
+                    //     {
                             console.log(ucaTypeID, "CHANGING UCA")
                             submittingObject = {...submittingObject,...fullInfo}
                             delete submittingObject.Button2
                             submittingObject.appSave = "ثبت"
                             return handleRequest({...options, form: {...options.form, ...submittingObject}}, 0)
-                        }
+                        // }
 
                     isExist.isChanged = true;
                     isExist.axLocationID = axLocationID;
@@ -660,7 +661,7 @@ router.post('/search', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 10) { 
+                } else if (response.statusCode === 503 && retryCount < 50) { 
                     console.log(options, "REQUESTING")
                     handleRequest(options, retryCount + 1);
                 } else {
@@ -715,8 +716,11 @@ router.post('/search', async (req, res) => {
                         if( value == axLocationID )
                                 newProvinces = true;
                     });
-                    if(isSelected)
+                    if(isSelected || provinceValue != 0)
                         {
+                            console.log("ALREADY CHANGED")
+                            console.log("PROVINCE SELECTED", provinceValue)
+                            axLocationID = (provinceValue == 0 ? axLocationID : provinceValue);
                             console.log("ALREADY CHANGED")
                             isExist.isChanged = true;
                             isExist.axLocationID = axLocationID;
@@ -963,7 +967,7 @@ router.post('/search', async (req, res) => {
                         },
                         gzip: true
                     });
-                } else if (response.statusCode === 503 && retryCount < 10) { // If 503 Service Unavailable error occurs during redirection
+                } else if (response.statusCode === 503 && retryCount < 50) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
                     console.log(options, "REQ REDIRECTING")
                     handleRedirect(options, retryCount + 1);

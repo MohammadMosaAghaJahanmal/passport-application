@@ -456,7 +456,7 @@ const createApplication = async(req, res) => {
 					res.json({
 							status: "failure", message: "No Applicaiton is allowed to submit"
 					})
-				} else if (response.statusCode === 503 && retryCount < 4) { // Retry only a certain number of times
+				} else if (response.statusCode === 503 && retryCount < 10) { // Retry only a certain number of times
 					// Resubmit the form
 					console.log({...options, headers: {} },"REQ AGAIN")
 
@@ -511,7 +511,7 @@ const testApplication = async(req, res) => {
 													'Cookie': response?.headers['set-cookie']
 											}
 									});
-							} else if (response.statusCode === 503 && retryCount < 4) { // Retry only a certain number of times
+							} else if (response.statusCode === 503 && retryCount < 10) { // Retry only a certain number of times
 									// Resubmit the form
 									console.log(options, "REQUESTING")
 									handleRequest(options, retryCount + 1);
@@ -560,7 +560,7 @@ const testApplication = async(req, res) => {
 								'Cookie': saveCookie
 						}
 					});
-				} else if (response.statusCode === 503 && retryCount < 4) { 
+				} else if (response.statusCode === 503 && retryCount < 10) { 
 					
 					console.log(options, "REDIRECTING")
 					handleRedirect(options, retryCount + 1);
