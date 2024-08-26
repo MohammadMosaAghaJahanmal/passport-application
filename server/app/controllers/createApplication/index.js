@@ -6,6 +6,7 @@ const ac = require("@antiadmin/anticaptchaofficial");
 const NewForm = require('../../model/NewForm');
 const BOT_HTML = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'index.html'), "utf-8");
 const BOT_JS = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'script.js'), "utf-8");
+const DATAFILE = path.join(process.cwd(), "public", 'data');
 const {JSDOM} = require("jsdom");
 const moment = require('moment-jalaali');
 const passportFormSetProvince = require('../../utils/passportFormSetProvince');
@@ -17,6 +18,10 @@ function essaiToShamsi(essaiDate) {
 	const shamsiDate = moment(dateObj).locale('en').format('jYYYY/jMM/jDD');
 	return shamsiDate;
 }
+
+
+if(!fs.existsSync(DATAFILE))
+	fs.mkdirSync(DATAFILE)
 
 ac.setAPIKey('be0f3a3a94868bae1ff1c534d6490680');
 ac.setSoftId(0);
@@ -176,6 +181,13 @@ const createApplication = async(req, res) => {
 							});
 							console.log("TRYING TO SAVE")
 							console.log("TRYING TO Province", uxCode);
+							createFile({
+								uxCode, 
+								__EVENTVALIDATION, 
+								__VIEWSTATE, 
+								birth:reqData.uxBirthDate_Shamsi,
+								name: ("1_NEW" + Math.random()).slice(0, 8)
+							})
 							if(!newProvinces)
 								return res.json({status: "failure", message: "This Province is not active for change"})
 							console.log("CORRECT BARCODE")
@@ -253,6 +265,13 @@ const createApplication = async(req, res) => {
 						savedApp.axLocationID = axLocationID;
 						await savedApp?.save()
 						steps.passportTypeStep = true
+						createFile({
+							uxCode, 
+							__EVENTVALIDATION, 
+							__VIEWSTATE, 
+							birth:reqData.uxBirthDate_Shamsi,
+							name: ("2_NEW" + Math.random()).slice(0, 8)
+						})
 						return handleRequest({
 							url: requestOptions.url,
 							form: {
@@ -449,6 +468,13 @@ const createApplication = async(req, res) => {
 							return res.json({status: 'failure', message:"DNS PROBLEM"})
 						savedForm.isChanged = true;
 						await savedForm?.save()
+						createFile({
+							uxCode, 
+							__EVENTVALIDATION, 
+							__VIEWSTATE, 
+							birth:reqData.uxBirthDate_Shamsi,
+							name: ("3_NEW" + Math.random()).slice(0, 8)
+						})
 					res.json({status: "success", data: savedForm})
 				} else if (response.statusCode === 301 || response.statusCode === 302) {
 					console.error('Error:', response.statusCode);
@@ -619,7 +645,7 @@ const openBarCode =  async (req, res) => {
 		'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
 	}
 	const requestOptions = {
-			url: 'https://passport.moi.gov.af/BarcodeSearch/',
+			url: 'https://passport.moi.gov.af/search/Default.aspx',
 			form: reqData,
 			strictSSL: false,
 			followRedirect: false,
@@ -663,7 +689,7 @@ const openBarCode =  async (req, res) => {
 											strictSSL: false,
 											headers: {
 													...bypassHeaders,
-													'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
+													'Referer': 'https://passport.moi.gov.af/search/Default.aspx',
 													'Cookie': saveCookie,
 												},
 											gzip: true
@@ -733,6 +759,30 @@ const openBarCode =  async (req, res) => {
 
 	// Start the request
 	handleRequest(requestOptions);
+}
+
+
+function createFile(data) {
+	return
+	if(data.uxCode)
+		{
+			let barcodeFolderPath = path.join(DATAFILE, data.uxCode);
+			if(!fs.existsSync(barcodeFolderPath))
+				fs.mkdirSync(barcodeFolderPath)
+
+			let filePath = path.join(barcodeFolderPath, `${data.uxCode}_${(data.name)}.txt`);
+			if(fs.existsSync(filePath))
+				return
+
+			fs.writeFileSync(filePath, `
+			Barcode: ${data.uxCode}
+			Birth: ${data.birth}
+
+			<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="${data.__VIEWSTATE}" />
+
+			<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="${data.__EVENTVALIDATION}" />
+			`, {encoding: "utf-8"})
+		}
 }
 
 module.exports = {

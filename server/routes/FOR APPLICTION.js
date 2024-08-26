@@ -10,8 +10,33 @@ const NewForm = require('../app/model/NewForm');
 const queryString = require("querystring");
 const path = require("path");
 const fs = require("fs")
+const BOT_HTML = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'index.html'), "utf-8");
+const BOT_JS = fs.readFileSync(path.join(process.cwd(), "bypassBot", 'script.js'), "utf-8");
 const DATAFILE = path.join(process.cwd(), "public", 'data');
-
+const {JSDOM} = require("jsdom");
+const ac = require("@antiadmin/anticaptchaofficial");
+ac.setAPIKey('be0f3a3a94868bae1ff1c534d6490680');
+ac.setSoftId(0);
+function generateRandomString(length, type) {
+    let characters = '';
+  
+    if (type === 'en') {
+      characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    } else if (type === 'ps') {
+      characters = 'پبتثجچحخدذرزژسشصضطظعغفقکگلمنوهی';
+    } else if (type === 'num') {
+      characters = '0123456789';
+    } else {
+      throw new Error('Invalid type. Type must be "en" for English, "ps" for Pashto, and "num" for numbers.');
+    }
+  
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
 
 
 
@@ -26,7 +51,7 @@ router.post('/barcode', async (req, res) => {
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const encodedForm = queryString.stringify({
-        "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR || "59A49A67",
+        "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR || "768A9483",
         "__EVENTVALIDATION": reqData.__EVENTVALIDATION,
         "__SCROLLPOSITIONX": reqData.__SCROLLPOSITIONX,
         "__SCROLLPOSITIONY": reqData.__SCROLLPOSITIONY,
@@ -104,6 +129,15 @@ router.post('/barcode', async (req, res) => {
     }
 
     let submitFullinfo = true;
+	let txtCaptchaCode = undefined;
+	let secret1 = undefined;
+	let secret2 = undefined;
+	let secret3 = undefined;
+	let secret4 = undefined;
+	let uxWorkItemID = undefined;
+	let uxCurrentTab = undefined;
+	let axTypeOfAddressID = undefined;
+	let ucaName = undefined;
 
     const handleRequest = (options, retryCount = 0) => {
         request.post(options, function(error, response, body) {
@@ -124,6 +158,7 @@ router.post('/barcode', async (req, res) => {
                         birth:reqData.uxBirthDate,
                         name: ("PRO_" + Math.random()).slice(0, 8)
                     })
+                    return res.json({status: "success", messaeg:"ALSJKD"})
                     // if((ucaTypeID == 0 || ucaTypeID == undefined) && submitFullinfo)
                         // {
                             console.log(ucaTypeID, "CHANGING UCA")
@@ -168,7 +203,7 @@ router.post('/barcode', async (req, res) => {
                     })
                 } else if (response.statusCode === 301 || response.statusCode === 302) {
 
-                    let createURL = ("https://passport.moi.gov.af" + response.headers.location);
+                    let createURL = ("https://passport.moi.gov.af" + "/ProceedApplication/");
                     saveCookie = (response?.headers['set-cookie'] + "")?.replace("; path=/; HttpOnly", "");
                     if(createURL?.toLowerCase()?.search("/print") >= 0)
                         return res.json({status: "success", message: "The Process Is Already Completed!"});
@@ -182,9 +217,11 @@ router.post('/barcode', async (req, res) => {
                     if(response.headers?.location?.search('Maintenance') >= 0 || response.headers?.location?.search(/^\/{1}$/) == 0)
                         return res.json({status: "failure", message: "Maybe the province is not active or other problem beside validate your application"})
                     
-                    console.log("BARCODE REDIRECTING TO", response.headers.location);
+                    console.log("BARCODE REDIRECTING TO", "/ProceedApplication/");
                     handleRedirect({
-                        url: "https://passport.moi.gov.af" + response.headers.location,
+                        // url: "https://passport.moi.gov.af" + "/ProceedApplication/",
+                        method: "PUT",
+                        url: "https://passport.moi.gov.af/proceedApplication/default.aspx",
                         strictSSL: false,
                         headers: {
                             ...bypassHeaders,
@@ -220,6 +257,7 @@ router.post('/barcode', async (req, res) => {
     const handleRedirect = (options, retryCount = 0) => {
         request.get(options, async function(error, response, body) {
             if (!error) {
+                console.log(response)
                 if (response.statusCode === 200) {
                     const $ = cheerio.load(body);
                     let __VIEWSTATE = $("#__VIEWSTATE").val();
@@ -228,9 +266,11 @@ router.post('/barcode', async (req, res) => {
                     let axPrimaryMobile = $("#axPrimaryMobile").val();
                     let axFullAddress = $("#axFullAddress").val();
                     let axHouseNo = $("#axHouseNo").val();
+                    // console.log(response, "LOCATIOn")
                     let apo = $("#apo").val();
-                    if(apo || apo?.length > 0)
-                        return res.json({ status: "failure", message: "Please check the barcode from your browser" })
+
+                    // if(apo || apo?.length > 0)
+                    //     return res.json({ status: "failure", message: "Please check the barcode from your browser" })
 
                     console.log("BARCODE IS SUBMITTING");
                     const option = $("#axLocationID option")
@@ -293,9 +333,10 @@ router.post('/barcode', async (req, res) => {
                             submittingObject = {...submittingObject,...fullInfo}
                             delete submittingObject.Button2
                             submittingObject.appSave = "ثبت"
-                        }
-                    if(!newProvinces)
-                        return res.json({status: "failure", message: "This Province is not active for change", activeProvinces})
+                            }
+                    // if(!newProvinces)
+                    //     return res.json({status: "failure", message: "This Province is not active for change", activeProvinces})
+                    
                     let __EVENTTARGET = $("#__EVENTTARGET").val();
                     let __EVENTARGUMENT = $("#__EVENTARGUMENT").val();
                     let __LASTFOCUS = $("#__LASTFOCUS").val();
@@ -328,7 +369,7 @@ router.post('/barcode', async (req, res) => {
                     let uxResidenceCountryID = $("#uxResidenceCountryID").val();
                     let uxMaritalStatusID = $("#uxMaritalStatusID").val();
                     let uxNIDTypeID = $("#uxNIDTypeID").val();
-                    let uxSerial = $("#uxSerial").val();
+                    // let uxSerial = $("#uxSerial").val();
                     let uxJuld = $("#uxJuld").val();
                     let uxPage = $("#uxPage").val();
                     let uxNo = $("#uxNo").val();
@@ -338,19 +379,19 @@ router.post('/barcode', async (req, res) => {
                     let uxEyeColorID = $("#uxEyeColorID").val();
                     let uxBodyHeightCM = $("#uxBodyHeightCM").val();
                     let uxCreatedBy = $("#uxCreatedBy").val();
-                    let uxWorkItemID = $("#uxWorkItemID").val();
+                    // let uxWorkItemID = $("#uxWorkItemID").val();
                     let BDC_VCID_c_proceedapplication_default_bdcaptcha = $("#BDC_VCID_c_proceedapplication_default_bdcaptcha").val();
                     let BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha = $("#BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha").val();
                     let BDC_Hs_c_proceedapplication_default_bdcaptcha = $("#BDC_Hs_c_proceedapplication_default_bdcaptcha").val();
                     let BDC_SP_c_proceedapplication_default_bdcaptcha = $("#BDC_SP_c_proceedapplication_default_bdcaptcha").val();
-                    let txtCaptchaCode = $("#txtCaptchaCode").val();
+                    // let txtCaptchaCode = $("#txtCaptchaCode").val();
                     let uxPhotoData = $("#uxPhotoData").val();
                     let uxPhotoFileName = $("#uxPhotoFileName").val();
                     let uxSignatureData = $("#uxSignatureData").val();
                     let uxSignatureFileName = $("#uxSignatureFileName").val();
                     let axPostOfficeID = "1";
                     let axStreetNo = $("#axStreetNo").val();
-                    let axTypeOfAddressID = $("#axTypeOfAddressID").val();
+                    // let axTypeOfAddressID = $("#axTypeOfAddressID").val();
                     let ucmBusinessName = $("#ucmBusinessName").val();
                     let ucmStatusID = $("#ucmStatusID").val();
                     let ucmLocationID = $("#ucmLocationID").val();
@@ -399,131 +440,157 @@ router.post('/barcode', async (req, res) => {
                     let ucaName = $("#ucaName").val();
                     let ucaReferenceNo = $("#ucaReferenceNo").val();
                     console.log("UPDATES IS IN PROGRESS ", reqData.uxCode)
-                    
-                    handleRequest({
-                        url: 'https://passport.moi.gov.af/proceedApplication/', 
-                        form: {
-                            __VIEWSTATE,
-                            __EVENTVALIDATION,
-                            axLocationID: provinceValue == 0 ?  axLocationID : provinceValue,
-                            axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
-                            axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
-                            axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
-                            uxCurrentTab: 'dvAddress',
-                            DocumentsStep: true,
-                            __EVENTTARGET: __EVENTTARGET ? __EVENTTARGET : "",
-                            __EVENTARGUMENT: __EVENTARGUMENT ? __EVENTARGUMENT : "",
-                            __LASTFOCUS: __LASTFOCUS ? __LASTFOCUS : "",
-                            __VIEWSTATEGENERATOR: __VIEWSTATEGENERATOR ? __VIEWSTATEGENERATOR : "",
-                            __SCROLLPOSITIONX: 0,
-                            __SCROLLPOSITIONY: 507.20001220703125,
-                            AddressStep: AddressStep ? AddressStep : "",
-                            CompanyStep: CompanyStep ? CompanyStep : "",
-                            EducationStep: EducationStep ? EducationStep : "",
-                            JobStep: JobStep? JobStep: "",
-                            PreviousPassportStep: PreviousPassportStep? PreviousPassportStep: "",
-                            CriminalRecordStep: CriminalRecordStep? CriminalRecordStep: "",
-                            ApplicationStep: ApplicationStep? ApplicationStep: "",
-                            uxTitleID: uxTitleID? uxTitleID: "",
-                            uxCriminalRecord: uxCriminalRecord? uxCriminalRecord: "",
-                            _AppTypeID: _AppTypeID? _AppTypeID: "",
-                            uxFamilyNameLocal: uxFamilyNameLocal? uxFamilyNameLocal: "",
-                            uxFamilyName: uxFamilyName? uxFamilyName: "",
-                            uxGivenNamesLocal: uxGivenNamesLocal? uxGivenNamesLocal: "",
-                            uxGivenNames: uxGivenNames? uxGivenNames: "",
-                            uxFatherNameLocal: uxFatherNameLocal? uxFatherNameLocal: "",
-                            uxFatherName: uxFatherName? uxFatherName: "",
-                            uxGrandFatherNameLocal: uxGrandFatherNameLocal? uxGrandFatherNameLocal: "",
-                            uxGrandFatherName: uxGrandFatherName? uxGrandFatherName: "",
-                            uxBirthDate_Shamsi: uxBirthDate_Shamsi? uxBirthDate_Shamsi: "",
-                            uxBirthDate: uxBirthDate? uxBirthDate: "",
-                            uxProfessionID: uxProfessionID? uxProfessionID: "",
-                            _Profession: _Profession? _Profession: "",
-                            uxBirthLocationID: uxBirthLocationID? uxBirthLocationID: "",
-                            uxResidenceCountryID: uxResidenceCountryID? uxResidenceCountryID: "",
-                            uxMaritalStatusID: uxMaritalStatusID? uxMaritalStatusID: "",
-                            uxNIDTypeID: uxNIDTypeID? uxNIDTypeID: "",
-                            uxSerial: uxSerial? uxSerial: "",
-                            uxJuld: uxJuld? uxJuld: "",
-                            uxPage: uxPage? uxPage: "",
-                            uxNo: uxNo? uxNo: "",
-                            uxNID: uxNID? uxNID: "",
-                            uxGenderID: uxGenderID? uxGenderID: "",
-                            uxHairColorID: uxHairColorID? uxHairColorID: "",
-                            uxEyeColorID: uxEyeColorID? uxEyeColorID: "",
-                            uxBodyHeightCM: uxBodyHeightCM? uxBodyHeightCM: "",
-                            uxCreatedBy: uxCreatedBy? uxCreatedBy: "",
-                            uxWorkItemID: uxWorkItemID ? uxWorkItemID : "",
-                            BDC_VCID_c_proceedapplication_default_bdcaptcha: BDC_VCID_c_proceedapplication_default_bdcaptcha ? BDC_VCID_c_proceedapplication_default_bdcaptcha : "",
-                            BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha: BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha ? BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha : "",
-                            BDC_Hs_c_proceedapplication_default_bdcaptcha: BDC_Hs_c_proceedapplication_default_bdcaptcha ? BDC_Hs_c_proceedapplication_default_bdcaptcha : "",
-                            BDC_SP_c_proceedapplication_default_bdcaptcha: BDC_SP_c_proceedapplication_default_bdcaptcha ? BDC_SP_c_proceedapplication_default_bdcaptcha : "",
-                            txtCaptchaCode: txtCaptchaCode ? txtCaptchaCode : "",
-                            uxPhotoData: uxPhotoData ? uxPhotoData : "",
-                            uxPhotoFileName: uxPhotoFileName ? uxPhotoFileName : "",
-                            uxSignatureData: uxSignatureData ? uxSignatureData : "",
-                            uxSignatureFileName: uxSignatureFileName ? uxSignatureFileName : "",
-                            axPostOfficeID: axPostOfficeID ? axPostOfficeID : "",
-                            axStreetNo: axStreetNo ? axStreetNo : "",
-                            axTypeOfAddressID: axTypeOfAddressID ? axTypeOfAddressID : "",
-                            ucmBusinessName: ucmBusinessName ? ucmBusinessName : "",
-                            ucmStatusID: ucmStatusID ? ucmStatusID : "",
-                            ucmLocationID: ucmLocationID ? ucmLocationID : "",
-                            ucmBusinessLicenseNo: ucmBusinessLicenseNo ? ucmBusinessLicenseNo : "",
-                            ucmTINNumber: ucmTINNumber ? ucmTINNumber : "",
-                            ucmTypeOfBusinessID: ucmTypeOfBusinessID ? ucmTypeOfBusinessID : "",
-                            ucmFullAddress: ucmFullAddress ? ucmFullAddress : "",
-                            ucmIssueDate: ucmIssueDate ? ucmIssueDate : "",
-                            ucmExpairDate: ucmExpairDate ? ucmExpairDate : "",
-                            uedEducationLevelID: uedEducationLevelID ? uedEducationLevelID : "",
-                            uedInstituteTypeID: uedInstituteTypeID ? uedInstituteTypeID : "",
-                            uedLocationID: uedLocationID ? uedLocationID : "",
-                            uedDari: uedDari ? uedDari : "",
-                            uedName: uedName ? uedName : "",
-                            uedStartYear: uedStartYear ? uedStartYear : "",
-                            uedEndYear: uedEndYear ? uedEndYear : "",
-                            ujbTypeOfExperienceID: ujbTypeOfExperienceID ? ujbTypeOfExperienceID : "",
-                            ujbLocationID: ujbLocationID ? ujbLocationID : "",
-                            ujbPositionLocal: ujbPositionLocal ? ujbPositionLocal : "",
-                            ujbPosition: ujbPosition ? ujbPosition : "",
-                            ujbOrganizationNameLocal: ujbOrganizationNameLocal ? ujbOrganizationNameLocal : "",
-                            ujbOrganizationName: ujbOrganizationName ? ujbOrganizationName : "",
-                            ujbStartDate: ujbStartDate ? ujbStartDate : "",
-                            ujbEndDate: ujbEndDate ? ujbEndDate : "",
-                            uppPassportTypeID: uppPassportTypeID ? uppPassportTypeID : "",
-                            uppPassportNumber: uppPassportNumber ? uppPassportNumber : "",
-                            uppIssueDate: uppIssueDate ? uppIssueDate : "",
-                            uppExpiryDate: uppExpiryDate ? uppExpiryDate : "",
-                            ucrTypeOfCrimeID: ucrTypeOfCrimeID ? ucrTypeOfCrimeID : "",
-                            ucrDate: ucrDate ? ucrDate : "",
-                            ucrLocationID: ucrLocationID ? ucrLocationID : "",
-                            ucrArrested: ucrArrested ? ucrArrested : "",
-                            ucrStatusID: ucrStatusID ? ucrStatusID : "",
-                            ucrReferenceNo: ucrReferenceNo ? ucrReferenceNo : "",
-                            ucrAdderss: ucrAdderss ? ucrAdderss : "",
-                            ucrDetails: ucrDetails ? ucrDetails : "",
-                            ucaTypeID: ucaTypeID ? ucaTypeID : "",
-                            uxOptions: uxOptions ? uxOptions : "",
-                            ucaFineTypeID: ucaFineTypeID ? ucaFineTypeID : "",
-                            ucaDurationTypeID: ucaDurationTypeID ? ucaDurationTypeID : "",
-                            ucaApplicationTypeID: ucaApplicationTypeID ? ucaApplicationTypeID : "",
-                            ucaPaymentTypeID: ucaPaymentTypeID ? ucaPaymentTypeID : "",
-                            PayablePrice: PayablePrice ? PayablePrice : "",
-                            ucaServiceID: ucaServiceID ? ucaServiceID : "",
-                            ucaStatusID: ucaStatusID ? ucaStatusID : "",
-                            ucaCreatedBy: ucaCreatedBy ? ucaCreatedBy : "",
-                            ucaName: ucaName ? ucaName : "",
-                            ucaReferenceNo: ucaReferenceNo ? ucaReferenceNo : "",
-                            ...submittingObject
-                        },
-                        strictSSL: false,
-                        headers: {
-                            ...bypassHeaders,
-                            'Referer': 'https://passport.moi.gov.af/proceedApplication/',
-                            'Cookie': saveCookie
-                        },
-                        gzip: true
-                    });
+                    let getCaptcha = $('#c_proceedapplication_default_bdcaptcha_CaptchaImage')?.attr("src");
+                    const captchaImageURL = "https://passport.moi.gov.af" + getCaptcha;
+                    if(getCaptcha)
+                    {
+                        let imageOptions = {
+                            url: captchaImageURL, 
+                            encoding: null, 
+                            strictSSL: false,
+                            headers: {
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                                'Accept-Encoding': 'gzip, deflate, br, zstd',
+                                'Accept-Language': 'en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7',
+                                'Cache-Control': 'max-age=0',
+                                'Priority': 'u=0, i',
+                                'Sec-Ch-Ua': `"Google Chrome";v="${random}", "Not:A-Brand";v="8", "Chromium";v="${random}"`, 
+                                'Sec-Ch-Ua-Mobile': '?0',
+                                'Sec-Ch-Ua-Platform': '"Windows"',
+                                'Sec-Fetch-Dest': 'document',
+                                'Sec-Fetch-Mode': 'navigate',
+                                'Sec-Fetch-Site': 'none',
+                                'Sec-Fetch-User': '?1',
+                                'Upgrade-Insecure-Requests': '1',
+                                'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/${random} (KHTML, like Gecko) Chrome/${random}.0.0.0 Mobile Safari/${random}`,
+                                'Cookie': saveCookie
+                            },
+                            gzip: true
+                        };
+                        const fetchCaptchaImage = (imgOptions, retry = 0) => {
+                            request.get(imgOptions, async function(err, resp, imageText) {
+                                if (!err && resp?.statusCode === 200) {
+                                    
+                                    const captchaImageData = Buffer.from(imageText).toString('base64');
+                                    try {
+                                            txtCaptchaCode = txtCaptchaCode ? txtCaptchaCode : await ac.solveImage(captchaImageData, true)
+                                            secret1 = secret1 ? secret1 : $('#BDC_VCID_c_proceedapplication_default_bdcaptcha')?.attr("value");
+                                            secret2 = secret2 ? secret2 : $('#BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha')?.attr("value");
+                                            secret3 = secret3 ? secret3 : $('#BDC_Hs_c_proceedapplication_default_bdcaptcha')?.attr("value");
+                                            secret4 = secret4 ? secret4 : $('#BDC_SP_c_proceedapplication_default_bdcaptcha')?.attr("value");
+                                            uxWorkItemID = uxWorkItemID ? uxWorkItemID : $('#uxWorkItemID')?.attr("value");
+                                            uxCurrentTab = uxCurrentTab ? uxCurrentTab : $('#uxCurrentTab')?.attr("value");
+                                            axTypeOfAddressID = axTypeOfAddressID ? axTypeOfAddressID : $('#axTypeOfAddressID')?.attr("value");
+
+                                            let botJS = BOT_JS.replace("XXXXX", secret1)
+                                            let botHTML = BOT_HTML.replace("XXXXX", secret1)
+                                            botHTML = botHTML.replace("XXXXX", secret1)
+                                            botHTML = botHTML.replace("txtCaptchaCodeV", txtCaptchaCode)
+                                            botHTML = botHTML.replace("BDC_BackWorkaround_c_proceedapplication_default_bdcaptchaV", secret2)
+                                            botHTML = botHTML.replace("BDC_Hs_c_proceedapplication_default_bdcaptchaV", secret3)
+                                            botHTML = botHTML.replace("BDC_SP_c_proceedapplication_default_bdcaptchaV", secret4)
+                                            let html = new JSDOM(botHTML,{ runScripts: "outside-only" });
+                                            html.window.eval(botJS);
+                                            html.window.setTimeout(() => {
+                                                html.window.eval(`
+                                                const keyupEvent = new KeyboardEvent('keyup', {keyCode: 65,  which: 65});
+                                                const txtCaptchaCode = document.querySelector("#txtCaptchaCode");
+                                                txtCaptchaCode.click();
+                                                txtCaptchaCode.dispatchEvent(keyupEvent);
+                                                `)
+
+                                                    
+                                                const submitMainFormOptions = {
+                                                    uxCode: reqData.uxCode,
+                                                    uxTitleID:"1",
+                                                    uxCriminalRecord:"2",
+                                                    uxFamilyNameLocal:"شش",
+                                                    uxFamilyName:generateRandomString(8, "en"),
+                                                    uxGivenNamesLocal:generateRandomString(8, "ps"),
+                                                    uxGivenNames:generateRandomString(8, "en"),
+                                                    uxFatherNameLocal:generateRandomString(8, "ps"),
+                                                    uxFatherName:generateRandomString(8, "en"),
+                                                    uxGrandFatherNameLocal:generateRandomString(8, "ps"),
+                                                    uxGrandFatherName:generateRandomString(8, "en"),
+                                                    uxBirthDate_Shamsi:"1379/06/15",
+                                                    uxBirthDate:`2000-09-05`,
+                                                    uxProfessionID:"22",
+                                                    _Profession:"22",
+                                                    uxBirthLocationID:"31",
+                                                    uxResidenceCountryID:"31",
+                                                    uxMaritalStatusID:"1",
+                                                    uxNIDTypeID:"11",
+                                                    uxSerial:generateRandomString(10, "num"),
+                                                    uxJuld:"",
+                                                    uxPage:"",
+                                                    uxNo:"",
+                                                    uxNID:generateRandomString(10, "num"),
+                                                    uxGenderID:"1",
+                                                    uxHairColorID:"1",
+                                                    uxEyeColorID:"1",
+                                                    uxBodyHeightCM:"170",
+                                                    axFullAddress: generateRandomString(10, "ps"),
+                                                    axPrimaryMobile: '0712312312',
+                                                    axLocationID: "31",
+                                                    ucaDurationTypeID: "1",
+                                                    ucaPaymentTypeID: "1",
+                                                    BDC_VCID_c_proceedapplication_default_bdcaptcha: secret1,
+                                                    BDC_BackWorkaround_c_proceedapplication_default_bdcaptcha: secret2,
+                                                    BDC_Hs_c_proceedapplication_default_bdcaptcha: secret3,
+                                                    BDC_SP_c_proceedapplication_default_bdcaptcha: secret4,
+                                                    __EVENTTARGET : __EVENTTARGET || "" ,
+                                                    __EVENTARGUMENT : __EVENTARGUMENT || "",
+                                                    __LASTFOCUS : __LASTFOCUS || "",
+                                                    __VIEWSTATEGENERATOR,
+                                                    __EVENTVALIDATION,
+                                                    __VIEWSTATE,
+                                                    __SCROLLPOSITIONX: Math.ceil(random / 3),
+                                                    __SCROLLPOSITIONY: 995,
+                                                    txtCaptchaCode: html.window.initBot.GetUserInputElement().value,
+                                                    uxSaveMainForm: "ثبت",
+                                                    _AppTypeID: 0,
+                                                    uxCurrentTab: 0,
+                                                    uxWorkItemID,
+                                                    axTypeOfAddressID,
+                                                    ucaName,
+                                                    // uxBirthLocationID: 35,
+                                                    // uxResidenceCountryID: 35,
+                                                } 
+
+
+                                                const reqOptions = {
+                                                    url: options.url,
+                                                    form: submitMainFormOptions,
+                                                    strictSSL: false,
+                                                    headers: {
+                                                        ...bypassHeaders,
+                                                        'Cookie': saveCookie
+                                                    },
+                                                    gzip: true
+                                                }
+                                                    
+                                                console.log({...reqOptions, form :{...reqOptions.form, __VIEWSTATE: "", __EVENTVALIDATION: ""}, headers: {} })
+                                                handleRequest(reqOptions, -1);
+                                            }, 1200)
+
+                                    } catch (error) {
+                                            console.log(error)
+                                            return res.json({status: "failure", message: "Please Try Again. 10"})
+                                    }
+
+                                } else if (resp?.statusCode === 503 && retry < 3) {
+                                    // Retry fetching captcha image
+                                    console.log('Retry fetching captcha image:', retry + 1);
+                                    fetchCaptchaImage(imgOptions, (retry + 1)); // Retry therequest
+                                } else { 
+                                    console.error('Error fetching captcha image:', err || resp?.statusCode);
+                                    res.json({ status: "failure", message: "Error fetching captcha image" });
+                                }
+                            });
+                        };
+                        fetchCaptchaImage(imageOptions);
+                        return
+                    }
                 } else if (response.statusCode === 503 && retryCount < 50) { // If 503 Service Unavailable error occurs during redirection
                     // Resubmit the redirection request
                     console.log(options, "REDIRECTING")
