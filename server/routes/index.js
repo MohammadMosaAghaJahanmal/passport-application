@@ -26,7 +26,7 @@ router.post('/barcode', async (req, res) => {
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const encodedForm = queryString.stringify({
-        "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR || "59A49A67",
+        "__VIEWSTATEGENERATOR": reqData.__VIEWSTATEGENERATOR || "768A9483",
         "__EVENTVALIDATION": reqData.__EVENTVALIDATION,
         "__SCROLLPOSITIONX": reqData.__SCROLLPOSITIONX,
         "__SCROLLPOSITIONY": reqData.__SCROLLPOSITIONY,
@@ -58,7 +58,7 @@ router.post('/barcode', async (req, res) => {
     }
 
     const requestOptions = {
-        url: 'https://passport.moi.gov.af/search/Default.aspx',
+        url: 'https://passport.moi.gov.af/BarcodeSearch/',
         form: encodedForm,
         strictSSL: false,
         followRedirect: true,
@@ -188,7 +188,7 @@ router.post('/barcode', async (req, res) => {
                         strictSSL: false,
                         headers: {
                             ...bypassHeaders,
-                            'Referer': 'https://passport.moi.gov.af/search/Default.aspx',
+                            'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
                             'Cookie': saveCookie,
                         },
                         gzip: true
@@ -1098,7 +1098,7 @@ router.post('/submitform', async(req, res) => {
     reqData = { ...reqData };
     let axLocationID = reqData.axLocationID || '31';
     const requestOptions = {
-        url: 'https://passport.moi.gov.af/search/Default.aspx',
+        url: 'https://passport.moi.gov.af/BarcodeSearch/',
         form: reqData,
         strictSSL: false,
         followRedirect: false

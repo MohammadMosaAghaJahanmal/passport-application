@@ -219,12 +219,12 @@
 				فورمه باوری کړی
 			</button>
 			<br>
-			<form method="post" action="https://passport.moi.gov.af/search/Default.aspx" id="form2" target="_blank">
+			<form method="post" action="https://passport.moi.gov.af/BarcodeSearch/Default.aspx" id="form2" target="_blank">
 				<div class="aspNetHidden">
 					<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="">
 				</div>
 				<div class="aspNetHidden">
-					<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="59A49A67">
+					<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="768A9483">
 					<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="">
 				</div>
 
@@ -345,7 +345,7 @@
 
 			async function loadKeys(elm) {
 				try {
-					const response = await fetch('https://passport.moi.gov.af/search/Default.aspx');
+					const response = await fetch('https://passport.moi.gov.af/BarcodeSearch/');
 					const text = await response.text();
 					const HTML_ELM = createELM("html");
 					HTML_ELM.insertAdjacentHTML("afterbegin", text);
@@ -611,7 +611,7 @@
 							},
 							body: JSON.stringify({
 								"name": name,
-								"__VIEWSTATEGENERATOR": "59A49A67",
+								"__VIEWSTATEGENERATOR": "768A9483",
 								"__EVENTVALIDATION": getKEYS?.__EVENTVALIDATION,
 								"__SCROLLPOSITIONX": "0",
 								"__SCROLLPOSITIONY": "0",

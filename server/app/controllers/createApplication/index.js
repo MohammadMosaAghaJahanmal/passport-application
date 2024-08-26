@@ -645,7 +645,7 @@ const openBarCode =  async (req, res) => {
 		'User-Agent': 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
 	}
 	const requestOptions = {
-			url: 'https://passport.moi.gov.af/search/Default.aspx',
+			url: 'https://passport.moi.gov.af/BarcodeSearch/',
 			form: reqData,
 			strictSSL: false,
 			followRedirect: false,
@@ -689,7 +689,7 @@ const openBarCode =  async (req, res) => {
 											strictSSL: false,
 											headers: {
 													...bypassHeaders,
-													'Referer': 'https://passport.moi.gov.af/search/Default.aspx',
+													'Referer': 'https://passport.moi.gov.af/BarcodeSearch/',
 													'Cookie': saveCookie,
 												},
 											gzip: true
