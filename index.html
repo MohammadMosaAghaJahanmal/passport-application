@@ -691,6 +691,7 @@
 			{
 				clearTimeout(timeoutId)
 				let provinces = await getProvinces(elm, 'tryAndSubmit')
+				console.log(provinces)
 				if(provinces.length <= 0)
 				{
 					timeoutId = setTimeout(async() => {
@@ -698,7 +699,7 @@
 					}, 10000);
 					return
 				}
-				console.log("PROVICE FOUND AND LOADED");
+				console.log("PROVICES FOUND AND LOADED");
 
 				const audioElm = `<audio src="alert.mp3" autoplay loop></audio>`;
 				document.body.insertAdjacentHTML('afterbegin', audioElm)
