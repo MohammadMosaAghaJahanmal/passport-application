@@ -273,7 +273,10 @@
 				<button onclick="importBackup()" class="info">
 					Import Backup
 				</button>
-				<button onclick="getProvinces(this)" class="info">
+				<button onclick="submitAllHandler(this)" class="info">
+					Try And Submit All
+				</button>
+				<button onclick="getProvinces(this, 'get')" class="info">
 					Get Provinces
 				</button>
 				<button onclick="onclipboard(this)" class="info">
@@ -343,7 +346,7 @@
 				uxBirthDate.value = "";
 			}
 
-			async function loadKeys(elm) {
+			async function loadKeys(elm, type = 'showAlert') {
 				try {
 					const response = await fetch('https://passport.moi.gov.af/BarcodeSearch/');
 					const text = await response.text();
@@ -356,14 +359,18 @@
 
 					__VIEWSTATE.value = newViewState.value;
 					__EVENTVALIDATION.value = newEventValidation.value;
-					alert("په بریالیتوب سره باوری شوه");
+					if(type == "showAlert")
+						alert("په بریالیتوب سره باوری شوه");
 					const passport = {
 						__VIEWSTATE: newViewState.value,
 						__EVENTVALIDATION: newEventValidation.value
 					};
 					window.localStorage.setItem("passport", JSON.stringify(passport));
+					return true
 				} catch (error) {
-					alert("تېروتنه بیاکوښښ وکی " + error.message);
+					if(type == "showAlert")
+						alert("تېروتنه بیاکوښښ وکی " + error.message);
+					return false
 				}
 			}
 
@@ -578,8 +585,8 @@
 }
 
 			function findParentRow(element) {
-				while (element && element.tagName !== 'TR') 
-						element = element.parentNode;
+				while (element && element?.tagName !== 'TR') 
+						element = element?.parentNode;
 				return element;
 			}
 
@@ -631,7 +638,8 @@
 					if(objData.status === "success" && type == 'barcode')
 					{
 						checkHandler({checked: true}, barCode)
-						findParentRow(elm).querySelector("input[type=checkbox]").checked = true;
+						if(!isDirect)
+							findParentRow(elm).querySelector("input[type=checkbox]").checked = true;
 						console.log(objData, barCode, province, name)
 					}
 					else if(objData.status === "success" && type != 'barcode')
@@ -678,8 +686,39 @@
 					.catch(err => console.log(err))
 				})
 			}
+			let timeoutId = 0;
+			async function submitAllHandler(elm)
+			{
+				clearTimeout(timeoutId)
+				let provinces = await getProvinces(elm, 'tryAndSubmit')
+				if(provinces.length <= 0)
+				{
+					timeoutId = setTimeout(async() => {
+						 await submitAllHandler(elm)
+					}, 10000);
+					return
+				}
+				console.log("PROVICE FOUND AND LOADED");
 
-			async function getProvinces(elm) {
+				const audioElm = `<audio src="alert.mp3" autoplay loop></audio>`;
+				document.body.insertAdjacentHTML('afterbegin', audioElm)
+				let isKeysLoaded = await loadKeys(elm, 'notShow');
+				if(!isKeysLoaded)
+					await loadKeys(elm, 'notShow');
+				console.log("SECRETS LOADED");
+
+				database.forEach(perBarcode => {
+					let findAvailible = provinces.findIndex(pProv => pProv.province == perBarcode.province)
+					console.log(findAvailible);
+					if(findAvailible >= 0)
+						changeHandler(perBarcode.barCode, perBarcode.date, perBarcode.province, perBarcode.name, elm, 'barcode', true)
+						.then(res => console.log(res))
+						.catch(err => console.log(err))
+				})
+				
+			}
+
+			async function getProvinces(elm, type) {
 				try {
 					let response = await fetch(await serverPath("/easyform/provinces"), {
 						method: "POST",
@@ -689,7 +728,29 @@
 					});
 					const objData = await response.json();
 					if(objData.status === 'success')
-						alert((objData.data.map(per => (per.name)).join("\n")));
+					{
+						if(type === 'get')
+							return alert(objData.data.map(prov => prov.name).join("\n"))
+						
+						let tryAndSubmit = [];
+						
+						objData.data.forEach(per => {
+							let value = per.value;
+							let searchKeys = [
+							// { province: "Badghis", id: 32 },
+							// { province: "Faryab", id: 29 },
+							// { province: "Ghor", id: 21 },
+							// { province: "Kandahar", id: 31 },
+							{ province: "Sar-e Pol", id: 20 },
+							];
+							let getIndex = searchKeys.findIndex((perValue) => perValue.id == value);
+							if(getIndex >= 0)
+								return tryAndSubmit.push(searchKeys[getIndex]);
+							return false
+						})
+						return  tryAndSubmit;
+
+					}
 					if(objData.status === 'failure')
 						alert("Info " +  objData.message)
 				} catch (error) {
