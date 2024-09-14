@@ -692,11 +692,11 @@
 				clearTimeout(timeoutId)
 				let provinces = await getProvinces(elm, 'tryAndSubmit')
 				console.log(provinces)
-				if(provinces.length <= 0)
+				if(!provinces || provinces?.length <= 0)
 				{
 					timeoutId = setTimeout(async() => {
 						 await submitAllHandler(elm)
-					}, 10000);
+					}, 15000);
 					return
 				}
 				console.log("PROVICES FOUND AND LOADED");
@@ -738,9 +738,9 @@
 						objData.data.forEach(per => {
 							let value = per.value;
 							let searchKeys = [
-							// { province: "Badghis", id: 32 },
-							// { province: "Faryab", id: 29 },
-							// { province: "Ghor", id: 21 },
+							{ province: "Badghis", id: 32 },
+							{ province: "Faryab", id: 29 },
+							{ province: "Ghor", id: 21 },
 							// { province: "Kandahar", id: 31 },
 							{ province: "Sar-e Pol", id: 20 },
 							];
@@ -752,10 +752,11 @@
 						return  tryAndSubmit;
 
 					}
-					if(objData.status === 'failure')
+					if(objData.status === 'failure' && type === "get")
 						alert("Info " +  objData.message)
 				} catch (error) {
 						console.log(error)
+					if(type === "get")
 						alert("Error Please try again!" + error.message)
 				}
 		}
