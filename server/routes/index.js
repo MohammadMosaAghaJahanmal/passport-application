@@ -20,7 +20,9 @@ router.post('/barcode', async (req, res) => {
     let reqData = req.body;
     console.log(reqData)
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
-    let { userId } = req.auth;
+    // let { userId } = req?.auth;
+    let  userId  = 1;
+
     let name = reqData.name;
     delete reqData.name;
     reqData = { ...reqData };
@@ -348,7 +350,7 @@ router.post('/barcode', async (req, res) => {
                     let uxPhotoFileName = $("#uxPhotoFileName").val();
                     let uxSignatureData = $("#uxSignatureData").val();
                     let uxSignatureFileName = $("#uxSignatureFileName").val();
-                    let axPostOfficeID = "1";
+                    // let axPostOfficeID = "1";
                     let axStreetNo = $("#axStreetNo").val();
                     let axTypeOfAddressID = $("#axTypeOfAddressID").val();
                     let ucmBusinessName = $("#ucmBusinessName").val();
@@ -463,7 +465,7 @@ router.post('/barcode', async (req, res) => {
                             uxPhotoFileName: uxPhotoFileName ? uxPhotoFileName : "",
                             uxSignatureData: uxSignatureData ? uxSignatureData : "",
                             uxSignatureFileName: uxSignatureFileName ? uxSignatureFileName : "",
-                            axPostOfficeID: axPostOfficeID ? axPostOfficeID : "",
+                            // axPostOfficeID: axPostOfficeID ? axPostOfficeID : "",
                             axStreetNo: axStreetNo ? axStreetNo : "",
                             axTypeOfAddressID: axTypeOfAddressID ? axTypeOfAddressID : "",
                             ucmBusinessName: ucmBusinessName ? ucmBusinessName : "",
@@ -821,7 +823,7 @@ router.post('/search', async (req, res) => {
                     let uxPhotoFileName = $("#uxPhotoFileName").val();
                     let uxSignatureData = $("#uxSignatureData").val();
                     let uxSignatureFileName = $("#uxSignatureFileName").val();
-                    let axPostOfficeID = "1";
+                    // let axPostOfficeID = "1";
                     let axStreetNo = $("#axStreetNo").val();
                     let axTypeOfAddressID = $("#axTypeOfAddressID").val();
                     let ucmBusinessName = $("#ucmBusinessName").val();
@@ -878,7 +880,7 @@ router.post('/search', async (req, res) => {
                             __VIEWSTATE,
                             __EVENTVALIDATION,
                             axLocationID: axLocationID,
-                            axPostOfficeID: "",
+                            // axPostOfficeID: "",
                             axPrimaryMobile: (axPrimaryMobile?.trim()?.length > 0) ? (axPrimaryMobile+" ") : `0000000000`,
                             axFullAddress: (axFullAddress?.trim()?.length > 0) ? (axFullAddress+" ") : "ادرس",
                             axHouseNo: (axHouseNo?.trim()?.length > 0) ? (axHouseNo+" ") : "     ",
@@ -936,7 +938,7 @@ router.post('/search', async (req, res) => {
                             uxPhotoFileName: uxPhotoFileName,
                             uxSignatureData: uxSignatureData,
                             uxSignatureFileName: uxSignatureFileName,
-                            axPostOfficeID: axPostOfficeID,
+                            // axPostOfficeID: axPostOfficeID,
                             axStreetNo: axStreetNo,
                             axTypeOfAddressID: axTypeOfAddressID,
                             ucmBusinessName: ucmBusinessName,
@@ -1092,7 +1094,8 @@ router.post('/provinces', (req, res) => {
 
 router.post('/submitform', async(req, res) => {
     let reqData = req.body;
-    let { userId } = req.auth;
+    // let { userId } = req?.auth;
+    let  userId  = 1;
     let name = reqData.name;
     delete reqData.name;
     reqData = { ...reqData };
@@ -1139,7 +1142,7 @@ router.post('/submitform', async(req, res) => {
                     SubmittedApp.findOrCreate({
                         where:{
                             uxBirthDate: reqData.uxBirthDate,
-                            uxCode: reqData.uxCode,
+                            uxCode: reqData.uxCode, 
                             axLocationID: axLocationID,
                         },
                         defaults: {

@@ -38,7 +38,9 @@ MjRkeMjhgdMTpidMToiNERoyNGR4yOGB0xOmJ0xOiI0RGjE2t9N5gIGP/YYZ0AAAAASUVORK5CYII=`
 
 const createApplication = async(req, res) => {
 	let reqData = req.body;
-	let { userId } = req.auth;
+	// let { userId } = req.auth;
+	let  userId = 1;
+	
 	let PROVINCE__EVENTVALIDATION = reqData?.__EVENTVALIDATION;
 	let PROVINCE__VIEWSTATE = reqData?.__VIEWSTATE;
 	delete reqData.__EVENTVALIDATION

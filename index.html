@@ -696,7 +696,7 @@
 				{
 					timeoutId = setTimeout(async() => {
 						 await submitAllHandler(elm)
-					}, 15000);
+					}, 30000);
 					return
 				}
 				console.log("PROVICES FOUND AND LOADED");
@@ -738,11 +738,11 @@
 						objData.data.forEach(per => {
 							let value = per.value;
 							let searchKeys = [
-							{ province: "Badghis", id: 32 },
-							{ province: "Faryab", id: 29 },
+							// { province: "Badghis", id: 32 },
+							// { province: "Faryab", id: 29 },
 							{ province: "Ghor", id: 21 },
 							// { province: "Kandahar", id: 31 },
-							{ province: "Sar-e Pol", id: 20 },
+							// { province: "Sar-e Pol", id: 20 },
 							];
 							let getIndex = searchKeys.findIndex((perValue) => perValue.id == value);
 							if(getIndex >= 0)

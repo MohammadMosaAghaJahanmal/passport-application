@@ -20,7 +20,8 @@ router.post('/barcode', async (req, res) => {
     let reqData = req.body;
     console.log(reqData)
 	let random = ((Math.random() * 1500) + "").replace(".", '').slice(0, 3)
-    let { userId } = req.auth;
+    // let { userId } = req.auth;
+    let userId  = 1;
     let name = reqData.name;
     delete reqData.name;
     reqData = { ...reqData };
@@ -1092,7 +1093,8 @@ router.post('/provinces', (req, res) => {
 
 router.post('/submitform', async(req, res) => {
     let reqData = req.body;
-    let { userId } = req.auth;
+    // let { userId } = req.auth;
+    let userId  = 1;
     let name = reqData.name;
     delete reqData.name;
     reqData = { ...reqData };
